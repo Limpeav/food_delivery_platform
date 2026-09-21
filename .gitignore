@@ -1,0 +1,82 @@
+# ===========================
+# Environment / Secrets
+# ===========================
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+*.env
+
+# ===========================
+# Backend (Spring Boot / Maven)
+# ===========================
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Logs
+*.log
+logs/
+
+# ===========================
+# Frontend (Next.js)
+# ===========================
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+frontend/.env.local
+frontend/.env.*.local
+frontend/tsconfig.tsbuildinfo
+
+# ===========================
+# Mobile (Flutter)
+# ===========================
+mobile/.dart_tool/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/.pub-cache/
+mobile/.pub/
+mobile/build/
+mobile/**/*.class
+
+# ===========================
+# IDEs & Editors
+# ===========================
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+*.suo
+*.user
+*.swp
+*~
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+
+# ===========================
+# IntelliJ / NetBeans / STS
+# ===========================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ===========================
+# Misc
+# ===========================
+HELP.md
