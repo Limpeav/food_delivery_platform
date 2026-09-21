@@ -38,7 +38,7 @@ spring:
       cache-null-values: false
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
   access-expiration: ${JWT_ACCESS_EXPIRATION:604800000} # 7 days
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 30 days
 
@@ -46,8 +46,8 @@ app:
   frontend:
     url: ${FRONTEND_URL:http://localhost:3000}
   admin:
-    email: ${ADMIN_EMAIL}
-    password: ${ADMIN_PASSWORD}
+    email: ${ADMIN_EMAIL:admin@gmail.com}
+    password: ${ADMIN_PASSWORD:admin123}
 
 springdoc:
   api-docs:
