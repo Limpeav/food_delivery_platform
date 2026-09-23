@@ -68,12 +68,18 @@ INSERT INTO users (name, email, password, phone_number, role, status, created_at
 VALUES ('Lucas Miller', 'lucas.shake@fooddelivery.com', '$2a$10$4xHKFtJi9wnmjxjE3qZWTOkBvgQk/sGP/O0DDrDt.b3VXBT/VqQ1e', '+85512220025', 'RESTAURANT_OWNER', 'ACTIVE', NOW(), NOW())
 ON CONFLICT (email) DO NOTHING;
 
--- 3. Update Restaurant 9 (Angkor Craft Brewery)
-UPDATE restaurants SET 
-    rating = 4.8, 
-    review_count = 32, 
-    updated_at = NOW() 
-WHERE id = 9;
+-- Insert Restaurant 8 if not exists
+INSERT INTO restaurants (id, name, description, address, phone, logo_url, cover_image_url, rating, review_count, delivery_fee, minimum_order, opening_time, closing_time, latitude, longitude, status, category_id, owner_id, created_at, updated_at)
+VALUES (8, 'Seoul Kitchen & Korean BBQ', 'Crispy Korean fried chicken, sizzling galbi, spicy kimchi stew, and authentic banchan.', 'St 214, Daun Penh, Phnom Penh', '+855 23 888 208', 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=300', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200', 4.7, 28, 1.50, 5.00, '10:30', '22:00', 11.5560, 104.9210, 'APPROVED', 7, 8, NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET category_id = EXCLUDED.category_id;
+
+-- 3. Insert / Update Restaurant 9 (Angkor Craft Brewery & Texas BBQ)
+INSERT INTO restaurants (id, name, description, address, phone, logo_url, cover_image_url, rating, review_count, delivery_fee, minimum_order, opening_time, closing_time, latitude, longitude, status, category_id, owner_id, created_at, updated_at)
+VALUES (9, 'Angkor Craft Brewery & Texas BBQ', 'Authentic Texas slow-smoked barbecue paired with artisanal craft beers brewed locally in Cambodia.', 'St 308, Bassac Lane, Phnom Penh', '+855 23 999 109', 'https://images.unsplash.com/photo-1544025162-d76694265947?w=300', 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200', 4.8, 32, 1.50, 5.00, '11:00', '23:30', 11.5518, 104.9312, 'APPROVED', 1, 9, NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET 
+    rating = EXCLUDED.rating, 
+    review_count = EXCLUDED.review_count, 
+    updated_at = NOW();
 
 -- Menu categories & food items for Restaurant 9
 

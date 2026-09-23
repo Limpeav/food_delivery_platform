@@ -67,29 +67,24 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         if (restaurantRepository.count() < 25) {
-            try {
-                log.info("Executing extended restaurants & foods seed script (Batch 1)...");
-                org.springframework.jdbc.datasource.init.ResourceDatabasePopulator populator =
-                        new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
-                                new org.springframework.core.io.ClassPathResource("seed_restaurants_foods.sql"));
-                populator.execute(dataSource);
-                log.info("Extended restaurants & foods (Batch 1) seeded successfully!");
-            } catch (Exception e) {
-                log.error("Failed to execute extended restaurants seed script (Batch 1): {}", e.getMessage());
-            }
+            executeSqlScriptDirectly("seed_restaurants_foods.sql", "Batch 1");
         }
 
-        if (restaurantRepository.count() < 50) {
-            try {
-                log.info("Executing extended restaurants & foods seed script (Batch 2)...");
-                org.springframework.jdbc.datasource.init.ResourceDatabasePopulator populator =
-                        new org.springframework.jdbc.datasource.init.ResourceDatabasePopulator(
-                                new org.springframework.core.io.ClassPathResource("seed_restaurants_foods_batch2.sql"));
-                populator.execute(dataSource);
-                log.info("Extended restaurants & foods (Batch 2) seeded successfully!");
-            } catch (Exception e) {
-                log.error("Failed to execute extended restaurants seed script (Batch 2): {}", e.getMessage());
-            }
+        if (restaurantRepository.count() < 40) {
+            executeSqlScriptDirectly("seed_restaurants_foods_batch2.sql", "Batch 2");
+        }
+    }
+
+    private void executeSqlScriptDirectly(String scriptName, String batchLabel) {
+        try (java.sql.Connection conn = dataSource.getConnection();
+             java.sql.Statement stmt = conn.createStatement()) {
+            log.info("Executing extended restaurants & foods seed script ({})...", batchLabel);
+            org.springframework.core.io.Resource resource = new org.springframework.core.io.ClassPathResource(scriptName);
+            String sql = org.springframework.util.StreamUtils.copyToString(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8);
+            stmt.execute(sql);
+            log.info("Extended restaurants & foods ({}) seeded successfully!", batchLabel);
+        } catch (Exception e) {
+            log.error("Failed to execute extended restaurants seed script ({}): {}", batchLabel, e.getMessage());
         }
     }
 
