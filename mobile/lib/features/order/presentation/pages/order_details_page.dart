@@ -63,13 +63,16 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppDimensions.radiusMd)),
             ),
             onPressed: () async {
+              final orderRepo = context.read<OrderRepository>();
+              final orderBloc = context.read<OrderBloc>();
+              final messenger = ScaffoldMessenger.of(context);
               Navigator.of(dialogCtx).pop();
               try {
-                await context.read<OrderRepository>().cancelOrder(order.id);
+                await orderRepo.cancelOrder(order.id);
                 if (mounted) {
-                  context.read<OrderBloc>().add(OrdersRefreshRequested());
+                  orderBloc.add(OrdersRefreshRequested());
                   _loadOrder();
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text('Order has been cancelled successfully.'),
                       backgroundColor: AppColors.textPrimary,
@@ -78,7 +81,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 }
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     SnackBar(
                       content: Text('Failed to cancel order: $e'),
                       backgroundColor: AppColors.error,
@@ -465,6 +468,36 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(item.foodName, style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                        if (item.selectedOptions != null && item.selectedOptions!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF3C7),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                item.selectedOptions!,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF92400E),
+                                ),
+                              ),
+                            ),
+                          ),
+                        if (item.specialInstructions != null && item.specialInstructions!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              'Note: ${item.specialInstructions}',
+                              style: AppTextStyles.caption.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ),
                         Text(
                           '${CurrencyFormatter.format(item.price)} each',
                           style: AppTextStyles.caption.copyWith(color: AppColors.textMuted),

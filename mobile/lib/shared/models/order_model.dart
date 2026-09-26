@@ -7,6 +7,8 @@ class OrderItemModel extends Equatable {
   final double price;
   final int quantity;
   final double subtotal;
+  final String? selectedOptions;
+  final String? specialInstructions;
 
   const OrderItemModel({
     required this.id,
@@ -15,6 +17,8 @@ class OrderItemModel extends Equatable {
     required this.price,
     required this.quantity,
     required this.subtotal,
+    this.selectedOptions,
+    this.specialInstructions,
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class OrderItemModel extends Equatable {
       price: ((json['price'] ?? json['unitPrice']) as num?)?.toDouble() ?? 0.0,
       quantity: (json['quantity'] as num?)?.toInt() ?? 1,
       subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0.0,
+      selectedOptions: json['selectedOptions'] as String?,
+      specialInstructions: json['specialInstructions'] as String?,
     );
   }
 
@@ -35,10 +41,12 @@ class OrderItemModel extends Equatable {
     'price': price,
     'quantity': quantity,
     'subtotal': subtotal,
+    'selectedOptions': selectedOptions,
+    'specialInstructions': specialInstructions,
   };
 
   @override
-  List<Object?> get props => [id, foodItemId, foodName, price, quantity, subtotal];
+  List<Object?> get props => [id, foodItemId, foodName, price, quantity, subtotal, selectedOptions, specialInstructions];
 }
 
 class OrderModel extends Equatable {

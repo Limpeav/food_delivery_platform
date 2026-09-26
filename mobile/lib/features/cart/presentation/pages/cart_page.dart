@@ -111,7 +111,7 @@ class CartPage extends StatelessWidget {
                 child: ListView.separated(
                   padding: const EdgeInsets.all(AppDimensions.lg),
                   itemCount: cart.items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.sm),
+                  separatorBuilder: (context, index) => const SizedBox(height: AppDimensions.sm),
                   itemBuilder: (context, index) {
                     final item = cart.items[index];
 
@@ -138,7 +138,7 @@ class CartPage extends StatelessWidget {
                                   ? CachedNetworkImage(
                                       imageUrl: item.foodImageUrl!,
                                       fit: BoxFit.cover,
-                                      errorWidget: (_, __, ___) => const Icon(
+                                      errorWidget: (context, url, error) => const Icon(
                                         Icons.fastfood_rounded,
                                         color: AppColors.primary,
                                         size: 24,
@@ -164,6 +164,20 @@ class CartPage extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                if (item.selectedOptions != null && item.selectedOptions!.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: Text(
+                                      item.selectedOptions!,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF92400E),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 const SizedBox(height: 2),
                                 Text(
                                   CurrencyFormatter.format(item.price),
