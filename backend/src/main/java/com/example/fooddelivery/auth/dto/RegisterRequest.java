@@ -3,6 +3,7 @@ package com.example.fooddelivery.auth.dto;
 import com.example.fooddelivery.user.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,10 +25,15 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, max = 100, message = "Password must be at least 6 characters")
+    @Size(min = 8, max = 100, message = "Password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$",
+            message = "Password must contain at least one letter and one number"
+    )
     private String password;
 
     private String phoneNumber;
 
     private Role role; // Optional, defaults to CUSTOMER if null or ADMIN is prevented
 }
+

@@ -50,6 +50,13 @@ services:
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@gmail.com}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      BAKONG_API_TOKEN: ${BAKONG_API_TOKEN:-}
+      BAKONG_ACCOUNT_ID: ${BAKONG_ACCOUNT_ID:-merchant@bakong}
+      BAKONG_MERCHANT_NAME: ${BAKONG_MERCHANT_NAME:-Cravery Food Delivery}
+      BAKONG_MERCHANT_CITY: ${BAKONG_MERCHANT_CITY:-Phnom Penh}
+      BAKONG_API_URL: ${BAKONG_API_URL:-https://api-bakong.nbc.gov.kh/v1}
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -89,6 +96,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  uploads_data:
 
 networks:
   cravery_network:

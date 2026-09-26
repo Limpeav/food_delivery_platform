@@ -71,4 +71,10 @@ class ApiEndpoints {
 
   // Reviews
   static const String reviews = '/reviews';
+
+  // Payments
+  static const String payments = '/payments';
+  static String paymentKhqr(dynamic orderId) => '/payments/$orderId/khqr';
+  static String verifyPaymentKhqr(dynamic orderId) => '/payments/$orderId/khqr/verify';
 }
+

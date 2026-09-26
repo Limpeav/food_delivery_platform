@@ -21,6 +21,8 @@ public class OrderItemResponse {
     private Integer quantity;
     private BigDecimal unitPrice;
     private BigDecimal subtotal;
+    private String selectedOptions;
+    private String specialInstructions;
 
     public static OrderItemResponse from(OrderItem item) {
         return OrderItemResponse.builder()
@@ -31,6 +33,8 @@ public class OrderItemResponse {
                 .quantity(item.getQuantity())
                 .unitPrice(item.getUnitPrice())
                 .subtotal(item.getSubtotal())
+                .selectedOptions(item.getSelectedOptions())
+                .specialInstructions(item.getSpecialInstructions())
                 .build();
     }
 }

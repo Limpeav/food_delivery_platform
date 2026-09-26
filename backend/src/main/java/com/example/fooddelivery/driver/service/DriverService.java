@@ -190,4 +190,20 @@ public class DriverService {
 
         return PageResponse.from(dtoPage);
     }
+
+    /**
+     * Returns a paginated history of completed deliveries for the driver, ordered by delivery time descending.
+     * Each record includes the delivery fee earned.
+     */
+    @Transactional(readOnly = true)
+    public com.example.fooddelivery.common.response.PageResponse<com.example.fooddelivery.delivery.dto.DeliveryResponse> getEarningsHistory(
+            Long userId, Pageable pageable) {
+        Driver driver = findDriverByUserId(userId);
+        org.springframework.data.domain.Page<com.example.fooddelivery.delivery.dto.DeliveryResponse> page =
+                deliveryRepository.findByDriverIdAndStatus(driver.getId(),
+                        com.example.fooddelivery.delivery.entity.DeliveryStatus.DELIVERED, pageable)
+                        .map(com.example.fooddelivery.delivery.dto.DeliveryResponse::from);
+        return com.example.fooddelivery.common.response.PageResponse.from(page);
+    }
 }
+

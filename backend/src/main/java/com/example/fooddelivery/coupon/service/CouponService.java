@@ -5,8 +5,12 @@ import com.example.fooddelivery.common.exception.ResourceNotFoundException;
 import com.example.fooddelivery.coupon.dto.CouponRequest;
 import com.example.fooddelivery.coupon.dto.CouponResponse;
 import com.example.fooddelivery.coupon.entity.Coupon;
+import com.example.fooddelivery.coupon.entity.CouponUsage;
 import com.example.fooddelivery.coupon.entity.DiscountType;
 import com.example.fooddelivery.coupon.repository.CouponRepository;
+import com.example.fooddelivery.coupon.repository.CouponUsageRepository;
+import com.example.fooddelivery.user.entity.User;
+import com.example.fooddelivery.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,8 @@ import java.util.stream.Collectors;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private final CouponUsageRepository couponUsageRepository;
+    private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<CouponResponse> getActiveCoupons() {
@@ -48,14 +54,36 @@ public class CouponService {
 
     /**
      * Validates the coupon and returns the calculated discount amount.
+     * Does NOT check per-user uniqueness — use validateAndCalculateDiscountForUser for that.
      */
     @Transactional(readOnly = true)
     public BigDecimal validateAndCalculateDiscount(String code, BigDecimal subtotal) {
         if (code == null || code.trim().isEmpty()) {
             return BigDecimal.ZERO;
         }
-
         Coupon coupon = findCouponByCode(code);
+        return computeDiscount(coupon, subtotal);
+    }
+
+    /**
+     * Validates the coupon for a specific user — enforces per-user single-use policy.
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal validateAndCalculateDiscountForUser(String code, BigDecimal subtotal, Long userId) {
+        if (code == null || code.trim().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        Coupon coupon = findCouponByCode(code);
+
+        // Per-user single-use enforcement
+        if (couponUsageRepository.existsByCouponIdAndUserId(coupon.getId(), userId)) {
+            throw new BadRequestException("You have already used coupon '" + coupon.getCode() + "'. Each coupon can only be used once per account.");
+        }
+
+        return computeDiscount(coupon, subtotal);
+    }
+
+    private BigDecimal computeDiscount(Coupon coupon, BigDecimal subtotal) {
         LocalDate today = LocalDate.now();
 
         if (!Boolean.TRUE.equals(coupon.getActive())) {
@@ -98,6 +126,9 @@ public class CouponService {
         return discount;
     }
 
+    /**
+     * Increments the global usage count. Call recordUsageForUser instead when a userId is available.
+     */
     @Transactional
     public void recordUsage(String code) {
         if (code != null && !code.trim().isEmpty()) {
@@ -106,6 +137,31 @@ public class CouponService {
                 couponRepository.save(coupon);
             });
         }
+    }
+
+    /**
+     * Records both the per-user coupon usage and increments the global counter atomically.
+     */
+    @Transactional
+    public void recordUsageForUser(String code, Long userId) {
+        if (code == null || code.trim().isEmpty()) return;
+        Coupon coupon = couponRepository.findByCodeIgnoreCase(code.trim()).orElse(null);
+        if (coupon == null) return;
+
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) return;
+
+        // Persist per-user usage record (DB unique constraint is a safety net)
+        CouponUsage usage = CouponUsage.builder()
+                .coupon(coupon)
+                .user(user)
+                .build();
+        couponUsageRepository.save(usage);
+
+        // Increment global counter
+        coupon.setUsedCount(coupon.getUsedCount() + 1);
+        couponRepository.save(coupon);
+        log.info("Coupon '{}' used by userId={}", coupon.getCode(), userId);
     }
 
     @Transactional

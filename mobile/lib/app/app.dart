@@ -27,6 +27,7 @@ import '../features/notification/presentation/bloc/notification_state.dart';
 import '../features/order/data/order_repository.dart';
 import '../features/order/presentation/bloc/order_bloc.dart';
 import '../features/order/presentation/bloc/order_event.dart';
+import '../features/payment/data/payment_repository.dart';
 import '../features/tracking/presentation/bloc/tracking_bloc.dart';
 import '../features/profile/data/profile_repository.dart';
 import '../features/profile/presentation/bloc/profile_bloc.dart';
@@ -70,6 +71,7 @@ class _CraveryAppState extends State<CraveryApp> {
   late final NotificationRepository _notificationRepository;
   late final ReviewRepository _reviewRepository;
   late final ProfileRepository _profileRepository;
+  late final PaymentRepository _paymentRepository;
 
   late final AuthBloc _authBloc;
   late final GoRouter _router;
@@ -88,6 +90,7 @@ class _CraveryAppState extends State<CraveryApp> {
     _cartRepository = CartRepository(dioClient: widget.dioClient);
     _checkoutRepository = CheckoutRepository(dioClient: widget.dioClient);
     _orderRepository = OrderRepository(dioClient: widget.dioClient);
+    _paymentRepository = PaymentRepository(dioClient: widget.dioClient);
     _addressRepository = AddressRepository(dioClient: widget.dioClient);
     _favoriteRepository = FavoriteRepository(dioClient: widget.dioClient);
     _notificationRepository = NotificationRepository(dioClient: widget.dioClient);
@@ -122,6 +125,7 @@ class _CraveryAppState extends State<CraveryApp> {
         RepositoryProvider.value(value: _cartRepository),
         RepositoryProvider.value(value: _checkoutRepository),
         RepositoryProvider.value(value: _orderRepository),
+        RepositoryProvider.value(value: _paymentRepository),
         RepositoryProvider.value(value: _addressRepository),
         RepositoryProvider.value(value: _favoriteRepository),
         RepositoryProvider.value(value: _notificationRepository),

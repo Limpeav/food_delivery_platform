@@ -98,4 +98,23 @@ public class OrderController {
         PageResponse<OrderResponse> response = orderService.getAllOrdersAdmin(pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PostMapping("/api/orders/{id}/reorder")
+    @Operation(summary = "Re-order: clears cart and pre-fills it with items from a previous order")
+    public ResponseEntity<ApiResponse<OrderResponse>> reorder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        OrderResponse response = orderService.reorder(principal.getId(), id);
+        return ResponseEntity.ok(ApiResponse.success("Cart pre-filled with previous order items. Proceed to checkout.", response));
+    }
+
+    @GetMapping("/api/orders/{id}/eta")
+    @Operation(summary = "Get estimated delivery time (ETA) for an active order based on driver GPS")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getDeliveryEta(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        java.util.Map<String, Object> eta = orderService.getDeliveryEta(id, principal.getId());
+        return ResponseEntity.ok(ApiResponse.success(eta));
+    }
 }
+

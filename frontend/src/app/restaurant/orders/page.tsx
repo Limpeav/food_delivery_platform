@@ -182,13 +182,27 @@ export default function RestaurantOrdersPage() {
                 </div>
 
                 {/* Items List */}
-                <div className="py-3 space-y-2">
+                <div className="py-3 space-y-2.5">
                   {order.items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-800">
-                        <span className="font-bold text-[#FF5A1F]">{item.quantity}×</span> {item.foodName}
-                      </span>
-                      <span className="text-slate-500 font-mono">${item.subtotal.toFixed(2)}</span>
+                    <div key={item.id} className="text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-slate-800">
+                          <span className="font-bold text-[#FF5A1F]">{item.quantity}×</span> {item.foodName}
+                        </span>
+                        <span className="text-slate-500 font-mono">${item.subtotal.toFixed(2)}</span>
+                      </div>
+                      {item.selectedOptions && (
+                        <div className="mt-0.5">
+                          <span className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded">
+                            {item.selectedOptions}
+                          </span>
+                        </div>
+                      )}
+                      {item.specialInstructions && (
+                        <p className="text-[11px] text-slate-500 italic mt-0.5">
+                          Prep note: {item.specialInstructions}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

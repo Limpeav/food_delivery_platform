@@ -102,4 +102,70 @@ public class AdminService {
         log.info("Admin updated user {} status to: {}", userId, status);
         return UserResponse.from(saved);
     }
+
+    /**
+     * Builds a revenue time-series map for the given date range and granularity (daily/weekly/monthly).
+     * Returns: { "labels": [...], "revenue": [...], "orderCounts": [...] }
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getRevenueTimeSeries(java.time.LocalDate from, java.time.LocalDate to, String granularity) {
+        List<String> labels = new java.util.ArrayList<>();
+        List<java.math.BigDecimal> revenues = new java.util.ArrayList<>();
+        List<Long> orderCounts = new java.util.ArrayList<>();
+
+        java.time.LocalDate cursor = from;
+
+        while (!cursor.isAfter(to)) {
+            java.time.LocalDate periodEnd;
+            String label;
+
+            switch (granularity.toLowerCase()) {
+                case "weekly" -> {
+                    periodEnd = cursor.plusDays(6).isAfter(to) ? to : cursor.plusDays(6);
+                    label = cursor + " to " + periodEnd;
+                    cursor = cursor.plusWeeks(1);
+                }
+                case "monthly" -> {
+                    periodEnd = cursor.withDayOfMonth(cursor.lengthOfMonth()).isAfter(to)
+                            ? to : cursor.withDayOfMonth(cursor.lengthOfMonth());
+                    label = cursor.getYear() + "-" + String.format("%02d", cursor.getMonthValue());
+                    cursor = cursor.plusMonths(1);
+                }
+                default -> { // daily
+                    periodEnd = cursor;
+                    label = cursor.toString();
+                    cursor = cursor.plusDays(1);
+                }
+            }
+
+            LocalDateTime start = cursor.minusDays(1).atStartOfDay();
+            if ("daily".equalsIgnoreCase(granularity)) {
+                start = periodEnd.atStartOfDay();
+            }
+            LocalDateTime end = periodEnd.atTime(23, 59, 59);
+            LocalDateTime periodStart = (label.equals(cursor.minusDays(1).toString()) || "daily".equalsIgnoreCase(granularity))
+                    ? periodEnd.atStartOfDay()
+                    : from.atStartOfDay();
+
+            // Simpler approach: query per period
+            final java.time.LocalDateTime finalStart = periodEnd.atStartOfDay();
+            final java.time.LocalDateTime finalEnd = periodEnd.atTime(23, 59, 59);
+
+            java.math.BigDecimal revenue = orderRepository.calculateRevenueInPeriod(finalStart, finalEnd);
+            long count = orderRepository.countOrdersInPeriod(finalStart, finalEnd);
+
+            labels.add(label);
+            revenues.add(revenue != null ? revenue : java.math.BigDecimal.ZERO);
+            orderCounts.add(count);
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("labels", labels);
+        result.put("revenue", revenues);
+        result.put("orderCounts", orderCounts);
+        result.put("granularity", granularity);
+        result.put("from", from.toString());
+        result.put("to", to.toString());
+        return result;
+    }
 }

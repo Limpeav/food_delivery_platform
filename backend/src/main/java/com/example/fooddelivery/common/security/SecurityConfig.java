@@ -107,8 +107,10 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // WebSocket handshake
+                        // WebSocket handshake & static uploads & health checks
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
 
                         // Public browsing endpoints
                         .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()

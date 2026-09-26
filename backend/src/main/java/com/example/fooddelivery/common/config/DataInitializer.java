@@ -56,9 +56,17 @@ public class DataInitializer implements CommandLineRunner {
     @org.springframework.beans.factory.annotation.Value("${app.admin.password:admin123}")
     private String adminPassword;
 
+    @org.springframework.beans.factory.annotation.Value("${app.seed.enabled:true}")
+    private boolean seedEnabled;
+
     @Override
     @Transactional
     public void run(String... args) {
+        if (!seedEnabled) {
+            log.info("Data seeding is disabled (app.seed.enabled=false). Skipping demo seed.");
+            return;
+        }
+
         if (userRepository.count() == 0) {
             log.info("Seeding initial development data...");
             seedInitialData();

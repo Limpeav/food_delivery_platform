@@ -92,4 +92,17 @@ public class DriverController {
         DriverResponse response = driverService.approveDriver(id, approve);
         return ResponseEntity.ok(ApiResponse.success("Driver approval status updated", response));
     }
+
+    @GetMapping("/api/driver/earnings/history")
+    @PreAuthorize("hasRole('DRIVER')")
+    @Operation(summary = "Get paginated earnings history (completed deliveries) for the logged-in driver")
+    public ResponseEntity<ApiResponse<com.example.fooddelivery.common.response.PageResponse<com.example.fooddelivery.delivery.dto.DeliveryResponse>>> getEarningsHistory(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @org.springframework.data.web.PageableDefault(size = 20, sort = "deliveredTime", direction = org.springframework.data.domain.Sort.Direction.DESC)
+            org.springframework.data.domain.Pageable pageable) {
+        com.example.fooddelivery.common.response.PageResponse<com.example.fooddelivery.delivery.dto.DeliveryResponse> history =
+                driverService.getEarningsHistory(principal.getId(), pageable);
+        return ResponseEntity.ok(ApiResponse.success(history));
+    }
 }
+

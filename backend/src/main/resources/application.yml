@@ -59,3 +59,23 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: method
     tags-sorter: alpha
+
+bakong:
+  token: ${BAKONG_API_TOKEN:}
+  account-id: ${BAKONG_ACCOUNT_ID:merchant@bakong}
+  merchant-name: ${BAKONG_MERCHANT_NAME:Cravery Food Delivery}
+  merchant-city: ${BAKONG_MERCHANT_CITY:Phnom Penh}
+  api-url: ${BAKONG_API_URL:https://api-bakong.nbc.gov.kh/v1}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+
+

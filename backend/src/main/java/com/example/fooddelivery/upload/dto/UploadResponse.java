@@ -1,0 +1,18 @@
+package com.example.fooddelivery.upload.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UploadResponse {
+    private String url;
+    private String fileName;
+    private String originalFileName;
+    private long size;
+    private String contentType;
+}

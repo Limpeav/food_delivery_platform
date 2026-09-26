@@ -13,8 +13,10 @@ import {
   Percent,
   CreditCard,
   PieChart,
+  BarChart3,
 } from 'lucide-react';
 import { adminService } from '@/services/adminService';
+import { orderService } from '@/services/orderService';
 import { AdminDashboardStats } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
@@ -24,6 +26,11 @@ export default function AdminReportsPage() {
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'today' | 'monthly' | 'lifetime'>('monthly');
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Time-series state
+  const [granularity, setGranularity] = useState<'daily' | 'weekly' | 'monthly'>('daily');
+  const [timeSeries, setTimeSeries] = useState<{ labels: string[]; revenue: number[]; orderCounts: number[]; granularity: string } | null>(null);
+  const [timeSeriesLoading, setTimeSeriesLoading] = useState(false);
 
   useEffect(() => {
     async function loadReports() {
@@ -39,6 +46,21 @@ export default function AdminReportsPage() {
     }
     loadReports();
   }, []);
+
+  useEffect(() => {
+    async function loadTimeSeries() {
+      try {
+        setTimeSeriesLoading(true);
+        const data = await orderService.getRevenueTimeSeries({ granularity });
+        setTimeSeries(data);
+      } catch (err) {
+        console.error('Failed to load revenue time series:', err);
+      } finally {
+        setTimeSeriesLoading(false);
+      }
+    }
+    loadTimeSeries();
+  }, [granularity]);
 
   if (loading) {
     return <Loading fullPage message="Compiling enterprise financial reports..." />;
@@ -183,6 +205,104 @@ export default function AdminReportsPage() {
           </h3>
           <p className="text-[11px] text-slate-500">Disbursed to partner restaurant accounts</p>
         </div>
+      </div>
+
+      {/* Revenue & Volume Time Series Visualizer */}
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-[#FF5A1F]" />
+              Revenue & Order Volume Trend
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Historical revenue and completed order frequency aggregated across time windows
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-bold">
+            {(['daily', 'weekly', 'monthly'] as const).map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setGranularity(g)}
+                className={`px-3 py-1.5 rounded-xl capitalize transition-all cursor-pointer ${
+                  granularity === g
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {timeSeriesLoading ? (
+          <div className="py-12 flex justify-center">
+            <Loading message="Updating revenue trend..." />
+          </div>
+        ) : timeSeries && timeSeries.labels.length > 0 ? (
+          <div className="space-y-4">
+            {/* Quick Summary Row */}
+            <div className="flex flex-wrap items-center gap-4 text-xs">
+              <span className="px-3 py-1.5 rounded-xl bg-orange-50 text-[#FF5A1F] font-bold">
+                Total Trend Revenue: ${timeSeries.revenue.reduce((a, b) => a + b, 0).toFixed(2)}
+              </span>
+              <span className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold">
+                Total Orders: {timeSeries.orderCounts.reduce((a, b) => a + b, 0)}
+              </span>
+            </div>
+
+            {/* Interactive Bar Chart */}
+            <div className="pt-6">
+              <div className="flex items-end gap-2 sm:gap-3 h-48 overflow-x-auto pb-4 pt-4 px-2">
+                {(() => {
+                  const maxRev = Math.max(...timeSeries.revenue, 1);
+                  return timeSeries.labels.map((label, idx) => {
+                    const rev = timeSeries.revenue[idx] || 0;
+                    const orders = timeSeries.orderCounts[idx] || 0;
+                    const heightPercent = Math.max(Math.round((rev / maxRev) * 100), 4);
+
+                    return (
+                      <div
+                        key={label + idx}
+                        className="flex-1 min-w-[36px] max-w-[56px] flex flex-col items-center gap-1.5 h-full justify-end group relative cursor-pointer"
+                      >
+                        {/* Tooltip on hover */}
+                        <div className="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
+                          <div className="bg-slate-900 text-white text-[10px] rounded-lg py-1.5 px-2.5 shadow-lg whitespace-nowrap">
+                            <p className="font-bold">{label}</p>
+                            <p className="text-emerald-400 font-bold">${rev.toFixed(2)}</p>
+                            <p className="text-slate-400">{orders} orders</p>
+                          </div>
+                          <div className="w-1.5 h-1.5 bg-slate-900 rotate-45 -mt-1"></div>
+                        </div>
+
+                        {/* Bar */}
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className={`w-full rounded-t-xl transition-all duration-300 group-hover:brightness-110 ${
+                            rev > 0 ? 'bg-[#FF5A1F]' : 'bg-slate-200'
+                          }`}
+                        />
+
+                        {/* Label */}
+                        <span className="text-[10px] text-slate-400 font-medium truncate w-full text-center">
+                          {label.length > 5 ? label.slice(5) : label}
+                        </span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="py-10 text-center text-xs text-slate-400">
+            No transaction records found for the chosen granularity window.
+          </div>
+        )}
       </div>
 
       {/* Network Scale & Supply Distribution */}

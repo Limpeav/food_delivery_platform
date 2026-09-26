@@ -21,6 +21,8 @@ public class CartItemResponse {
     private BigDecimal unitPrice;
     private Integer quantity;
     private BigDecimal subtotal;
+    private String selectedOptions;
+    private String specialInstructions;
 
     public static CartItemResponse from(CartItem item) {
         return CartItemResponse.builder()
@@ -31,6 +33,8 @@ public class CartItemResponse {
                 .unitPrice(item.getFoodItem().getPrice())
                 .quantity(item.getQuantity())
                 .subtotal(item.getSubtotal())
+                .selectedOptions(item.getSelectedOptions())
+                .specialInstructions(item.getSpecialInstructions())
                 .build();
     }
 }

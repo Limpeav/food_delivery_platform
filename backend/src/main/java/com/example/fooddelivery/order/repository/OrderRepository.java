@@ -40,4 +40,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT o.status, COUNT(o) FROM Order o GROUP BY o.status")
     List<Object[]> countOrdersGroupedByStatus();
+
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status = 'DELIVERED' AND o.createdAt >= :start AND o.createdAt <= :end")
+    java.math.BigDecimal calculateRevenueInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT COUNT(o) FROM Order o WHERE o.status = 'DELIVERED' AND o.createdAt >= :start AND o.createdAt <= :end")
+    long countOrdersInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
 }
+

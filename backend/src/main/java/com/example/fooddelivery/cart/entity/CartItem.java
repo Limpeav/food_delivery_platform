@@ -33,6 +33,12 @@ public class CartItem {
     @Builder.Default
     private Integer quantity = 1;
 
+    @Column(name = "selected_options")
+    private String selectedOptions;
+
+    @Column(name = "special_instructions")
+    private String specialInstructions;
+
     public BigDecimal getSubtotal() {
         if (foodItem == null || foodItem.getPrice() == null) {
             return BigDecimal.ZERO;

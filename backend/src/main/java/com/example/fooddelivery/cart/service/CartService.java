@@ -72,9 +72,11 @@ public class CartService {
             cart.setRestaurant(foodItem.getRestaurant());
         }
 
-        // Check if item already exists in cart
+        // Check if item already exists in cart with same options and instructions
         Optional<CartItem> existingItem = cart.getItems().stream()
-                .filter(item -> item.getFoodItem().getId().equals(foodItem.getId()))
+                .filter(item -> item.getFoodItem().getId().equals(foodItem.getId()) &&
+                        java.util.Objects.equals(item.getSelectedOptions(), request.getSelectedOptions()) &&
+                        java.util.Objects.equals(item.getSpecialInstructions(), request.getSpecialInstructions()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
@@ -85,6 +87,8 @@ public class CartService {
                     .cart(cart)
                     .foodItem(foodItem)
                     .quantity(request.getQuantity())
+                    .selectedOptions(request.getSelectedOptions())
+                    .specialInstructions(request.getSpecialInstructions())
                     .build();
             cart.getItems().add(newItem);
         }
@@ -140,5 +144,18 @@ public class CartService {
         Cart updated = cartRepository.save(cart);
         log.info("Cleared cart for customer {}", customerId);
         return CartResponse.from(updated);
+    }
+
+    /**
+     * Convenience method for programmatic cart item addition (e.g., re-order flow).
+     */
+    @Transactional
+    public CartResponse addItem(Long customerId, Long foodItemId, int quantity) {
+        com.example.fooddelivery.cart.dto.AddToCartRequest req =
+                com.example.fooddelivery.cart.dto.AddToCartRequest.builder()
+                        .foodItemId(foodItemId)
+                        .quantity(quantity)
+                        .build();
+        return addToCart(customerId, req);
     }
 }

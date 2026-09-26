@@ -43,4 +43,10 @@ public class OrderItem {
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal subtotal;
+
+    @Column(name = "selected_options")
+    private String selectedOptions;
+
+    @Column(name = "special_instructions")
+    private String specialInstructions;
 }

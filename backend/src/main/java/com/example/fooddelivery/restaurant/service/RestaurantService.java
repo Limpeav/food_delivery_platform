@@ -217,4 +217,39 @@ public class RestaurantService {
             throw new ForbiddenException("You are not the owner of this restaurant");
         }
     }
+
+    /**
+     * Determines if the restaurant is currently open based on its configured opening/closing hours.
+     * Times are expected in HH:mm format (24-hour).
+     */
+    public boolean isOpen(Restaurant restaurant) {
+        if (restaurant.getOpeningTime() == null || restaurant.getClosingTime() == null) return true;
+        try {
+            java.time.LocalTime now = java.time.LocalTime.now();
+            java.time.LocalTime opening = java.time.LocalTime.parse(restaurant.getOpeningTime());
+            java.time.LocalTime closing = java.time.LocalTime.parse(restaurant.getClosingTime());
+
+            if (closing.isBefore(opening)) {
+                // Overnight restaurant (e.g., 22:00 – 02:00)
+                return !now.isBefore(opening) || !now.isAfter(closing);
+            }
+            return !now.isBefore(opening) && !now.isAfter(closing);
+        } catch (Exception e) {
+            log.warn("Failed to parse opening hours for restaurant {}: {}", restaurant.getId(), e.getMessage());
+            return true; // default to open on parse failure
+        }
+    }
+
+    /**
+     * Throws BadRequestException if the restaurant is currently closed.
+     */
+    public void checkRestaurantIsOpen(Restaurant restaurant) {
+        if (!isOpen(restaurant)) {
+            throw new BadRequestException(
+                    "Restaurant '" + restaurant.getName() + "' is currently closed. " +
+                    "Opening hours: " + restaurant.getOpeningTime() + " – " + restaurant.getClosingTime()
+            );
+        }
+    }
 }
+

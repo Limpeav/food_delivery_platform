@@ -14,8 +14,12 @@ import {
   Star,
   Receipt,
   Navigation,
+  RotateCcw,
+  QrCode,
+  Smartphone,
+  RefreshCw,
 } from 'lucide-react';
-import { orderService } from '@/services/orderService';
+import { orderService, DeliveryEta, PaymentInfo, KhqrResponse } from '@/services/orderService';
 import { reviewService } from '@/services/reviewService';
 import { Order, OrderStatus } from '@/types';
 import { Badge } from '@/components/ui/Badge';
@@ -35,6 +39,14 @@ export default function OrderTrackingPage({
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [reordering, setReordering] = useState(false);
+  const [eta, setEta] = useState<DeliveryEta | null>(null);
+  const [payment, setPayment] = useState<PaymentInfo | null>(null);
+
+  // Bakong KHQR payment state
+  const [khqr, setKhqr] = useState<KhqrResponse | null>(null);
+  const [verifyingKhqr, setVerifyingKhqr] = useState(false);
+  const [khqrMessage, setKhqrMessage] = useState<string | null>(null);
 
   // Review Modal
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -49,6 +61,19 @@ export default function OrderTrackingPage({
         setLoading(true);
         const o = await orderService.getOrderById(orderId);
         setOrder(o);
+
+        // Fetch payment details
+        orderService.getPaymentByOrder(orderId).then(setPayment).catch(() => {});
+
+        // Fetch Bakong KHQR if online payment
+        if (o.paymentMethod === 'ONLINE_PAYMENT') {
+          orderService.getBakongKhqr(orderId).then(setKhqr).catch(() => {});
+        }
+
+        // Fetch ETA if order is active
+        if (['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(o.status)) {
+          orderService.getDeliveryEta(orderId).then(setEta).catch(() => {});
+        }
       } catch (err) {
         console.error('Failed to load order:', err);
       } finally {
@@ -69,12 +94,47 @@ export default function OrderTrackingPage({
       try {
         const fresh = await orderService.getOrderById(orderId);
         setOrder(fresh);
+
+        // Auto-check Bakong payment if still pending
+        if (fresh.paymentMethod === 'ONLINE_PAYMENT' && payment?.status !== 'SUCCESS') {
+          orderService.verifyBakongKhqr(orderId).then((res) => {
+            if (res.verified) {
+              orderService.getPaymentByOrder(orderId).then(setPayment).catch(() => {});
+            }
+          }).catch(() => {});
+        }
+
+        // Refresh ETA if in delivery
+        if (['DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(fresh.status)) {
+          orderService.getDeliveryEta(orderId).then(setEta).catch(() => {});
+        }
       } catch (err) {
         console.error('Polling error:', err);
       }
     }, 6000);
     return () => clearInterval(interval);
-  }, [order, orderId]);
+  }, [order, orderId, payment?.status]);
+
+  const handleVerifyPayment = async (simulate = false) => {
+    setVerifyingKhqr(true);
+    setKhqrMessage(null);
+    try {
+      const res = await orderService.verifyBakongKhqr(orderId, simulate);
+      setKhqrMessage(res.message);
+      if (res.verified) {
+        const [freshOrder, freshPayment] = await Promise.all([
+          orderService.getOrderById(orderId),
+          orderService.getPaymentByOrder(orderId),
+        ]);
+        setOrder(freshOrder);
+        setPayment(freshPayment);
+      }
+    } catch (err: any) {
+      setKhqrMessage(err.response?.data?.message || 'Verification check failed');
+    } finally {
+      setVerifyingKhqr(false);
+    }
+  };
 
   const handleCancelOrder = async () => {
     if (!confirm('Are you sure you want to cancel this order?')) return;
@@ -86,6 +146,19 @@ export default function OrderTrackingPage({
       alert(err.response?.data?.message || 'Could not cancel order');
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleReorder = async () => {
+    if (!order) return;
+    setReordering(true);
+    try {
+      await orderService.reorder(order.id);
+      router.push('/cart');
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Could not re-order items');
+    } finally {
+      setReordering(false);
     }
   };
 
@@ -205,8 +278,137 @@ export default function OrderTrackingPage({
               <Star className="w-3.5 h-3.5 fill-white" /> Rate & Review
             </Button>
           )}
+
+          {['DELIVERED', 'CANCELLED'].includes(order.status) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReorder}
+              isLoading={reordering}
+              className="rounded-xl text-xs gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-[#FF5A1F]" /> Re-order
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Bakong KHQR Payment Screen (when online payment is pending) */}
+      {order.paymentMethod === 'ONLINE_PAYMENT' && payment?.status !== 'SUCCESS' && (
+        <div className="rounded-3xl border-2 border-[#E1251B]/30 bg-gradient-to-b from-red-50/50 to-white p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-red-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-[#E1251B] text-white flex items-center justify-center font-black text-xs shadow-md tracking-wider">
+                KHQR
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-black text-slate-900">
+                    Bakong KHQR Online Payment
+                  </h2>
+                  <Badge variant="warning" size="sm">Awaiting Payment</Badge>
+                </div>
+                <p className="text-xs text-slate-500">
+                  National Bank of Cambodia Standardized Cross-Bank QR
+                </p>
+              </div>
+            </div>
+
+            <div className="text-left sm:text-right">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Payable</span>
+              <p className="text-2xl font-black text-[#E1251B]">${order.totalAmount.toFixed(2)}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            {/* QR Code Column */}
+            <div className="md:col-span-5 flex flex-col items-center justify-center p-6 bg-white rounded-3xl border border-red-100 shadow-xs space-y-3">
+              {khqr?.qrImage ? (
+                <div className="p-3 bg-white rounded-2xl border-2 border-[#E1251B] shadow-md">
+                  <img
+                    src={khqr.qrImage}
+                    alt="Bakong KHQR"
+                    className="w-56 h-56 object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-56 h-56 flex items-center justify-center bg-slate-100 rounded-2xl">
+                  <Loading message="Generating Bakong KHQR..." />
+                </div>
+              )}
+              <div className="text-center">
+                <p className="text-xs font-bold text-slate-800">{khqr?.merchantName || 'Cravery Food Delivery'}</p>
+                <p className="text-[10px] text-slate-400 font-mono">{khqr?.merchantAccountId || 'merchant@bakong'}</p>
+              </div>
+            </div>
+
+            {/* Instruction Column */}
+            <div className="md:col-span-7 space-y-4">
+              <div className="space-y-2">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-[#E1251B]" />
+                  How to pay with your Cambodian Banking App:
+                </h3>
+                <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside pl-1">
+                  <li>Open <strong>Bakong, ABA Mobile, Wing Bank, ACLEDA, Canadia, Sathapana</strong>, or any Cambodian bank app.</li>
+                  <li>Tap the <strong>Scan QR / KHQR</strong> scanner button.</li>
+                  <li>Scan the KHQR code on the left and confirm the payment of <strong>${order.totalAmount.toFixed(2)}</strong>.</li>
+                  <li>Payment will be verified automatically by Bakong Open API.</li>
+                </ol>
+              </div>
+
+              {khqrMessage && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium">
+                  {khqrMessage}
+                </div>
+              )}
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => handleVerifyPayment(false)}
+                  isLoading={verifyingKhqr}
+                  className="rounded-xl text-xs gap-1.5 bg-[#E1251B] hover:bg-[#c91e15]"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Check Payment Status
+                </Button>
+
+                {khqr?.simulated && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleVerifyPayment(true)}
+                    isLoading={verifyingKhqr}
+                    className="rounded-xl text-xs gap-1 text-slate-600"
+                  >
+                    (Dev Mode) Simulate Pay
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmed Bakong Payment Banner */}
+      {order.paymentMethod === 'ONLINE_PAYMENT' && payment?.status === 'SUCCESS' && (
+        <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-emerald-900">
+                Paid via Bakong KHQR (${order.totalAmount.toFixed(2)})
+              </p>
+              <p className="text-[11px] text-emerald-700">
+                Transaction verified on Bakong network. Ref: {payment.transactionReference}
+              </p>
+            </div>
+          </div>
+          <Badge variant="success" size="sm">PAID VIA BAKONG</Badge>
+        </div>
+      )}
 
       {/* Pipeline Visualizer */}
       <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs">
@@ -312,7 +514,9 @@ export default function OrderTrackingPage({
                   </div>
                   <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
                     <span>Estimated Arrival:</span>
-                    <span className="font-bold text-white">~15-20 mins</span>
+                    <span className="font-bold text-white">
+                      {eta ? `${eta.etaMinutes} mins${eta.distanceKm ? ` (${eta.distanceKm} km)` : ''}` : '~15-20 mins'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -363,19 +567,31 @@ export default function OrderTrackingPage({
 
           <div className="divide-y divide-slate-100">
             {order.items.map((item) => (
-              <div key={item.id} className="py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-orange-100 text-[#FF5A1F] text-xs font-bold flex items-center justify-center">
+              <div key={item.id} className="py-3 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-lg bg-orange-100 text-[#FF5A1F] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {item.quantity}×
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-900">{item.foodName}</h4>
-                    <p className="text-[11px] text-slate-400">
+                    {item.selectedOptions && (
+                      <div className="mt-0.5">
+                        <span className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded">
+                          {item.selectedOptions}
+                        </span>
+                      </div>
+                    )}
+                    {item.specialInstructions && (
+                      <p className="text-[11px] text-slate-500 italic mt-0.5">
+                        Note: {item.specialInstructions}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-slate-400 mt-0.5">
                       ${item.unitPrice.toFixed(2)} each
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-slate-900">
+                <span className="text-xs font-black text-slate-900 shrink-0">
                   ${item.subtotal.toFixed(2)}
                 </span>
               </div>
@@ -410,6 +626,22 @@ export default function OrderTrackingPage({
                 {order.paymentMethod.replace(/_/g, ' ')}
               </Badge>
             </div>
+            {payment && (
+              <>
+                <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-400">
+                  <span>Payment Status:</span>
+                  <Badge variant={payment.status === 'SUCCESS' ? 'success' : payment.status === 'FAILED' ? 'danger' : 'warning'} size="sm">
+                    {payment.status}
+                  </Badge>
+                </div>
+                {payment.transactionReference && (
+                  <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                    <span>Reference:</span>
+                    <span className="text-slate-600 font-bold">{payment.transactionReference}</span>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -150,6 +150,8 @@ export interface CartItem {
   unitPrice: number;
   quantity: number;
   subtotal: number;
+  selectedOptions?: string;
+  specialInstructions?: string;
 }
 
 export interface Cart {
@@ -197,6 +199,8 @@ export interface OrderItem {
   quantity: number;
   unitPrice: number;
   subtotal: number;
+  selectedOptions?: string;
+  specialInstructions?: string;
 }
 
 export interface Order {

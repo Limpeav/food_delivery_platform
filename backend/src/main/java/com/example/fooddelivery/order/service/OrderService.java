@@ -84,6 +84,9 @@ public class OrderService {
             throw new BadRequestException("Restaurant is not currently active and accepting orders");
         }
 
+        // Enforce opening hours
+        restaurantService.checkRestaurantIsOpen(restaurant);
+
         // Validate items and calculate subtotal directly from DB prices
         BigDecimal subtotal = BigDecimal.ZERO;
         List<OrderItem> orderItems = new ArrayList<>();
@@ -108,6 +111,8 @@ public class OrderService {
                     .quantity(cartItem.getQuantity())
                     .unitPrice(itemPrice)
                     .subtotal(itemSubtotal)
+                    .selectedOptions(cartItem.getSelectedOptions())
+                    .specialInstructions(cartItem.getSpecialInstructions())
                     .build();
             orderItems.add(orderItem);
         }
@@ -118,13 +123,13 @@ public class OrderService {
                     subtotal, restaurant.getMinimumOrder()));
         }
 
-        // Validate and apply coupon
+        // Validate and apply coupon (per-user single-use enforcement)
         BigDecimal discount = BigDecimal.ZERO;
         String couponCode = null;
         if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
             couponCode = request.getCouponCode().trim().toUpperCase();
-            discount = couponService.validateAndCalculateDiscount(couponCode, subtotal);
-            couponService.recordUsage(couponCode);
+            discount = couponService.validateAndCalculateDiscountForUser(couponCode, subtotal, customerId);
+            couponService.recordUsageForUser(couponCode, customerId);
         }
 
         BigDecimal deliveryFee = restaurant.getDeliveryFee() != null ? restaurant.getDeliveryFee() : BigDecimal.ZERO;
@@ -304,6 +309,80 @@ public class OrderService {
     public Order findOrderById(Long id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
+    }
+
+    /**
+     * Re-order: clears current cart and pre-fills it from a previous order's items.
+     * Returns the new cart state so the customer can review before checkout.
+     */
+    @Transactional
+    public OrderResponse reorder(Long customerId, Long sourceOrderId) {
+        Order source = findOrderById(sourceOrderId);
+
+        if (!source.getCustomer().getId().equals(customerId)) {
+            throw new ForbiddenException("You cannot re-order from someone else's order");
+        }
+
+        // Clear existing cart so we start fresh
+        cartService.clearCart(customerId);
+
+        // Re-add each item from the source order (skip unavailable items gracefully)
+        int added = 0;
+        for (com.example.fooddelivery.order.entity.OrderItem oi : source.getItems()) {
+            if (oi.getFoodItem() != null && Boolean.TRUE.equals(oi.getFoodItem().getAvailable())) {
+                try {
+                    cartService.addItem(customerId, oi.getFoodItem().getId(), oi.getQuantity());
+                    added++;
+                } catch (Exception e) {
+                    log.warn("Re-order: skipping unavailable item '{}': {}", oi.getFoodName(), e.getMessage());
+                }
+            }
+        }
+
+        if (added == 0) {
+            throw new BadRequestException("None of the items from the original order are currently available");
+        }
+
+        log.info("Re-order: {} item(s) added to cart for customer {} from order #{}", added, customerId, sourceOrderId);
+        return mapToOrderResponse(source);
+    }
+
+    /**
+     * Returns an estimated delivery time in minutes for an active order based on driver proximity.
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getDeliveryEta(Long orderId, Long requestingUserId) {
+        Order order = findOrderById(orderId);
+
+        if (!order.getCustomer().getId().equals(requestingUserId)) {
+            throw new ForbiddenException("You cannot view ETA for this order");
+        }
+
+        com.example.fooddelivery.delivery.entity.Delivery delivery = deliveryService.getDeliveryByOrderId(orderId);
+        if (delivery == null || delivery.getDriver() == null) {
+            return Map.of("etaMinutes", -1, "message", "Driver not yet assigned");
+        }
+
+        com.example.fooddelivery.driver.entity.DriverLocation loc =
+                driverLocationRepository.findByDriverId(delivery.getDriver().getId()).orElse(null);
+        if (loc == null || order.getDeliveryLatitude() == null || order.getDeliveryLongitude() == null) {
+            return Map.of("etaMinutes", -1, "message", "Location data unavailable");
+        }
+
+        double distanceKm = com.example.fooddelivery.common.util.GeoUtils.calculateDistanceKm(
+                loc.getLatitude(), loc.getLongitude(),
+                order.getDeliveryLatitude(), order.getDeliveryLongitude()
+        );
+
+        // Assume avg speed 30 km/h in city traffic
+        double etaMinutes = (distanceKm / 30.0) * 60.0;
+        long etaRounded = Math.max(1L, Math.round(etaMinutes));
+
+        return Map.of(
+                "etaMinutes", etaRounded,
+                "distanceKm", Math.round(distanceKm * 10.0) / 10.0,
+                "message", "Estimated delivery in " + etaRounded + " minute(s)"
+        );
     }
 
     private OrderResponse mapToOrderResponse(Order order) {

@@ -32,4 +32,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     @Override
     @EntityGraph(attributePaths = {"order", "order.restaurant", "order.customer", "driver", "driver.user"})
     Optional<Delivery> findById(Long id);
+
+    @EntityGraph(attributePaths = {"order", "order.restaurant", "order.customer", "driver", "driver.user"})
+    Page<Delivery> findByDriverIdAndStatus(Long driverId, DeliveryStatus status, Pageable pageable);
 }
+

@@ -10,7 +10,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "reviews", indexes = {
+    @Index(name = "idx_reviews_restaurant", columnList = "restaurant_id"),
+    @Index(name = "idx_reviews_customer", columnList = "customer_id"),
+    @Index(name = "idx_reviews_order", columnList = "order_id")
+})
 @Getter
 @Setter
 @NoArgsConstructor

@@ -1,5 +1,4 @@
 package com.example.fooddelivery.admin.controller;
-
 import com.example.fooddelivery.admin.dto.AdminDashboardStats;
 import com.example.fooddelivery.admin.service.AdminService;
 import com.example.fooddelivery.common.response.ApiResponse;
@@ -68,4 +67,17 @@ public class AdminController {
         reviewService.deleteReview(id);
         return ResponseEntity.ok(ApiResponse.success("Review deleted successfully", null));
     }
+
+    @GetMapping("/analytics/revenue")
+    @Operation(summary = "Get revenue time-series data for charts (daily/weekly/monthly granularity)")
+    public ResponseEntity<ApiResponse<java.util.Map<String, Object>>> getRevenueTimeSeries(
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate from,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate to,
+            @RequestParam(defaultValue = "daily") String granularity) {
+        if (from == null) from = java.time.LocalDate.now().minusDays(29);
+        if (to == null) to = java.time.LocalDate.now();
+        java.util.Map<String, Object> data = adminService.getRevenueTimeSeries(from, to, granularity);
+        return ResponseEntity.ok(ApiResponse.success(data));
+    }
 }
+
