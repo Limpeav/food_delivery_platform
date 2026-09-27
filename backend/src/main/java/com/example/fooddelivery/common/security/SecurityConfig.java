@@ -91,10 +91,14 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/forgot-password",
                                 "/api/auth/reset-password",
-                                "/api/auth/customer/**",
-                                "/api/auth/restaurant/**",
-                                "/api/auth/driver/**",
-                                "/api/auth/admin/**"
+                                "/api/auth/customer/login",
+                                "/api/auth/customer/register",
+                                "/api/auth/customer/google",
+                                "/api/auth/restaurant/login",
+                                "/api/auth/restaurant/register",
+                                "/api/auth/driver/login",
+                                "/api/auth/driver/register",
+                                "/api/auth/admin/login"
                         ).permitAll()
 
                         // Swagger / OpenAPI documentation

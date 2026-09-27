@@ -102,9 +102,6 @@ public class AuthService {
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         // 3. Verify account status
-        if (user.getStatus() == UserStatus.SUSPENDED) {
-            throw new UnauthorizedException("Your account has been suspended. Please contact support.");
-        }
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new UnauthorizedException("Your account is " + user.getStatus().name().toLowerCase() + ". Please contact support.");
         }
@@ -628,7 +625,7 @@ public class AuthService {
                     .build();
             passwordResetTokenRepository.save(prt);
 
-            log.info("Password reset token generated for user: {} (Token: {})", email, token);
+            log.info("Password reset token generated for user: {}", email);
             return token;
         } else {
             log.info("Password reset requested for non-existent email: {}", email);

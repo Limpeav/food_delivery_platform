@@ -34,6 +34,11 @@ public class RegisterRequest {
 
     private String phoneNumber;
 
-    private Role role; // Optional, defaults to CUSTOMER if null or ADMIN is prevented
+    /**
+     * @deprecated Ignored at runtime — all registrations via this legacy endpoint
+     * are forced to CUSTOMER role. Use the portal-specific registration endpoints instead.
+     */
+    @Deprecated
+    private Role role;
 }
 

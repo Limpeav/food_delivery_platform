@@ -6,7 +6,7 @@ server:
       cookie:
         name: JSESSIONID
         http-only: true
-        secure: false
+        secure: ${SESSION_COOKIE_SECURE:true}
         same-site: lax
         path: /
 
@@ -41,8 +41,8 @@ spring:
       cache-null-values: false
 
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
-  access-expiration: ${JWT_ACCESS_EXPIRATION:604800000} # 7 days
+  secret: ${JWT_SECRET}
+  access-expiration: ${JWT_ACCESS_EXPIRATION:900000}    # 15 minutes (short-lived)
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:2592000000} # 30 days
 
 app:
@@ -50,7 +50,7 @@ app:
     url: ${FRONTEND_URL:http://localhost:3000}
   admin:
     email: ${ADMIN_EMAIL:admin@gmail.com}
-    password: ${ADMIN_PASSWORD:admin123}
+    password: ${ADMIN_PASSWORD}
 
 springdoc:
   api-docs:

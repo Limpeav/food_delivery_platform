@@ -14,6 +14,7 @@ import {
   CreditCard,
   PieChart,
   BarChart3,
+  AlertTriangle,
 } from 'lucide-react';
 import { adminService } from '@/services/adminService';
 import { orderService } from '@/services/orderService';
@@ -21,9 +22,13 @@ import { AdminDashboardStats } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 
+/** Platform take rate — 15% commission on all GMV */
+const PLATFORM_TAKE_RATE = 0.15;
+
 export default function AdminReportsPage() {
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [timeframe, setTimeframe] = useState<'today' | 'monthly' | 'lifetime'>('monthly');
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -31,15 +36,18 @@ export default function AdminReportsPage() {
   const [granularity, setGranularity] = useState<'daily' | 'weekly' | 'monthly'>('daily');
   const [timeSeries, setTimeSeries] = useState<{ labels: string[]; revenue: number[]; orderCounts: number[]; granularity: string } | null>(null);
   const [timeSeriesLoading, setTimeSeriesLoading] = useState(false);
+  const [timeSeriesError, setTimeSeriesError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadReports() {
       try {
         setLoading(true);
+        setError(null);
         const data = await adminService.getDashboardStats();
         setStats(data);
       } catch (err) {
-        console.error(err);
+        console.error('Failed to load dashboard stats:', err);
+        setError('Failed to load financial report data. Please refresh the page or try again later.');
       } finally {
         setLoading(false);
       }
@@ -51,10 +59,12 @@ export default function AdminReportsPage() {
     async function loadTimeSeries() {
       try {
         setTimeSeriesLoading(true);
+        setTimeSeriesError(null);
         const data = await orderService.getRevenueTimeSeries({ granularity });
         setTimeSeries(data);
       } catch (err) {
         console.error('Failed to load revenue time series:', err);
+        setTimeSeriesError('Failed to load revenue trend data. Please try switching granularity or refreshing.');
       } finally {
         setTimeSeriesLoading(false);
       }
@@ -79,9 +89,9 @@ export default function AdminReportsPage() {
   };
 
   const selectedGmv = getSelectedGmv();
-  // Standard marketplace split: 15% platform take rate, 85% merchant net
-  const platformCommission = selectedGmv * 0.15;
-  const merchantPayouts = selectedGmv * 0.85;
+  // Split: PLATFORM_TAKE_RATE commission, remainder to merchants
+  const platformCommission = selectedGmv * PLATFORM_TAKE_RATE;
+  const merchantPayouts = selectedGmv * (1 - PLATFORM_TAKE_RATE);
 
   const handleExportCsv = () => {
     if (!stats) return;
@@ -165,6 +175,19 @@ export default function AdminReportsPage() {
         </div>
       )}
 
+      {error && (
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-center gap-3">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-red-500" />
+          <span>{error}</span>
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-xs font-bold underline cursor-pointer"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Main Revenue KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-2">
@@ -241,6 +264,11 @@ export default function AdminReportsPage() {
         {timeSeriesLoading ? (
           <div className="py-12 flex justify-center">
             <Loading message="Updating revenue trend..." />
+          </div>
+        ) : timeSeriesError ? (
+          <div className="py-8 flex items-center justify-center gap-3 text-xs text-red-600 bg-red-50 rounded-2xl">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{timeSeriesError}</span>
           </div>
         ) : timeSeries && timeSeries.labels.length > 0 ? (
           <div className="space-y-4">
