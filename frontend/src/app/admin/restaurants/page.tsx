@@ -38,7 +38,8 @@ export default function AdminRestaurantsPage() {
       setRestaurants(res.content);
       setTotalPages(res.totalPages || 0);
       setTotalElements(res.totalElements || 0);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.response?.status === 401) return;
       console.error(err);
     } finally {
       setLoading(false);
@@ -76,10 +77,10 @@ export default function AdminRestaurantsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Restaurant Partner Moderation
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Approve new merchant applications, manage store compliance and statuses
           </p>
         </div>
@@ -87,7 +88,7 @@ export default function AdminRestaurantsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#FF5A1F]"
+          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-[#FF5A1F]"
         >
           <option value="ALL">All Statuses</option>
           <option value="PENDING">Pending Review</option>
@@ -107,11 +108,11 @@ export default function AdminRestaurantsPage() {
           description="There are currently no restaurants matching this status filter."
         />
       ) : (
-        <div className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-xs divide-y divide-slate-100">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs divide-y divide-slate-100 dark:divide-slate-800">
           {restaurants.map((rest) => (
             <div key={rest.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
                   <img
                     src={
                       rest.logoUrl ||
@@ -124,13 +125,13 @@ export default function AdminRestaurantsPage() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-slate-900">{rest.name}</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{rest.name}</h3>
                     <Badge variant={getStatusVariant(rest.status)} size="sm">
                       {rest.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Owner: <span className="font-semibold text-slate-700">{rest.ownerName}</span> • Category: {rest.categoryName}
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Owner: <span className="font-semibold text-slate-700 dark:text-slate-300">{rest.ownerName}</span> • Category: {rest.categoryName}
                   </p>
                   <div className="flex items-center gap-4 text-xs text-slate-400">
                     <span className="flex items-center gap-1">
@@ -203,7 +204,7 @@ export default function AdminRestaurantsPage() {
             totalElements={totalElements}
             pageSize={20}
             onPageChange={(p) => setPage(p - 1)}
-            className="px-6 py-4 bg-slate-50/50"
+            className="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800"
           />
         </div>
       )}

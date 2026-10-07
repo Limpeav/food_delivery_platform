@@ -48,17 +48,17 @@ export const FooterPaymentAndSocial: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6 border-t border-slate-100">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-6 border-t border-slate-100 dark:border-slate-800">
       {/* Payment Badges */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold text-slate-400 mr-2 uppercase tracking-wider">
+        <span className="text-xs font-bold text-slate-400 dark:text-slate-500 mr-2 uppercase tracking-wider">
           Payment Methods:
         </span>
         {supportedPaymentMethods.map((method) => (
           <span
             key={method.id}
             title={method.description}
-            className="inline-flex items-center px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 font-bold text-[11px] text-slate-700 shadow-2xs hover:bg-slate-100 transition-colors"
+            className="inline-flex items-center px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 font-bold text-[11px] text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
           >
             {method.badgeText}
           </span>
@@ -68,7 +68,7 @@ export const FooterPaymentAndSocial: React.FC = () => {
       {/* Social Media Links (Only display if configured) */}
       {socialLinks.length > 0 && (
         <div className="flex items-center gap-2.5">
-          <span className="text-xs font-bold text-slate-400 mr-1 uppercase tracking-wider">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-500 mr-1 uppercase tracking-wider">
             Follow Cravery:
           </span>
           {socialLinks.map((link, idx) => (
@@ -77,7 +77,7 @@ export const FooterPaymentAndSocial: React.FC = () => {
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-[#FF5A1F] hover:text-white text-slate-600 flex items-center justify-center transition-all cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FF5A1F]"
+              className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-[#FF5A1F] dark:hover:bg-[#FF5A1F] hover:text-white dark:hover:text-white text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#FF5A1F]"
               aria-label={link.ariaLabel}
             >
               {renderSocialIcon(link.iconName)}

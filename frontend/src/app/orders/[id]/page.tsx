@@ -15,17 +15,18 @@ import {
   Receipt,
   Navigation,
   RotateCcw,
-  QrCode,
-  Smartphone,
-  RefreshCw,
+  Banknote,
 } from 'lucide-react';
-import { orderService, DeliveryEta, PaymentInfo, KhqrResponse } from '@/services/orderService';
+import { orderService, DeliveryEta, PaymentInfo } from '@/services/orderService';
 import { reviewService } from '@/services/reviewService';
 import { Order, OrderStatus } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Loading } from '@/components/ui/Loading';
+import { DeliveryTrackingMap } from '@/components/ui/DeliveryTrackingMap';
+import { OrderReceiptModal } from '@/components/ui/OrderReceiptModal';
+import { subscribeToOrder, subscribeToOrderLocation } from '@/lib/websocket';
 
 export default function OrderTrackingPage({
   params,
@@ -42,11 +43,7 @@ export default function OrderTrackingPage({
   const [reordering, setReordering] = useState(false);
   const [eta, setEta] = useState<DeliveryEta | null>(null);
   const [payment, setPayment] = useState<PaymentInfo | null>(null);
-
-  // Bakong KHQR payment state
-  const [khqr, setKhqr] = useState<KhqrResponse | null>(null);
-  const [verifyingKhqr, setVerifyingKhqr] = useState(false);
-  const [khqrMessage, setKhqrMessage] = useState<string | null>(null);
+  const [realtimeDriverLocation, setRealtimeDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
 
   // Review Modal
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -54,6 +51,7 @@ export default function OrderTrackingPage({
   const [reviewComment, setReviewComment] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -64,11 +62,6 @@ export default function OrderTrackingPage({
 
         // Fetch payment details
         orderService.getPaymentByOrder(orderId).then(setPayment).catch(() => {});
-
-        // Fetch Bakong KHQR if online payment
-        if (o.paymentMethod === 'ONLINE_PAYMENT') {
-          orderService.getBakongKhqr(orderId).then(setKhqr).catch(() => {});
-        }
 
         // Fetch ETA if order is active
         if (['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(o.status)) {
@@ -85,7 +78,38 @@ export default function OrderTrackingPage({
     }
   }, [orderId]);
 
-  // Polling for live status updates every 6 seconds
+  // Real-time WebSocket connection for order updates and driver movement
+  useEffect(() => {
+    if (!orderId) return;
+
+    // 1. Live Order Status Updates
+    const unsubscribeOrder = subscribeToOrder(orderId, (update: any) => {
+      console.log('Real-time order update received:', update);
+      orderService.getOrderById(orderId).then((fresh) => {
+        setOrder(fresh);
+        if (['DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(fresh.status)) {
+          orderService.getDeliveryEta(orderId).then(setEta).catch(() => {});
+        }
+      }).catch(console.error);
+    });
+
+    // 2. Live Driver GPS Location Updates
+    const unsubscribeLocation = subscribeToOrderLocation(orderId, (loc: any) => {
+      if (loc && typeof loc.latitude === 'number' && typeof loc.longitude === 'number') {
+        setRealtimeDriverLocation({
+          lat: loc.latitude,
+          lng: loc.longitude,
+        });
+      }
+    });
+
+    return () => {
+      unsubscribeOrder();
+      unsubscribeLocation();
+    };
+  }, [orderId]);
+
+  // Fallback Polling (every 15 seconds) for network resilience
   useEffect(() => {
     if (!order || ['DELIVERED', 'CANCELLED', 'REJECTED'].includes(order.status)) {
       return;
@@ -95,46 +119,16 @@ export default function OrderTrackingPage({
         const fresh = await orderService.getOrderById(orderId);
         setOrder(fresh);
 
-        // Auto-check Bakong payment if still pending
-        if (fresh.paymentMethod === 'ONLINE_PAYMENT' && payment?.status !== 'SUCCESS') {
-          orderService.verifyBakongKhqr(orderId).then((res) => {
-            if (res.verified) {
-              orderService.getPaymentByOrder(orderId).then(setPayment).catch(() => {});
-            }
-          }).catch(() => {});
-        }
-
         // Refresh ETA if in delivery
         if (['DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(fresh.status)) {
           orderService.getDeliveryEta(orderId).then(setEta).catch(() => {});
         }
       } catch (err) {
-        console.error('Polling error:', err);
+        console.error('Fallback polling error:', err);
       }
-    }, 6000);
+    }, 15000);
     return () => clearInterval(interval);
-  }, [order, orderId, payment?.status]);
-
-  const handleVerifyPayment = async (simulate = false) => {
-    setVerifyingKhqr(true);
-    setKhqrMessage(null);
-    try {
-      const res = await orderService.verifyBakongKhqr(orderId, simulate);
-      setKhqrMessage(res.message);
-      if (res.verified) {
-        const [freshOrder, freshPayment] = await Promise.all([
-          orderService.getOrderById(orderId),
-          orderService.getPaymentByOrder(orderId),
-        ]);
-        setOrder(freshOrder);
-        setPayment(freshPayment);
-      }
-    } catch (err: any) {
-      setKhqrMessage(err.response?.data?.message || 'Verification check failed');
-    } finally {
-      setVerifyingKhqr(false);
-    }
-  };
+  }, [order, orderId]);
 
   const handleCancelOrder = async () => {
     if (!confirm('Are you sure you want to cancel this order?')) return;
@@ -234,7 +228,7 @@ export default function OrderTrackingPage({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
               Order #{formattedOrderNumber}
             </h1>
             <Badge
@@ -250,12 +244,21 @@ export default function OrderTrackingPage({
               {order.status.replace(/_/g, ' ')}
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Placed on {new Date(order.createdAt).toLocaleString()}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setReceiptModalOpen(true)}
+            className="rounded-xl text-xs gap-1.5 shadow-xs"
+          >
+            <Receipt className="w-3.5 h-3.5 text-[#FF5A1F]" /> Official Receipt
+          </Button>
+
           {order.status === 'PENDING' && (
             <Button
               variant="danger"
@@ -293,135 +296,51 @@ export default function OrderTrackingPage({
         </div>
       </div>
 
-      {/* Bakong KHQR Payment Screen (when online payment is pending) */}
-      {order.paymentMethod === 'ONLINE_PAYMENT' && payment?.status !== 'SUCCESS' && (
-        <div className="rounded-3xl border-2 border-[#E1251B]/30 bg-gradient-to-b from-red-50/50 to-white p-6 sm:p-8 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-red-100">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#E1251B] text-white flex items-center justify-center font-black text-xs shadow-md tracking-wider">
-                KHQR
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-black text-slate-900">
-                    Bakong KHQR Online Payment
-                  </h2>
-                  <Badge variant="warning" size="sm">Awaiting Payment</Badge>
-                </div>
-                <p className="text-xs text-slate-500">
-                  National Bank of Cambodia Standardized Cross-Bank QR
-                </p>
-              </div>
-            </div>
-
-            <div className="text-left sm:text-right">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Payable</span>
-              <p className="text-2xl font-black text-[#E1251B]">${order.totalAmount.toFixed(2)}</p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            {/* QR Code Column */}
-            <div className="md:col-span-5 flex flex-col items-center justify-center p-6 bg-white rounded-3xl border border-red-100 shadow-xs space-y-3">
-              {khqr?.qrImage ? (
-                <div className="p-3 bg-white rounded-2xl border-2 border-[#E1251B] shadow-md">
-                  <img
-                    src={khqr.qrImage}
-                    alt="Bakong KHQR"
-                    className="w-56 h-56 object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="w-56 h-56 flex items-center justify-center bg-slate-100 rounded-2xl">
-                  <Loading message="Generating Bakong KHQR..." />
-                </div>
-              )}
-              <div className="text-center">
-                <p className="text-xs font-bold text-slate-800">{khqr?.merchantName || 'Cravery Food Delivery'}</p>
-                <p className="text-[10px] text-slate-400 font-mono">{khqr?.merchantAccountId || 'merchant@bakong'}</p>
-              </div>
-            </div>
-
-            {/* Instruction Column */}
-            <div className="md:col-span-7 space-y-4">
-              <div className="space-y-2">
-                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-[#E1251B]" />
-                  How to pay with your Cambodian Banking App:
-                </h3>
-                <ol className="text-xs text-slate-600 space-y-2 list-decimal list-inside pl-1">
-                  <li>Open <strong>Bakong, ABA Mobile, Wing Bank, ACLEDA, Canadia, Sathapana</strong>, or any Cambodian bank app.</li>
-                  <li>Tap the <strong>Scan QR / KHQR</strong> scanner button.</li>
-                  <li>Scan the KHQR code on the left and confirm the payment of <strong>${order.totalAmount.toFixed(2)}</strong>.</li>
-                  <li>Payment will be verified automatically by Bakong Open API.</li>
-                </ol>
-              </div>
-
-              {khqrMessage && (
-                <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium">
-                  {khqrMessage}
-                </div>
-              )}
-
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={() => handleVerifyPayment(false)}
-                  isLoading={verifyingKhqr}
-                  className="rounded-xl text-xs gap-1.5 bg-[#E1251B] hover:bg-[#c91e15]"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Check Payment Status
-                </Button>
-
-                {khqr?.simulated && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleVerifyPayment(true)}
-                    isLoading={verifyingKhqr}
-                    className="rounded-xl text-xs gap-1 text-slate-600"
-                  >
-                    (Dev Mode) Simulate Pay
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Confirmed Bakong Payment Banner */}
-      {order.paymentMethod === 'ONLINE_PAYMENT' && payment?.status === 'SUCCESS' && (
-        <div className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-4 sm:p-5 flex items-center justify-between gap-4">
+      {/* Payment Banner */}
+      {order.paymentMethod === 'ONLINE_PAYMENT' ? (
+        <div className="rounded-3xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30 p-4 sm:p-5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
-              <p className="text-xs font-bold text-emerald-900">
-                Paid via Bakong KHQR (${order.totalAmount.toFixed(2)})
+              <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                Online Payment (${order.totalAmount.toFixed(2)})
               </p>
-              <p className="text-[11px] text-emerald-700">
-                Transaction verified on Bakong network. Ref: {payment.transactionReference}
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                Payment verified. {order.transactionReference ? `Ref: ${order.transactionReference}` : ''}
               </p>
             </div>
           </div>
-          <Badge variant="success" size="sm">PAID VIA BAKONG</Badge>
+          <Badge variant="success" size="sm">PAID ONLINE</Badge>
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Banknote className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                Cash on Delivery (${order.totalAmount.toFixed(2)})
+              </p>
+              <p className="text-[11px] text-amber-700 dark:text-amber-400">
+                Please prepare exact cash to pay the driver upon arrival.
+              </p>
+            </div>
+          </div>
+          <Badge variant="warning" size="sm">CASH ON DELIVERY</Badge>
         </div>
       )}
 
       {/* Pipeline Visualizer */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-6">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6">
           Delivery Pipeline
         </h2>
 
         {order.status === 'CANCELLED' || order.status === 'REJECTED' ? (
-          <div className="flex items-center gap-3 rounded-2xl bg-rose-50 border border-rose-200 p-4 text-rose-700">
+          <div className="flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-4 text-rose-700 dark:text-rose-300">
             <AlertCircle className="w-6 h-6 shrink-0 text-rose-500" />
             <div>
               <p className="text-sm font-bold">This order was {order.status.toLowerCase()}</p>
-              <p className="text-xs text-rose-600 mt-0.5">
+              <p className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">
                 Any pre-authorized amounts have been credited back.
               </p>
             </div>
@@ -435,19 +354,19 @@ export default function OrderTrackingPage({
                   key={step.key}
                   className={`p-3 rounded-2xl border text-center transition-all ${
                     status === 'active'
-                      ? 'border-[#FF5A1F] bg-[#FFF1EB] text-[#FF5A1F] ring-2 ring-[#FF5A1F]/20'
+                      ? 'border-[#FF5A1F] bg-[#FFF1EB] dark:bg-orange-950/30 text-[#FF5A1F] ring-2 ring-[#FF5A1F]/20'
                       : status === 'completed'
-                      ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                      : 'border-slate-100 bg-slate-50/60 text-slate-400'
+                      ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
+                      : 'border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500'
                   }`}
                 >
                   <div className="flex justify-center mb-1.5">
                     {status === 'completed' ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                     ) : status === 'active' ? (
                       <Clock className="w-5 h-5 text-[#FF5A1F] animate-spin" />
                     ) : (
-                      <div className="w-5 h-5 rounded-full border border-slate-300" />
+                      <div className="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-700" />
                     )}
                   </div>
                   <p className="text-xs font-bold leading-tight">{step.label}</p>
@@ -463,26 +382,26 @@ export default function OrderTrackingPage({
         {/* Left: Driver Card & Restaurant */}
         <div className="lg:col-span-6 space-y-6">
           {/* Driver Tracking Card */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
             <div className="flex items-center gap-2">
               <Bike className="w-5 h-5 text-[#FF5A1F]" />
-              <h2 className="text-base font-bold text-slate-900">
+              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
                 Driver & GPS Dispatch
               </h2>
             </div>
 
             {order.driverName ? (
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-50/50 border border-blue-100">
+                <div className="flex items-center justify-between p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/50">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
                       {order.driverName.charAt(0)}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                         {order.driverName}
                       </h4>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
                         {order.vehicleType || 'Motorbike'} • {order.vehicleNumber || 'Phnom Penh 1B-9988'}
                       </p>
                     </div>
@@ -490,66 +409,111 @@ export default function OrderTrackingPage({
                   {order.driverPhone && (
                     <a
                       href={`tel:${order.driverPhone}`}
-                      className="p-2.5 rounded-xl bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 transition-colors"
+                      className="p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 transition-colors"
                     >
                       <Phone className="w-4 h-4" />
                     </a>
                   )}
                 </div>
 
-                {/* Simulated GPS Coordinate Card */}
-                <div className="p-4 rounded-2xl bg-slate-950 text-white space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                {/* Interactive Live Tracking Map */}
+                <div className="space-y-3">
+                  <DeliveryTrackingMap
+                    restaurantLocation={{
+                      lat: order.restaurantLatitude || 11.5564,
+                      lng: order.restaurantLongitude || 104.9282,
+                      name: order.restaurantName,
+                      address: order.restaurantAddress,
+                    }}
+                    deliveryLocation={{
+                      lat: order.deliveryLatitude || 11.5621,
+                      lng: order.deliveryLongitude || 104.9160,
+                      name: order.customerName,
+                      address: order.deliveryAddress,
+                    }}
+                    driverLocation={
+                      realtimeDriverLocation
+                        ? {
+                            lat: realtimeDriverLocation.lat,
+                            lng: realtimeDriverLocation.lng,
+                            name: order.driverName || 'Driver',
+                          }
+                        : order.driverLatitude && order.driverLongitude
+                        ? {
+                            lat: order.driverLatitude,
+                            lng: order.driverLongitude,
+                            name: order.driverName,
+                          }
+                        : undefined
+                    }
+                    status={order.deliveryStatus || order.status}
+                    height={300}
+                  />
+
+                  <div className="p-3.5 rounded-2xl bg-slate-950 text-white flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
                       <Navigation className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-                      Live GPS Position
-                    </span>
-                    <Badge variant="success" size="sm">
-                      {order.deliveryStatus ? order.deliveryStatus.replace(/_/g, ' ') : 'IN TRANSIT'}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center justify-between text-xs font-mono text-slate-300">
-                    <span>Lat: {order.driverLatitude?.toFixed(4) || '11.5564'}</span>
-                    <span>Lng: {order.driverLongitude?.toFixed(4) || '104.9282'}</span>
-                  </div>
-                  <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                    <span>Estimated Arrival:</span>
-                    <span className="font-bold text-white">
-                      {eta ? `${eta.etaMinutes} mins${eta.distanceKm ? ` (${eta.distanceKm} km)` : ''}` : '~15-20 mins'}
-                    </span>
+                      <span className="font-bold text-slate-200">
+                        {order.deliveryStatus ? order.deliveryStatus.replace(/_/g, ' ') : 'IN TRANSIT'}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 flex items-center gap-2">
+                      <span>ETA:</span>
+                      <span className="font-bold text-emerald-400">
+                        {eta ? `${eta.etaMinutes} mins${eta.distanceKm ? ` (${eta.distanceKm} km)` : ''}` : '~15-20 mins'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="p-5 text-center border border-dashed border-slate-200 rounded-2xl text-xs text-slate-500">
-                <Bike className="w-6 h-6 text-slate-400 mx-auto mb-2" />
-                <p className="font-medium text-slate-700">Driver Auto-Assignment In Progress</p>
-                <p className="mt-0.5">
-                  Nearest available driver will be assigned as soon as food is ready.
-                </p>
+              <div className="space-y-4">
+                <DeliveryTrackingMap
+                  restaurantLocation={{
+                    lat: order.restaurantLatitude || 11.5564,
+                    lng: order.restaurantLongitude || 104.9282,
+                    name: order.restaurantName,
+                    address: order.restaurantAddress,
+                  }}
+                  deliveryLocation={{
+                    lat: order.deliveryLatitude || 11.5621,
+                    lng: order.deliveryLongitude || 104.9160,
+                    name: order.customerName,
+                    address: order.deliveryAddress,
+                  }}
+                  status={order.status}
+                  height={260}
+                />
+                <div className="p-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-500 dark:text-slate-400">
+                  <Bike className="w-5 h-5 text-slate-400 dark:text-slate-500 mx-auto mb-1.5" />
+                  <p className="font-medium text-slate-700 dark:text-slate-300">Driver Auto-Assignment In Progress</p>
+                  <p className="text-[11px] mt-0.5 text-slate-400 dark:text-slate-500">
+                    Nearest available rider will be assigned as soon as food preparation completes.
+                  </p>
+                </div>
               </div>
             )}
           </div>
 
           {/* Restaurant & Destination Card */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900">Delivery Route</h3>
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Delivery Route</h3>
             <div className="space-y-3 text-xs">
               <div className="flex items-start gap-3">
                 <Store className="w-4 h-4 text-[#FF5A1F] shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-slate-800">{order.restaurantName}</p>
-                  <p className="text-slate-500">{order.restaurantAddress}</p>
+                  <p className="font-bold text-slate-800 dark:text-slate-200">{order.restaurantName}</p>
+                  <p className="text-slate-500 dark:text-slate-400">{order.restaurantAddress}</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-bold text-slate-800">
+                  <p className="font-bold text-slate-800 dark:text-slate-200">
                     {order.customerName} {order.customerPhone ? `(${order.customerPhone})` : ''}
                   </p>
-                  <p className="text-slate-500">{order.deliveryAddress}</p>
+                  <p className="text-slate-500 dark:text-slate-400">{order.deliveryAddress}</p>
                 </div>
               </div>
             </div>
@@ -557,41 +521,41 @@ export default function OrderTrackingPage({
         </div>
 
         {/* Right: Order Items & Financials */}
-        <div className="lg:col-span-6 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-6">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+        <div className="lg:col-span-6 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-6">
+          <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
             <Receipt className="w-5 h-5 text-[#FF5A1F]" />
-            <h2 className="text-base font-bold text-slate-900">
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
               Items Ordered
             </h2>
           </div>
 
-          <div className="divide-y divide-slate-100">
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
             {order.items.map((item) => (
               <div key={item.id} className="py-3 flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-lg bg-orange-100 text-[#FF5A1F] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-lg bg-orange-100 dark:bg-orange-950/50 text-[#FF5A1F] text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                     {item.quantity}×
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">{item.foodName}</h4>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">{item.foodName}</h4>
                     {item.selectedOptions && (
                       <div className="mt-0.5">
-                        <span className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200/60 px-1.5 py-0.5 rounded">
+                        <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/60 px-1.5 py-0.5 rounded">
                           {item.selectedOptions}
                         </span>
                       </div>
                     )}
                     {item.specialInstructions && (
-                      <p className="text-[11px] text-slate-500 italic mt-0.5">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-0.5">
                         Note: {item.specialInstructions}
                       </p>
                     )}
-                    <p className="text-[11px] text-slate-400 mt-0.5">
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
                       ${item.unitPrice.toFixed(2)} each
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-slate-900 shrink-0">
+                <span className="text-xs font-black text-slate-900 dark:text-slate-100 shrink-0">
                   ${item.subtotal.toFixed(2)}
                 </span>
               </div>
@@ -599,28 +563,28 @@ export default function OrderTrackingPage({
           </div>
 
           {/* Pricing Summary */}
-          <div className="pt-4 border-t border-slate-100 space-y-2.5 text-xs text-slate-600">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex justify-between">
               <span>Subtotal</span>
-              <span className="font-semibold text-slate-800">${order.subtotal.toFixed(2)}</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200">${order.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
               <span>Delivery Fee</span>
-              <span className="font-semibold text-slate-800">${order.deliveryFee.toFixed(2)}</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200">${order.deliveryFee.toFixed(2)}</span>
             </div>
             {order.discount > 0 && (
-              <div className="flex justify-between text-emerald-600 font-semibold">
+              <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
                 <span>Voucher Discount</span>
                 <span>-${order.discount.toFixed(2)}</span>
               </div>
             )}
-            <div className="border-t border-slate-100 pt-3 flex justify-between text-sm font-bold text-slate-900">
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between text-sm font-bold text-slate-900 dark:text-slate-100">
               <span>Total Paid</span>
               <span className="text-base font-black text-[#FF5A1F]">
                 ${order.totalAmount.toFixed(2)}
               </span>
             </div>
-            <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400">
+            <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
               <span>Payment Mode:</span>
               <Badge variant="neutral" size="sm">
                 {order.paymentMethod.replace(/_/g, ' ')}
@@ -628,16 +592,16 @@ export default function OrderTrackingPage({
             </div>
             {payment && (
               <>
-                <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
                   <span>Payment Status:</span>
                   <Badge variant={payment.status === 'SUCCESS' ? 'success' : payment.status === 'FAILED' ? 'danger' : 'warning'} size="sm">
                     {payment.status}
                   </Badge>
                 </div>
                 {payment.transactionReference && (
-                  <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-slate-400">
+                  <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-slate-400 dark:text-slate-500">
                     <span>Reference:</span>
-                    <span className="text-slate-600 font-bold">{payment.transactionReference}</span>
+                    <span className="text-slate-600 dark:text-slate-300 font-bold">{payment.transactionReference}</span>
                   </div>
                 )}
               </>
@@ -655,7 +619,7 @@ export default function OrderTrackingPage({
       >
         <form onSubmit={handleReviewSubmit} className="space-y-4 pt-2">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-2">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
               Overall Rating
             </label>
             <div className="flex items-center gap-2">
@@ -670,7 +634,7 @@ export default function OrderTrackingPage({
                     className={`w-7 h-7 ${
                       star <= reviewRating
                         ? 'fill-amber-400 text-amber-400'
-                        : 'text-slate-300'
+                        : 'text-slate-300 dark:text-slate-700'
                     }`}
                   />
                 </button>
@@ -679,7 +643,7 @@ export default function OrderTrackingPage({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
               Comments (Optional)
             </label>
             <textarea
@@ -687,7 +651,7 @@ export default function OrderTrackingPage({
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
               placeholder="What did you love? How was the food temperature and taste?"
-              className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
             />
           </div>
 
@@ -711,6 +675,15 @@ export default function OrderTrackingPage({
           </div>
         </form>
       </Modal>
+
+      {/* Official Tax Invoice & Receipt Modal */}
+      {order && (
+        <OrderReceiptModal
+          isOpen={receiptModalOpen}
+          onClose={() => setReceiptModalOpen(false)}
+          order={order}
+        />
+      )}
     </div>
   );
 }

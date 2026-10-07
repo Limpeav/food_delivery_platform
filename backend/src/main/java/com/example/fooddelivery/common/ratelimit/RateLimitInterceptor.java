@@ -29,12 +29,26 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                         60,
                         "Too many login attempts from your IP. Please try again after 1 minute."
                 );
+            } else if (uri.endsWith("/api/auth/register")) {
+                rateLimiterService.checkLimit(
+                        "auth:register:" + clientIp,
+                        5,
+                        300,
+                        "Too many registration attempts from your IP. Please try again after 5 minutes."
+                );
             } else if (uri.endsWith("/api/auth/forgot-password")) {
                 rateLimiterService.checkLimit(
                         "auth:forgot-password:" + clientIp,
                         3,
                         300,
                         "Too many password reset attempts from your IP. Please try again after 5 minutes."
+                );
+            } else if (uri.endsWith("/api/orders")) {
+                rateLimiterService.checkLimit(
+                        "orders:create:" + clientIp,
+                        15,
+                        60,
+                        "Too many order creation requests. Please wait a moment before trying again."
                 );
             }
         }

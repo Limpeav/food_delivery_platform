@@ -8,7 +8,7 @@ INSERT INTO restaurant_categories (id, name, description, image_url, active, cre
 VALUES (11, 'Indian & Himalayan', 'Fragrant curries, tandoori grills, buttery naan, and aromatic biryanis', 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600', true, NOW())
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description, image_url = EXCLUDED.image_url;
 INSERT INTO restaurant_categories (id, name, description, image_url, active, created_at)
-VALUES (12, 'Boba & Specialty Drinks', 'Chewy brown sugar boba, creamy milk teas, and fruit tea coolers', 'https://images.unsplash.com/photo-1558857563-b37cf5a4c7e6?w=600', true, NOW())
+VALUES (12, 'Boba & Specialty Drinks', 'Chewy brown sugar boba, creamy milk teas, and fruit tea coolers', 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=600', true, NOW())
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, description = EXCLUDED.description, image_url = EXCLUDED.image_url;
 INSERT INTO restaurant_categories (id, name, description, image_url, active, created_at)
 VALUES (13, 'Middle Eastern & Halal', 'Juicy spiced shawarma, crispy falafel, hummus platters, and kebabs', 'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600', true, NOW())
@@ -202,7 +202,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Spiced Sumac Fries with Garlic Dip', 'Crispy skin-on fries dusted with tangy sumac and served with garlic toum.', 2.50, 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Spiced Sumac Fries with Garlic Dip', 'Crispy skin-on fries dusted with tangy sumac and served with garlic toum.', 2.50, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Pistachio Baklava Triangles (3 pcs)', 'Crisp flaky filo pastry layered with crushed pistachios and orange blossom honey.', 3.75, 'https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=600', 4, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
 END $$;
@@ -277,7 +277,7 @@ BEGIN
     END IF;
 
     INSERT INTO restaurants (id, name, description, address, phone, logo_url, cover_image_url, rating, review_count, delivery_fee, minimum_order, opening_time, closing_time, latitude, longitude, status, category_id, owner_id, created_at, updated_at)
-    VALUES (v_rest_id, 'The Alley Boba & Milk Tea', 'Artisanal hand-crafted tapioca pearls slow-cooked in rich brown sugar syrup, premium fresh milk, and royal Assam black teas.', 'St 51 corner St 294, BKK1, Phnom Penh', '+855 23 218 899', 'https://images.unsplash.com/photo-1558857563-b37cf5a4c7e6?w=300', 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=1200', 4.9, 64, 1.00, 2.50, '08:30', '22:00', 11.5515, 104.925, 'APPROVED', 12, v_owner_id, NOW(), NOW())
+    VALUES (v_rest_id, 'The Alley Boba & Milk Tea', 'Artisanal hand-crafted tapioca pearls slow-cooked in rich brown sugar syrup, premium fresh milk, and royal Assam black teas.', 'St 51 corner St 294, BKK1, Phnom Penh', '+855 23 218 899', 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=300', 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=1200', 4.9, 64, 1.00, 2.50, '08:30', '22:00', 11.5515, 104.925, 'APPROVED', 12, v_owner_id, NOW(), NOW())
     ON CONFLICT (id) DO UPDATE SET 
         name = EXCLUDED.name, 
         description = EXCLUDED.description, 
@@ -294,7 +294,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Brown Sugar Deerioca Fresh Milk', 'Signature warm chewy pearls coated in house brown sugar with rich fresh milk and cream.', 3.45, 'https://images.unsplash.com/photo-1558857563-b37cf5a4c7e6?w=600', 4, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Brown Sugar Deerioca Fresh Milk', 'Signature warm chewy pearls coated in house brown sugar with rich fresh milk and cream.', 3.45, 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=600', 4, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Brown Sugar Deerioca Creme Brulee Milk', 'Topped with a layer of caramelized custard cream torched to a crisp.', 3.85, 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?w=600', 5, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
@@ -333,7 +333,7 @@ BEGIN
     END IF;
 
     INSERT INTO restaurants (id, name, description, address, phone, logo_url, cover_image_url, rating, review_count, delivery_fee, minimum_order, opening_time, closing_time, latitude, longitude, status, category_id, owner_id, created_at, updated_at)
-    VALUES (v_rest_id, 'KOI Thé Cambodia', 'World-famous Taiwanese artisan tea shop celebrated for golden tapioca pearls, velvety macchiato foam crowns, and fresh milk teas.', 'St 315, Toul Kork, Phnom Penh', '+855 23 881 223', 'https://images.unsplash.com/photo-1558857563-b37cf5a4c7e6?w=300', 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=1200', 4.9, 71, 1.00, 2.50, '08:00', '22:00', 11.579, 104.899, 'APPROVED', 12, v_owner_id, NOW(), NOW())
+    VALUES (v_rest_id, 'KOI Thé Cambodia', 'World-famous Taiwanese artisan tea shop celebrated for golden tapioca pearls, velvety macchiato foam crowns, and fresh milk teas.', 'St 315, Toul Kork, Phnom Penh', '+855 23 881 223', 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=300', 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=1200', 4.9, 71, 1.00, 2.50, '08:00', '22:00', 11.579, 104.899, 'APPROVED', 12, v_owner_id, NOW(), NOW())
     ON CONFLICT (id) DO UPDATE SET 
         name = EXCLUDED.name, 
         description = EXCLUDED.description, 
@@ -350,7 +350,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Golden Bubble Milk Tea (Large)', 'Authentic Taiwanese milk tea with signature translucent golden tapioca pearls.', 3.10, 'https://images.unsplash.com/photo-1558857563-b37cf5a4c7e6?w=600', 3, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Golden Bubble Milk Tea (Large)', 'Authentic Taiwanese milk tea with signature translucent golden tapioca pearls.', 3.10, 'https://images.unsplash.com/photo-1556881286-fc6915169721?w=600', 3, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Hazelnut Chocolate Milk Tea with Pearls', 'Rich cocoa blended with roasted hazelnut syrup and chewy golden bubbles.', 3.35, 'https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600', 4, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
 
@@ -680,11 +680,11 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Classic Lasagna Bolognese al Forno', 'Layered fresh pasta sheets with slow-cooked beef ragù, creamy béchamel, and melted parmesan.', 8.50, 'https://images.unsplash.com/photo-1621996346565-e3d5d6281699?w=600', 15, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Classic Lasagna Bolognese al Forno', 'Layered fresh pasta sheets with slow-cooked beef ragù, creamy béchamel, and melted parmesan.', 8.50, 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=600', 15, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Spaghetti Alla Carbonara Tradizionale', 'Imported bronze-die pasta tossed with crispy cured guanciale, pecorino romano, and farm egg yolks.', 7.95, 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=600', 14, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Penne al Pesto Genovese con Pollo', 'Tossed with fragrant basil pine nut pesto, grilled chicken strips, and cherry tomatoes.', 7.25, 'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?w=600', 12, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Penne al Pesto Genovese con Pollo', 'Tossed with fragrant basil pine nut pesto, grilled chicken strips, and cherry tomatoes.', 7.25, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600', 12, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
 
     INSERT INTO menu_categories (name, description, display_order, active, restaurant_id)
     VALUES ('Stuffed Calzones & Pizzas', 'Oven-baked folded pizzas and appetizers', 2, true, v_rest_id)
@@ -747,7 +747,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Garlic Parmesan Crinkle Fries', 'Tossed with roasted garlic butter, fresh parsley, and freshly grated parmesan.', 3.25, 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600', 8, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Garlic Parmesan Crinkle Fries', 'Tossed with roasted garlic butter, fresh parsley, and freshly grated parmesan.', 3.25, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600', 8, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('NYC Jumbo Beef Corn Dog', 'Beef frankfurter dipped in sweet cornmeal batter, fried golden brown with mustard.', 2.95, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
 
@@ -803,7 +803,7 @@ BEGIN
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Hand-Breaded Chicken Tenders (5 pcs)', 'Tender white meat chicken fillets fried golden with Santa Fe dipping sauce.', 4.50, 'https://images.unsplash.com/photo-1562967914-608f82629710?w=600', 8, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Seasoned CrissCut Fries (Large)', 'Crispy waffle-cut seasoned potatoes.', 2.50, 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Seasoned CrissCut Fries (Large)', 'Crispy waffle-cut seasoned potatoes.', 2.50, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
 
     INSERT INTO menu_categories (name, description, display_order, active, restaurant_id)
     VALUES ('Desserts & Shakes', 'Hand-scooped ice cream shakes', 3, true, v_rest_id)
@@ -885,7 +885,7 @@ BEGIN
     END IF;
 
     INSERT INTO restaurants (id, name, description, address, phone, logo_url, cover_image_url, rating, review_count, delivery_fee, minimum_order, opening_time, closing_time, latitude, longitude, status, category_id, owner_id, created_at, updated_at)
-    VALUES (v_rest_id, 'Golden Duck Hong Kong BBQ', 'Legendary Hong Kong roast kitchen. Charcoal-roasted crispy skin duck, tender honey char siu, crackling pork belly, and comforting wonton egg noodles.', 'St 130, Daun Penh, Phnom Penh', '+855 23 216 777', 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=300', 'https://images.unsplash.com/photo-1514944298352-824f2b963a75?w=1200', 4.8, 42, 1.25, 3.50, '08:00', '21:00', 11.567, 104.927, 'APPROVED', 5, v_owner_id, NOW(), NOW())
+    VALUES (v_rest_id, 'Golden Duck Hong Kong BBQ', 'Legendary Hong Kong roast kitchen. Charcoal-roasted crispy skin duck, tender honey char siu, crackling pork belly, and comforting wonton egg noodles.', 'St 130, Daun Penh, Phnom Penh', '+855 23 216 777', 'https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=300', 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=1200', 4.8, 42, 1.25, 3.50, '08:00', '21:00', 11.567, 104.927, 'APPROVED', 5, v_owner_id, NOW(), NOW())
     ON CONFLICT (id) DO UPDATE SET 
         name = EXCLUDED.name, 
         description = EXCLUDED.description, 
@@ -902,7 +902,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('HK Roast Duck Rice Platter', 'Generous slices of succulent roast duck over jasmine rice with cucumber and ginger scallion sauce.', 5.75, 'https://images.unsplash.com/photo-1514944298352-824f2b963a75?w=600', 10, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('HK Roast Duck Rice Platter', 'Generous slices of succulent roast duck over jasmine rice with cucumber and ginger scallion sauce.', 5.75, 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=600', 10, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Twin Combo Roast Platter (Char Siu & Crispy Pork)', 'Honey roasted BBQ pork paired with crackling pork belly slices.', 7.95, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600', 12, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
 
@@ -1161,7 +1161,7 @@ BEGIN
     END IF;
 
     INSERT INTO restaurants (id, name, description, address, phone, logo_url, cover_image_url, rating, review_count, delivery_fee, minimum_order, opening_time, closing_time, latitude, longitude, status, category_id, owner_id, created_at, updated_at)
-    VALUES (v_rest_id, 'Baja Fish & Carnitas Stand', 'Pacific coast Mexican seafood. Crispy beer-battered mahi-mahi tacos, citrus shrimp ceviche with avocado, and loaded cheesy quesadillas.', 'Elite Town, Koh Pich (Diamond Island), Phnom Penh', '+855 11 889 001', 'https://images.unsplash.com/photo-1512838243191-e81e88cc8912?w=300', 'https://images.unsplash.com/photo-1512838243191-e81e88cc8912?w=1200', 4.8, 31, 1.50, 4.00, '11:00', '23:00', 11.5525, 104.9385, 'APPROVED', 9, v_owner_id, NOW(), NOW())
+    VALUES (v_rest_id, 'Baja Fish & Carnitas Stand', 'Pacific coast Mexican seafood. Crispy beer-battered mahi-mahi tacos, citrus shrimp ceviche with avocado, and loaded cheesy quesadillas.', 'Elite Town, Koh Pich (Diamond Island), Phnom Penh', '+855 11 889 001', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=300', 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=1200', 4.8, 31, 1.50, 4.00, '11:00', '23:00', 11.5525, 104.9385, 'APPROVED', 9, v_owner_id, NOW(), NOW())
     ON CONFLICT (id) DO UPDATE SET 
         name = EXCLUDED.name, 
         description = EXCLUDED.description, 
@@ -1178,7 +1178,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Baja California Beer-Battered Fish Tacos (3 pcs)', 'Crispy golden battered white fish fillets with chipotle mayo, crunchy cabbage slaw, and lime.', 7.25, 'https://images.unsplash.com/photo-1512838243191-e81e88cc8912?w=600', 12, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Baja California Beer-Battered Fish Tacos (3 pcs)', 'Crispy golden battered white fish fillets with chipotle mayo, crunchy cabbage slaw, and lime.', 7.25, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600', 12, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Citrus Poached Shrimp Ceviche with Tostadas', 'Plump river shrimp cured in fresh lime juice with diced tomatoes, red onions, cilantro, and avocado.', 6.50, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600', 10, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
 

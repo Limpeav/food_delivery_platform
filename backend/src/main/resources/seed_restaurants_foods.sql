@@ -296,9 +296,9 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Burrata Pugliese con Pomodorini', 'Creamy 150g whole Pugliese burrata cheese served with roasted cherry tomatoes, basil pesto, and warm focaccia.', 8.95, 'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?w=600', 10, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Burrata Pugliese con Pomodorini', 'Creamy 150g whole Pugliese burrata cheese served with roasted cherry tomatoes, basil pesto, and warm focaccia.', 8.95, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600', 10, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Tagliatelle al Ragù Bolognese', 'Fresh egg ribbons simmered in slow-cooked prime beef ragù with red wine and rosemary.', 9.50, 'https://images.unsplash.com/photo-1621996346565-e3d5d6281699?w=600', 15, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Tagliatelle al Ragù Bolognese', 'Fresh egg ribbons simmered in slow-cooked prime beef ragù with red wine and rosemary.', 9.50, 'https://images.unsplash.com/photo-1574894709920-11b28e7367e3?w=600', 15, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Crispy Truffle Arancini (4 pcs)', 'Golden fried saffron risotto balls stuffed with gooey mozzarella and served with garlic aioli.', 5.75, 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=600', 10, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
 
@@ -416,9 +416,9 @@ BEGIN
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Golden Honey-Butter Biscuits (3 pcs)', 'Drizzled with sweet honey butter straight from the oven.', 2.25, 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600', 5, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Creamy Mashed Potatoes with Brown Gravy', 'Smooth whipped potatoes smothered in savory country brown gravy.', 1.95, 'https://images.unsplash.com/photo-1514944298352-824f2b963a75?w=600', 5, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Creamy Mashed Potatoes with Brown Gravy', 'Smooth whipped potatoes smothered in savory country brown gravy.', 1.95, 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=600', 5, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Crispy Crinkle Cut Fries (Large)', 'Golden crinkle fries dusted with Texas seasoning salt.', 2.15, 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Crispy Crinkle Cut Fries (Large)', 'Golden crinkle fries dusted with Texas seasoning salt.', 2.15, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600', 6, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Creamy Southern Coleslaw', 'Crisp cabbage and carrots tossed in sweet and tangy cream dressing.', 1.75, 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600', 3, true, 4.6, v_rest_id, v_cat_id, NOW(), NOW());
 
@@ -463,7 +463,7 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Roasted Cantonese Duck with Plum Sauce (Half)', 'Crispy spiced skin with tender aromatic duck meat served with traditional sweet plum sauce.', 14.50, 'https://images.unsplash.com/photo-1514944298352-824f2b963a75?w=600', 20, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Roasted Cantonese Duck with Plum Sauce (Half)', 'Crispy spiced skin with tender aromatic duck meat served with traditional sweet plum sauce.', 14.50, 'https://images.unsplash.com/photo-1518492104633-130d0cc84637?w=600', 20, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Crispy Crackling Golden Roast Pork Belly', 'Pork belly roasted to golden perfection with crisp skin and succulent layers.', 8.95, 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600', 15, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
@@ -639,7 +639,7 @@ BEGIN
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Quesabirria Tacos with Rich Consomé', 'Slow-braised beef shank grilled in corn tortillas with melted cheese, served with hot spiced dipping broth and limes.', 7.50, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600', 15, true, 4.9, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Crispy Baja Fish Tacos', 'Crispy beer-battered white fish fillet topped with crunchy chipotle slaw and pickled red onions.', 6.95, 'https://images.unsplash.com/photo-1512838243191-e81e88cc8912?w=600', 14, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Crispy Baja Fish Tacos', 'Crispy beer-battered white fish fillet topped with crunchy chipotle slaw and pickled red onions.', 6.95, 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600', 14, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Pork Carnitas Michoacan Tacos', 'Slow-rendered tender pork carnitas topped with fresh guacamole and salsa verde.', 6.50, 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?w=600', 12, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
 
@@ -888,7 +888,7 @@ BEGIN
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Baked Cheesy Penne Carbonara', 'Penne pasta baked with smoked bacon, creamy carbonara sauce, and golden browned cheese.', 5.95, 'https://images.unsplash.com/photo-1645112411341-6c4fd023714a?w=600', 14, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Baked Spinach & Cheese Gratin', 'Creamy tender spinach baked with rich cheddar and mozzarella crust.', 4.25, 'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?w=600', 12, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Baked Spinach & Cheese Gratin', 'Creamy tender spinach baked with rich cheddar and mozzarella crust.', 4.25, 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600', 12, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
 
     INSERT INTO menu_categories (name, description, display_order, active, restaurant_id)
     VALUES ('Desserts & Sodas', 'Sweet desserts and carbonated refreshments', 3, true, v_rest_id)
@@ -1062,9 +1062,9 @@ BEGIN
     RETURNING id INTO v_cat_id;
 
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Loaded Cheddar Bacon Crinkle Fries', 'Golden crinkle-cut fries smothered in warm cheese sauce, crispy bacon crumbles, and green onions.', 3.95, 'https://images.unsplash.com/photo-1576107232684-1279f3908594?w=600', 8, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Loaded Cheddar Bacon Crinkle Fries', 'Golden crinkle-cut fries smothered in warm cheese sauce, crispy bacon crumbles, and green onions.', 3.95, 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600', 8, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
-    VALUES ('Crispy Beer-Battered Onion Rings', 'Thick cut jumbo onions in crunchy batter with smoky BBQ dip.', 2.95, 'https://images.unsplash.com/photo-1639024471287-032f66ab7503?w=600', 8, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
+    VALUES ('Crispy Beer-Battered Onion Rings', 'Thick cut jumbo onions in crunchy batter with smoky BBQ dip.', 2.95, 'https://images.unsplash.com/photo-1625938144755-652e08e359b7?w=600', 8, true, 4.7, v_rest_id, v_cat_id, NOW(), NOW());
     INSERT INTO food_items (name, description, price, image_url, preparation_time, available, rating, restaurant_id, menu_category_id, created_at, updated_at)
     VALUES ('Crispy Chicken Bites with Ranch', 'Bite-sized buttermilk fried chicken pieces with homemade garlic ranch.', 3.75, 'https://images.unsplash.com/photo-1562967914-608f82629710?w=600', 8, true, 4.8, v_rest_id, v_cat_id, NOW(), NOW());
 

@@ -36,7 +36,7 @@ export const Footer: React.FC = () => {
     <>
       <footer
         role="contentinfo"
-        className="border-t border-slate-200/80 bg-white text-slate-600 mt-auto"
+        className="border-t border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 mt-auto transition-colors"
       >
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 space-y-10">
           {/* Main Navigation Grid */}

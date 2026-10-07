@@ -27,14 +27,27 @@ public class UploadService {
     );
 
     private final Path rootLocation;
+    private final com.example.fooddelivery.upload.config.StorageProperties storageProperties;
 
-    public UploadService(@Value("${app.upload.dir:uploads}") String uploadDir) {
-        this.rootLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
+    @org.springframework.beans.factory.annotation.Autowired
+    public UploadService(
+            @org.springframework.beans.factory.annotation.Autowired(required = false)
+            com.example.fooddelivery.upload.config.StorageProperties storageProperties,
+            @Value("${app.storage.dir:${app.upload.dir:uploads}}") String uploadDir) {
+        this.storageProperties = (storageProperties != null) ? storageProperties : new com.example.fooddelivery.upload.config.StorageProperties();
+        String targetDir = (storageProperties != null && storageProperties.getDir() != null && !storageProperties.getDir().isBlank())
+                ? storageProperties.getDir()
+                : uploadDir;
+        this.rootLocation = Paths.get(targetDir).toAbsolutePath().normalize();
         try {
             Files.createDirectories(this.rootLocation);
         } catch (IOException e) {
             log.error("Could not initialize upload folder: {}", e.getMessage());
         }
+    }
+
+    public UploadService(String uploadDir) {
+        this(null, uploadDir);
     }
 
     public UploadResponse storeImage(MultipartFile file) {
@@ -65,8 +78,16 @@ public class UploadService {
             Files.copy(inputStream, destinationFile, StandardCopyOption.REPLACE_EXISTING);
             log.info("Uploaded image stored successfully: {} (size: {} bytes)", generatedFileName, file.getSize());
 
+            String urlPrefix = "/uploads/";
+            if ("s3".equalsIgnoreCase(storageProperties.getType()) 
+                    && storageProperties.getS3() != null 
+                    && storageProperties.getS3().getPublicUrl() != null 
+                    && !storageProperties.getS3().getPublicUrl().isBlank()) {
+                urlPrefix = storageProperties.getS3().getPublicUrl().replaceAll("/+$", "") + "/";
+            }
+
             return UploadResponse.builder()
-                    .url("/uploads/" + generatedFileName)
+                    .url(urlPrefix + generatedFileName)
                     .fileName(generatedFileName)
                     .originalFileName(originalFilename)
                     .size(file.getSize())

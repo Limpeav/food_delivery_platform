@@ -6,11 +6,20 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Store, AlertCircle, ArrowRight, UserCheck, Utensils, CheckCircle2 } from 'lucide-react';
+import {
+  Store,
+  AlertCircle,
+  ArrowRight,
+  UserCheck,
+  Utensils,
+  CheckCircle2,
+  MapPin,
+} from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { restaurantService } from '@/services/restaurantService';
 import { RestaurantCategory } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { LocationPicker, LocationPickerValue } from '@/components/ui/LocationPicker';
 
 const onboardingSchema = z
   .object({
@@ -50,9 +59,19 @@ export default function RestaurantRegisterPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Location state managed separately (outside RHF since it's a complex object)
+  const [location, setLocation] = useState<LocationPickerValue>({
+    lat: 11.5564,
+    lng: 104.9282,
+    address: '',
+  });
+  const [locationError, setLocationError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -75,11 +94,22 @@ export default function RestaurantRegisterPage() {
   useEffect(() => {
     restaurantService
       .getCategories()
-      .then((cats) => setCategories(cats))
+      .then((cats) => {
+        setCategories(cats);
+        if (cats.length > 0) {
+          setValue('categoryId', cats[0].id);
+        }
+      })
       .catch(() => setCategories([]));
-  }, []);
+  }, [setValue]);
 
   const onSubmit = async (data: OnboardingFormData) => {
+    // Validate that a meaningful location was chosen (not just the default pin)
+    if (!location.lat || !location.lng) {
+      setLocationError('Please pin your restaurant location on the map.');
+      return;
+    }
+    setLocationError(null);
     setErrorMsg(null);
     setIsSubmitting(true);
     try {
@@ -92,9 +122,9 @@ export default function RestaurantRegisterPage() {
         restaurantName: data.restaurantName,
         description: data.description,
         restaurantPhone: data.restaurantPhone || data.phone,
-        address: data.address,
-        latitude: 11.5564,
-        longitude: 104.9282,
+        address: data.address || location.address || '',
+        latitude: location.lat,
+        longitude: location.lng,
         openingTime: data.openingTime,
         closingTime: data.closingTime,
         categoryId: Number(data.categoryId),
@@ -106,6 +136,15 @@ export default function RestaurantRegisterPage() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // When the map pin is moved, auto-fill the address field if it's empty
+  const handleLocationChange = (val: LocationPickerValue) => {
+    setLocation(val);
+    setLocationError(null);
+    if (val.address && !getValues('address')) {
+      setValue('address', val.address, { shouldValidate: true });
     }
   };
 
@@ -121,7 +160,7 @@ export default function RestaurantRegisterPage() {
             Apply as Restaurant Partner
           </h1>
           <p className="text-sm text-slate-400">
-            Submit your restaurant details for administrator review & onboarding
+            Submit your restaurant details for administrator review &amp; onboarding
           </p>
         </div>
 
@@ -140,7 +179,7 @@ export default function RestaurantRegisterPage() {
               <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-emerald-400">
                 <UserCheck className="w-4 h-4" />
                 <h3 className="text-xs font-bold uppercase tracking-wider">
-                  1. Owner & Account Information
+                  1. Owner &amp; Account Information
                 </h3>
               </div>
 
@@ -327,13 +366,41 @@ export default function RestaurantRegisterPage() {
               </div>
             </div>
 
+            {/* Section 3: Location */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2 pb-2 border-b border-slate-800 text-emerald-400">
+                <MapPin className="w-4 h-4" />
+                <h3 className="text-xs font-bold uppercase tracking-wider">
+                  3. Restaurant Location
+                </h3>
+              </div>
+
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Pin your restaurant&apos;s exact location on the map so customers and drivers can find you accurately. Click anywhere on the map, drag the green pin, or tap{' '}
+                <span className="text-emerald-400 font-semibold">Use my location</span> to auto-detect via GPS.
+              </p>
+
+              <LocationPicker value={location} onChange={handleLocationChange} />
+
+              {locationError && (
+                <p className="flex items-center gap-1.5 text-xs text-rose-400">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {locationError}
+                </p>
+              )}
+            </div>
+
             {/* Submission notice */}
             <div className="rounded-2xl bg-slate-900 border border-slate-800 p-4 text-xs text-slate-400 space-y-1.5">
               <p className="font-bold text-emerald-400 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" /> Production Review Policy:
               </p>
               <p className="leading-relaxed">
-                By submitting this form, your user account will be created with role <span className="text-white font-semibold">RESTAURANT_OWNER</span>, and your restaurant profile will be marked as <span className="text-amber-400 font-semibold">PENDING</span> until administrative approval.
+                By submitting this form, your user account will be created with role{' '}
+                <span className="text-white font-semibold">RESTAURANT_OWNER</span>, and your
+                restaurant profile will be marked as{' '}
+                <span className="text-amber-400 font-semibold">PENDING</span> until administrative
+                approval.
               </p>
             </div>
 
@@ -342,16 +409,15 @@ export default function RestaurantRegisterPage() {
               disabled={isSubmitting}
               className="w-full rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 text-sm transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 cursor-pointer"
             >
-              {isSubmitting ? 'Submitting Partner Application...' : 'Submit Restaurant Application'}
+              {isSubmitting
+                ? 'Submitting Partner Application...'
+                : 'Submit Restaurant Application'}
             </button>
           </form>
 
           <div className="mt-6 text-center text-xs text-slate-400 pt-4 border-t border-slate-800">
             Already registered as a partner?{' '}
-            <Link
-              href="/restaurant/login"
-              className="font-bold text-emerald-400 hover:underline"
-            >
+            <Link href="/restaurant/login" className="font-bold text-emerald-400 hover:underline">
               Sign in to Partner Hub
             </Link>
           </div>

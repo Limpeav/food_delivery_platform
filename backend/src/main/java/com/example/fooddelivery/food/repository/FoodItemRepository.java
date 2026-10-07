@@ -21,4 +21,6 @@ public interface FoodItemRepository extends JpaRepository<FoodItem, Long>, JpaSp
     List<FoodItem> findByMenuCategoryIdAndAvailableTrue(Long menuCategoryId);
 
     List<FoodItem> findTop10ByAvailableTrueOrderByRatingDesc();
+
+    List<FoodItem> findByRestaurantIdInAndAvailableTrueOrderByRatingDesc(List<Long> restaurantIds);
 }

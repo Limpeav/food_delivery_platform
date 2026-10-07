@@ -8,6 +8,8 @@ export interface User {
   phoneNumber?: string;
   role: Role;
   status: UserStatus;
+  restaurantId?: number;
+  driverId?: number;
   createdAt: string;
   updatedAt?: string;
 }
@@ -20,6 +22,7 @@ export interface AuthResponse {
   user: User;
   businessStatus?: string;
   statusMessage?: string;
+  phoneRequired?: boolean;
 }
 
 export interface CustomerRegisterRequest {
@@ -140,6 +143,23 @@ export interface FoodItem {
   available: boolean;
   rating: number;
   createdAt: string;
+}
+
+export interface NearbyRestaurant extends Restaurant {
+  distanceKm: number;
+  estimatedDeliveryMinutes: number;
+  isOpen: boolean;
+  recommendationScore: number;
+  recommendedFoods: FoodItem[];
+}
+
+export interface NearbyRecommendationResponse {
+  userLatitude: number;
+  userLongitude: number;
+  radiusKm: number;
+  totalFound: number;
+  restaurants: NearbyRestaurant[];
+  topRecommendedFoods: FoodItem[];
 }
 
 export interface CartItem {

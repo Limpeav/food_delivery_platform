@@ -36,11 +36,12 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    @Operation(summary = "Get registered users with optional role filtering")
+    @Operation(summary = "Get registered users with optional role filtering and search")
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getUsers(
             @RequestParam(required = false) Role role,
+            @RequestParam(required = false) String search,
             @PageableDefault(size = 15, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PageResponse<UserResponse> response = adminService.getUsers(role, pageable);
+        PageResponse<UserResponse> response = adminService.getUsers(role, search, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

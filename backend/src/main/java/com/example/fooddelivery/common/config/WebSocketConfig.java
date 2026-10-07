@@ -38,6 +38,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
+                .setAllowedOriginPatterns("*");
+        registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
@@ -48,20 +50,40 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
                 StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                if (accessor != null && StompCommand.CONNECT.equals(accessor.getCommand())) {
-                    String authHeader = accessor.getFirstNativeHeader("Authorization");
-                    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                        String token = authHeader.substring(7);
-                        if (jwtTokenProvider.validateToken(token)) {
-                            Long userId = jwtTokenProvider.getUserIdFromToken(token);
-                            String role = jwtTokenProvider.getRoleFromToken(token);
-                            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                                    userId,
-                                    null,
-                                    role != null ? List.of(new SimpleGrantedAuthority("ROLE_" + role)) : List.of()
-                            );
-                            accessor.setUser(auth);
-                            log.debug("STOMP WebSocket authenticated for userId: {}, role: {}", userId, role);
+                if (accessor != null) {
+                    if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+                        String authHeader = accessor.getFirstNativeHeader("Authorization");
+                        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                            String token = authHeader.substring(7);
+                            if (jwtTokenProvider.validateToken(token)) {
+                                Long userId = jwtTokenProvider.getUserIdFromToken(token);
+                                String role = jwtTokenProvider.getRoleFromToken(token);
+                                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                        userId,
+                                        null,
+                                        role != null ? List.of(new SimpleGrantedAuthority("ROLE_" + role)) : List.of()
+                                );
+                                accessor.setUser(auth);
+                                log.debug("STOMP WebSocket authenticated for userId: {}, role: {}", userId, role);
+                            }
+                        }
+                    } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                        String destination = accessor.getDestination();
+                        java.security.Principal principal = accessor.getUser();
+                        if (destination != null && destination.startsWith("/topic/notifications/")) {
+                            String targetIdStr = destination.substring("/topic/notifications/".length());
+                            try {
+                                Long targetUserId = Long.parseLong(targetIdStr);
+                                if (principal instanceof UsernamePasswordAuthenticationToken auth) {
+                                    Long currentUserId = (Long) auth.getPrincipal();
+                                    boolean isAdmin = auth.getAuthorities().stream()
+                                            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+                                    if (!isAdmin && !currentUserId.equals(targetUserId)) {
+                                        log.warn("Unauthorized subscription to {}: user is {}", destination, currentUserId);
+                                        return null;
+                                    }
+                                }
+                            } catch (NumberFormatException ignored) {}
                         }
                     }
                 }

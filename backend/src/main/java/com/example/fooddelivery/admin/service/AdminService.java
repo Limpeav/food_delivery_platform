@@ -17,13 +17,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.criteria.Predicate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,10 +89,26 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<UserResponse> getUsers(Role role, @NonNull Pageable pageable) {
-        Page<User> page = (role != null)
-                ? userRepository.findByRole(role, pageable)
-                : userRepository.findAll(pageable);
+    public PageResponse<UserResponse> getUsers(Role role, String search, @NonNull Pageable pageable) {
+        Specification<User> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (role != null) {
+                predicates.add(cb.equal(root.get("role"), role));
+            }
+
+            if (search != null && !search.trim().isEmpty()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                Predicate nameMatch = cb.like(cb.lower(root.get("name")), pattern);
+                Predicate emailMatch = cb.like(cb.lower(root.get("email")), pattern);
+                Predicate phoneMatch = cb.like(cb.lower(root.get("phoneNumber")), pattern);
+                predicates.add(cb.or(nameMatch, emailMatch, phoneMatch));
+            }
+
+            return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<User> page = userRepository.findAll(spec, pageable);
         return PageResponse.from(page.map(UserResponse::from));
     }
 

@@ -32,7 +32,7 @@ export default function HelpCenterPage() {
     },
     {
       q: 'What payment methods are supported on Cravery?',
-      a: 'Cravery supports two primary payment options: Cash on Delivery (COD) allowing you to pay the courier upon package arrival, and Online Digital Card / QR Payment for instant checkout confirmation.',
+      a: 'Cravery currently supports Cash on Delivery (COD). You pay the courier directly in cash when your order arrives — no online payment or card required.',
       category: 'payments',
     },
     {

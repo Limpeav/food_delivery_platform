@@ -7,6 +7,7 @@ import { ShieldAlert, ShieldCheck, LogOut, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Loading } from '@/components/ui/Loading';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export default function AdminLayout({
   children,
@@ -49,12 +50,15 @@ export default function AdminLayout({
             </div>
           </div>
 
-          <Link
-            href="/"
-            className="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Return to Customer App
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
+              href="/"
+              className="text-xs text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Return to Customer App
+            </Link>
+          </div>
         </header>
 
         {/* Main Content */}
@@ -76,18 +80,18 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="flex-1 flex bg-slate-50 min-h-screen">
+    <div className="h-screen w-full flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
       <Sidebar role="ADMIN" />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Operational Admin Topbar */}
-        <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between shrink-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-400 flex items-center justify-center font-bold">
               <ShieldAlert className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 leading-tight">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
                 Platform Superadmin Console
               </h2>
               <span className="text-[10px] text-slate-400 font-medium">
@@ -97,14 +101,16 @@ export default function AdminLayout({
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-600" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               Role: SUPERADMIN
             </span>
 
+            <ThemeToggle />
+
             <button
               onClick={() => logout()}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign Out
@@ -112,8 +118,11 @@ export default function AdminLayout({
           </div>
         </header>
 
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto max-w-7xl">
-          {children}
+        {/* Scrollable Right Side Content Only */}
+        <main className="flex-1 overflow-y-auto p-6 sm:p-8 min-w-0 w-full">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

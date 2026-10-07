@@ -7,8 +7,10 @@ import { Coupon } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Badge } from '@/components/ui/Badge';
 import { Loading } from '@/components/ui/Loading';
+import { toast } from '@/components/ui/Toast';
 
 export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -22,6 +24,8 @@ export default function AdminCouponsPage() {
   const [minOrder, setMinOrder] = useState('10');
   const [maxDiscount, setMaxDiscount] = useState('5');
   const [submitting, setSubmitting] = useState(false);
+  const [deleteCouponId, setDeleteCouponId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadCoupons();
@@ -32,7 +36,8 @@ export default function AdminCouponsPage() {
       setLoading(true);
       const res = await couponService.getAllCouponsAdmin();
       setCoupons(res);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.response?.status === 401) return;
       console.error(err);
     } finally {
       setLoading(false);
@@ -64,13 +69,19 @@ export default function AdminCouponsPage() {
     }
   };
 
-  const handleDeleteCoupon = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this coupon?')) return;
+  const handleDeleteCoupon = async () => {
+    if (!deleteCouponId) return;
+    setDeleting(true);
     try {
-      await couponService.deleteCoupon(id);
-      setCoupons(coupons.filter((c) => c.id !== id));
-    } catch (err) {
+      await couponService.deleteCoupon(deleteCouponId);
+      setCoupons(coupons.filter((c) => c.id !== deleteCouponId));
+      toast.success('Coupon deleted successfully');
+      setDeleteCouponId(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete coupon');
       console.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -82,10 +93,10 @@ export default function AdminCouponsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Voucher & Coupon Management
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Configure campaign discount codes, percentage caps, and minimum basket requirements
           </p>
         </div>
@@ -104,11 +115,11 @@ export default function AdminCouponsPage() {
         {coupons.map((cp) => (
           <div
             key={cp.id}
-            className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs flex flex-col justify-between"
+            className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs flex flex-col justify-between"
           >
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-sm font-black text-slate-900 bg-orange-50 text-[#FF5A1F] px-2.5 py-1 rounded-lg border border-orange-200">
+                <span className="font-mono text-sm font-black bg-orange-50 dark:bg-orange-950/60 text-[#FF5A1F] dark:text-[#FF7A45] px-2.5 py-1 rounded-lg border border-orange-200 dark:border-orange-900/50">
                   {cp.code}
                 </span>
                 <Badge variant="primary" size="sm">
@@ -116,13 +127,13 @@ export default function AdminCouponsPage() {
                 </Badge>
               </div>
 
-              <h3 className="text-xl font-black text-slate-900 mt-2">
+              <h3 className="text-xl font-black text-slate-900 dark:text-white mt-2">
                 {cp.discountType === 'PERCENTAGE'
                   ? `${cp.discountValue}% OFF`
                   : `$${cp.discountValue} OFF`}
               </h3>
 
-              <div className="space-y-1 text-xs text-slate-500 mt-2">
+              <div className="space-y-1 text-xs text-slate-500 dark:text-slate-400 mt-2">
                 <p>Min Spend: ${cp.minimumOrderAmount.toFixed(2)}</p>
                 {cp.maximumDiscount && (
                   <p>Max Cap: ${cp.maximumDiscount.toFixed(2)}</p>
@@ -131,10 +142,10 @@ export default function AdminCouponsPage() {
               </div>
             </div>
 
-            <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-end">
+            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end">
               <button
-                onClick={() => handleDeleteCoupon(cp.id)}
-                className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors cursor-pointer"
+                onClick={() => setDeleteCouponId(cp.id)}
+                className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                 title="Delete voucher"
               >
                 <Trash2 className="w-4 h-4" />
@@ -240,6 +251,19 @@ export default function AdminCouponsPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteCouponId !== null}
+        onClose={() => { if (!deleting) setDeleteCouponId(null); }}
+        onConfirm={handleDeleteCoupon}
+        isLoading={deleting}
+        variant="danger"
+        title="Delete Promotion Coupon?"
+        description="Are you sure you want to delete this coupon? Customers will no longer be able to apply this promo code at checkout."
+        confirmText="Yes, Delete Coupon"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

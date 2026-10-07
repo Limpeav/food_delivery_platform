@@ -13,6 +13,12 @@ import com.example.fooddelivery.restaurantcategory.entity.RestaurantCategory;
 import com.example.fooddelivery.restaurantcategory.service.RestaurantCategoryService;
 import com.example.fooddelivery.user.entity.User;
 import com.example.fooddelivery.user.service.UserService;
+import com.example.fooddelivery.common.util.GeoUtils;
+import com.example.fooddelivery.food.dto.FoodItemResponse;
+import com.example.fooddelivery.food.entity.FoodItem;
+import com.example.fooddelivery.food.repository.FoodItemRepository;
+import com.example.fooddelivery.restaurant.dto.NearbyRecommendationResponse;
+import com.example.fooddelivery.restaurant.dto.NearbyRestaurantResponse;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +30,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -35,6 +46,7 @@ public class RestaurantService {
     private final RestaurantRepository restaurantRepository;
     private final UserService userService;
     private final RestaurantCategoryService categoryService;
+    private final FoodItemRepository foodItemRepository;
     private final com.example.fooddelivery.order.repository.OrderRepository orderRepository;
     private final com.example.fooddelivery.order.repository.OrderItemRepository orderItemRepository;
 
@@ -250,6 +262,116 @@ public class RestaurantService {
                     "Opening hours: " + restaurant.getOpeningTime() + " – " + restaurant.getClosingTime()
             );
         }
+    }
+
+    /**
+     * Finds nearby restaurants within the specified radius (default: 5.0 km) of the user's coordinates,
+     * calculates real-time distances & delivery estimates, scores them for recommendation,
+     * and bundles top recommended dishes for customers to order directly.
+     */
+    @Transactional(readOnly = true)
+    public NearbyRecommendationResponse getNearbyRestaurants(Double latitude, Double longitude, Double radiusKm, Integer limit) {
+        if (latitude == null || longitude == null) {
+            throw new BadRequestException("Latitude and longitude must be provided to find nearby restaurants");
+        }
+        if (latitude < -90.0 || latitude > 90.0 || longitude < -180.0 || longitude > 180.0) {
+            throw new BadRequestException("Invalid coordinates: latitude must be between -90 and 90, longitude between -180 and 180");
+        }
+
+        final double effectiveRadius = (radiusKm != null && radiusKm > 0.0) ? Math.min(radiusKm, 50.0) : 5.0;
+        final int effectiveLimit = (limit != null && limit > 0) ? Math.min(limit, 50) : 20;
+
+        List<Restaurant> approvedRestaurants = restaurantRepository.findByStatus(RestaurantStatus.APPROVED);
+
+        record Candidate(Restaurant restaurant, double distanceKm, int etaMinutes, boolean isOpen, double score) {}
+
+        List<Candidate> candidates = new ArrayList<>();
+
+        for (Restaurant r : approvedRestaurants) {
+            if (r.getLatitude() == null || r.getLongitude() == null) continue;
+
+            double distance = GeoUtils.calculateDistanceKm(latitude, longitude, r.getLatitude(), r.getLongitude());
+            if (distance <= effectiveRadius) {
+                double roundedDist = BigDecimal.valueOf(distance).setScale(2, RoundingMode.HALF_UP).doubleValue();
+                int etaMinutes = Math.max(15, (int) Math.round(15 + distance * 3.5));
+                boolean open = isOpen(r);
+
+                // Recommendation scoring:
+                // 1. Proximity: closer restaurants receive up to 35 points
+                double proximityScore = Math.max(0.0, (1.0 - (distance / effectiveRadius))) * 35.0;
+                // 2. Rating: 5-star ratings receive up to 35 points
+                double ratingScore = ((r.getRating() != null ? r.getRating() : 0.0) / 5.0) * 35.0;
+                // 3. Open status: currently open restaurants receive a 20 point bonus
+                double openBonus = open ? 20.0 : 0.0;
+                // 4. Review count credibility: up to 10 points
+                double reviewBonus = Math.min(10.0, (r.getReviewCount() != null ? r.getReviewCount() : 0) * 0.2);
+
+                double totalScore = BigDecimal.valueOf(proximityScore + ratingScore + openBonus + reviewBonus)
+                        .setScale(1, RoundingMode.HALF_UP).doubleValue();
+
+                candidates.add(new Candidate(r, roundedDist, etaMinutes, open, totalScore));
+            }
+        }
+
+        // Sort candidates: Open first, then highest recommendation score, then closest distance
+        candidates.sort(Comparator
+                .comparing((Candidate c) -> c.isOpen ? 0 : 1)
+                .thenComparing(Candidate::score, Comparator.reverseOrder())
+                .thenComparing(Candidate::distanceKm));
+
+        int totalFound = candidates.size();
+
+        // Limit candidates for response
+        List<Candidate> topCandidates = candidates.stream()
+                .limit(effectiveLimit)
+                .toList();
+
+        List<Long> topRestaurantIds = topCandidates.stream()
+                .map(c -> c.restaurant().getId())
+                .toList();
+
+        Map<Long, List<FoodItemResponse>> foodsByRestaurantId = Map.of();
+        List<FoodItemResponse> overallTopDishes = new ArrayList<>();
+
+        if (!topRestaurantIds.isEmpty()) {
+            List<FoodItem> availableFoods = foodItemRepository
+                    .findByRestaurantIdInAndAvailableTrueOrderByRatingDesc(topRestaurantIds);
+
+            foodsByRestaurantId = availableFoods.stream()
+                    .map(FoodItemResponse::from)
+                    .collect(Collectors.groupingBy(FoodItemResponse::getRestaurantId));
+
+            // Up to 8 top recommended dishes across all nearby restaurants (with high ratings)
+            overallTopDishes = availableFoods.stream()
+                    .map(FoodItemResponse::from)
+                    .limit(8)
+                    .toList();
+        }
+
+        List<NearbyRestaurantResponse> restaurantResponses = new ArrayList<>();
+        for (Candidate c : topCandidates) {
+            List<FoodItemResponse> allFoods = foodsByRestaurantId.getOrDefault(c.restaurant().getId(), List.of());
+            // Select up to top 3 signature dishes per restaurant for quick-buy preview
+            List<FoodItemResponse> top3Foods = allFoods.stream().limit(3).toList();
+
+            restaurantResponses.add(NearbyRestaurantResponse.from(
+                    c.restaurant(),
+                    c.distanceKm(),
+                    c.etaMinutes(),
+                    c.isOpen(),
+                    c.score(),
+                    top3Foods
+            ));
+        }
+
+        return NearbyRecommendationResponse.builder()
+                .userLatitude(latitude)
+                .userLongitude(longitude)
+                .radiusKm(effectiveRadius)
+                .totalFound(totalFound)
+                .restaurants(restaurantResponses)
+                .topRecommendedFoods(overallTopDishes)
+                .build();
     }
 }
 

@@ -27,16 +27,42 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final com.example.fooddelivery.common.idempotency.IdempotencyService idempotencyService;
 
     // Customer Endpoints
     @PostMapping("/api/orders")
     @Operation(summary = "Create order from current shopping cart (Customer)")
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
             @AuthenticationPrincipal UserPrincipal principal,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody CreateOrderRequest request) {
-        OrderResponse response = orderService.createOrder(principal.getId(), request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Order created successfully", response));
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            OrderResponse cached = idempotencyService.getCachedResponse(idempotencyKey, principal.getId(), OrderResponse.class);
+            if (cached != null) {
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .header("Idempotent-Replay", "true")
+                        .body(ApiResponse.success("Order already placed (idempotent replay)", cached));
+            }
+            if (!idempotencyService.acquire(idempotencyKey, principal.getId())) {
+                throw new com.example.fooddelivery.common.exception.BadRequestException(
+                        "Order is currently being processed. Please wait a moment.");
+            }
+        }
+
+        try {
+            OrderResponse response = orderService.createOrder(principal.getId(), request);
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.complete(idempotencyKey, principal.getId(), response);
+            }
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success("Order created successfully", response));
+        } catch (RuntimeException e) {
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.release(idempotencyKey, principal.getId());
+            }
+            throw e;
+        }
     }
 
     @GetMapping("/api/orders")

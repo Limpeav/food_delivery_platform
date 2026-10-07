@@ -40,7 +40,8 @@ export default function AdminDriversPage() {
       setDrivers(res.content);
       setTotalPages(res.totalPages || 0);
       setTotalElements(res.totalElements || 0);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.response?.status === 401) return;
       console.error(err);
     } finally {
       setLoading(false);
@@ -64,10 +65,10 @@ export default function AdminDriversPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Delivery Fleet Management
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Verify rider vehicle documents, driving licenses, and grant dispatch authorization
           </p>
         </div>
@@ -75,7 +76,7 @@ export default function AdminDriversPage() {
         <select
           value={approvedFilter}
           onChange={(e) => setApprovedFilter(e.target.value as any)}
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#FF5A1F]"
+          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-[#FF5A1F]"
         >
           <option value="ALL">All Drivers</option>
           <option value="PENDING">Pending Review</option>
@@ -93,22 +94,22 @@ export default function AdminDriversPage() {
           description="There are currently no driver accounts matching this filter."
         />
       ) : (
-        <div className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-xs divide-y divide-slate-100">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs divide-y divide-slate-100 dark:divide-slate-800">
           {drivers.map((driver) => (
             <div key={driver.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-base shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-base shrink-0">
                   <Bike className="w-6 h-6" />
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-slate-900">{driver.name}</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{driver.name}</h3>
                     <Badge variant={driver.approved ? 'success' : 'warning'} size="sm">
                       {driver.approved ? 'Authorized' : 'Pending Verification'}
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-500">
-                    Phone: <span className="font-semibold text-slate-700">{driver.phoneNumber || 'N/A'}</span> • Vehicle: {driver.vehicleType} ({driver.vehicleNumber})
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Phone: <span className="font-semibold text-slate-700 dark:text-slate-300">{driver.phoneNumber || 'N/A'}</span> • Vehicle: {driver.vehicleType} ({driver.vehicleNumber})
                   </p>
                   <p className="text-xs text-slate-400">
                     License Number: <span className="font-mono">{driver.licenseNumber}</span>
@@ -134,7 +135,7 @@ export default function AdminDriversPage() {
                     variant="outline"
                     onClick={() => handleApprove(driver.id, false)}
                     isLoading={actionLoading === driver.id}
-                    className="rounded-xl text-xs gap-1 text-rose-600 hover:bg-rose-50"
+                    className="rounded-xl text-xs gap-1 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                   >
                     <X className="w-3.5 h-3.5" /> Revoke Authorization
                   </Button>
@@ -148,7 +149,7 @@ export default function AdminDriversPage() {
             totalElements={totalElements}
             pageSize={20}
             onPageChange={(p) => setPage(p - 1)}
-            className="px-6 py-4 bg-slate-50/50"
+            className="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800"
           />
         </div>
       )}

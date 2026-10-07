@@ -29,7 +29,7 @@ export const FooterLinkGroup: React.FC<FooterLinkGroupProps> = ({
         className="w-full sm:w-auto flex items-center justify-between text-left group cursor-pointer sm:cursor-default"
         aria-expanded={isMobileOpen}
       >
-        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 group-hover:text-[#FF5A1F] sm:group-hover:text-slate-900 transition-colors">
+        <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white group-hover:text-[#FF5A1F] sm:group-hover:text-slate-900 dark:sm:group-hover:text-white transition-colors">
           {title}
         </h3>
         <ChevronDown
@@ -41,7 +41,7 @@ export const FooterLinkGroup: React.FC<FooterLinkGroupProps> = ({
 
       {/* Links List */}
       <ul
-        className={`space-y-2 text-xs text-slate-600 font-medium ${
+        className={`space-y-2 text-xs text-slate-600 dark:text-slate-400 font-medium ${
           isMobileOpen ? 'block' : 'hidden sm:block'
         }`}
       >
@@ -57,11 +57,11 @@ export const FooterLinkGroup: React.FC<FooterLinkGroupProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   id={link.id}
-                  className="hover:text-[#FF5A1F] transition-colors inline-flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:text-[#FF5A1F]"
+                  className="hover:text-[#FF5A1F] dark:hover:text-[#FF5A1F] transition-colors inline-flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:text-[#FF5A1F]"
                 >
                   <span>{link.label}</span>
                   {link.badge && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-[#FFF1EB] text-[#FF5A1F] text-[9px] font-black">
+                    <span className="px-1.5 py-0.5 rounded-md bg-[#FFF1EB] dark:bg-orange-950/40 text-[#FF5A1F] text-[9px] font-black">
                       {link.badge}
                     </span>
                   )}
@@ -70,11 +70,11 @@ export const FooterLinkGroup: React.FC<FooterLinkGroupProps> = ({
                 <Link
                   href={link.href}
                   id={link.id}
-                  className="hover:text-[#FF5A1F] transition-colors inline-flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:text-[#FF5A1F]"
+                  className="hover:text-[#FF5A1F] dark:hover:text-[#FF5A1F] transition-colors inline-flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:text-[#FF5A1F]"
                 >
                   <span>{link.label}</span>
                   {link.badge && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-[#FFF1EB] text-[#FF5A1F] text-[9px] font-black">
+                    <span className="px-1.5 py-0.5 rounded-md bg-[#FFF1EB] dark:bg-orange-950/40 text-[#FF5A1F] text-[9px] font-black">
                       {link.badge}
                     </span>
                   )}
@@ -83,11 +83,11 @@ export const FooterLinkGroup: React.FC<FooterLinkGroupProps> = ({
                 <Link
                   href={link.href}
                   id={link.id}
-                  className="hover:text-[#FF5A1F] transition-colors inline-flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:text-[#FF5A1F]"
+                  className="hover:text-[#FF5A1F] dark:hover:text-[#FF5A1F] transition-colors inline-flex items-center gap-1.5 focus-visible:outline-hidden focus-visible:text-[#FF5A1F]"
                 >
                   <span>{link.label}</span>
                   {link.badge && (
-                    <span className="px-1.5 py-0.5 rounded-md bg-[#FFF1EB] text-[#FF5A1F] text-[9px] font-black">
+                    <span className="px-1.5 py-0.5 rounded-md bg-[#FFF1EB] dark:bg-orange-950/40 text-[#FF5A1F] text-[9px] font-black">
                       {link.badge}
                     </span>
                   )}

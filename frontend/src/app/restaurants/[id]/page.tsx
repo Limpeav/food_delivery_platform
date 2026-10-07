@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use, Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Star,
@@ -26,6 +27,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Loading } from '@/components/ui/Loading';
 import { Modal } from '@/components/ui/Modal';
 import { FoodDetailModal } from '@/components/shared/FoodDetailModal';
+import { toast } from '@/components/ui/Toast';
 
 function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
   const router = useRouter();
@@ -147,8 +149,10 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
 
     try {
       await addItem(food.id, quantity);
+      toast.success(`${food.name} added to cart!`);
     } catch (err) {
       console.error('Error adding to cart:', err);
+      toast.error('Failed to add item. Please try again.');
     }
   };
 
@@ -156,6 +160,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
     if (pendingFoodItem) {
       await clearCart();
       await addItem(pendingFoodItem.id, pendingQuantity);
+      toast.success(`${pendingFoodItem.name} added to cart!`);
       setConflictModalOpen(false);
       setPendingFoodItem(null);
       setPendingQuantity(1);
@@ -189,13 +194,16 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
     <div className="pb-24">
       {/* Restaurant Hero Banner */}
       <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-slate-900">
-        <img
+        <Image
           src={
             restaurant.coverImageUrl ||
             'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&auto=format&fit=crop&q=80'
           }
           alt={restaurant.name}
-          className="h-full w-full object-cover opacity-60"
+          fill
+          className="object-cover opacity-60"
+          priority
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
 
@@ -246,9 +254,9 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
       </div>
 
       {/* Info Bar */}
-      <div className="border-b border-slate-200 bg-white">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5">
-          <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-slate-600">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-semibold text-slate-600 dark:text-slate-300">
             <div className="flex items-center gap-6">
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-[#FF5A1F]" />
@@ -259,12 +267,12 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                 Delivery: ${restaurant.deliveryFee.toFixed(2)}
               </span>
               <span className="hidden md:flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-slate-400" />
+                <Info className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                 Min Order: ${restaurant.minimumOrder.toFixed(2)}
               </span>
             </div>
             {restaurant.phone && (
-              <span className="flex items-center gap-1.5 text-slate-500">
+              <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                 <Phone className="w-3.5 h-3.5" />
                 {restaurant.phone}
               </span>
@@ -274,14 +282,14 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
       </div>
 
       {/* Menu Categories Tab Navigation */}
-      <div className="sticky top-16 z-30 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 py-3">
+      <div className="sticky top-16 z-30 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 py-3">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveCategoryId('all')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
               activeCategoryId === 'all'
                 ? 'bg-[#FF5A1F] text-white shadow-sm shadow-[#FF5A1F]/30'
-                : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+                : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
             }`}
           >
             All Items ({foods.length})
@@ -293,7 +301,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                 activeCategoryId === c.id
                   ? 'bg-[#FF5A1F] text-white shadow-sm shadow-[#FF5A1F]/30'
-                  : 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300'
+                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
               {c.name}
@@ -306,10 +314,10 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-black text-slate-900">Menu Dishes</h2>
-            <p className="text-xs text-slate-500">Click on any dish to view its details and customer reviews</p>
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Menu Dishes</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Click on any dish to view its details and customer reviews</p>
           </div>
-          <span className="text-xs font-bold text-slate-400">
+          <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
             {filteredFoods.length} {filteredFoods.length === 1 ? 'item' : 'items'}
           </span>
         </div>
@@ -322,7 +330,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
               <div
                 key={food.id}
                 onClick={() => handleOpenFoodModal(food)}
-                className="group cursor-pointer rounded-3xl border border-slate-200/80 bg-white p-4 shadow-xs hover:shadow-lg hover:border-[#FF5A1F]/40 hover:-translate-y-0.5 transition-all flex gap-4 relative overflow-hidden"
+                className="group cursor-pointer rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-xs hover:shadow-lg hover:border-[#FF5A1F]/40 hover:-translate-y-0.5 transition-all flex gap-4 relative overflow-hidden"
               >
                 {/* Food Details */}
                 <div className="flex-1 flex flex-col justify-between">
@@ -332,20 +340,20 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                         {food.menuCategoryName || 'Specialty'}
                       </span>
                     </div>
-                    <h3 className="font-bold text-slate-900 text-sm group-hover:text-[#FF5A1F] transition-colors leading-snug">
+                    <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm group-hover:text-[#FF5A1F] transition-colors leading-snug">
                       {food.name}
                     </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-1">
                       {food.description}
                     </p>
                   </div>
 
                   <div className="mt-4 flex items-center justify-between">
                     <div>
-                      <span className="text-base font-black text-slate-900">
+                      <span className="text-base font-black text-slate-900 dark:text-slate-100">
                         ${food.price.toFixed(2)}
                       </span>
-                      <span className="text-[10px] text-slate-400 block font-medium group-hover:text-[#FF5A1F] transition-colors">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-medium group-hover:text-[#FF5A1F] transition-colors">
                         Click for details →
                       </span>
                     </div>
@@ -364,20 +372,22 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                         {inCart ? `Add (${inCart.quantity})` : 'Add'}
                       </Button>
                     ) : (
-                      <span className="text-xs font-semibold text-slate-400">Sold out</span>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">Sold out</span>
                     )}
                   </div>
                 </div>
 
                 {/* Food Image */}
-                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
-                  <img
+                <div className="relative h-28 w-28 shrink-0 overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
+                  <Image
                     src={
                       food.imageUrl ||
                       'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&auto=format&fit=crop&q=80'
                     }
                     alt={food.name}
-                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="112px"
                   />
                   {food.rating ? (
                     <span className="absolute bottom-1.5 right-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-xs flex items-center gap-0.5">
@@ -393,23 +403,23 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
 
         {/* Customer Reviews Section */}
         {reviews.length > 0 && (
-          <div className="mt-14 pt-8 border-t border-slate-200">
-            <h2 className="text-xl font-bold text-slate-900 mb-4">Customer Reviews</h2>
+          <div className="mt-14 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">Customer Reviews</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {reviews.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 space-y-2"
+                  className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800">{r.customerName}</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{r.customerName}</span>
                     <div className="flex items-center text-amber-400 text-xs font-bold gap-0.5">
                       <Star className="w-3 h-3 fill-amber-400" />
                       <span>{r.rating}</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-600 italic">&ldquo;{r.comment}&rdquo;</p>
-                  <span className="text-[10px] text-slate-400 block">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 italic">&ldquo;{r.comment}&rdquo;</p>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
                     {new Date(r.createdAt).toLocaleDateString()}
                   </span>
                 </div>
@@ -457,8 +467,8 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
         description="Your cart already contains items from another restaurant."
       >
         <div className="space-y-4 pt-2">
-          <p className="text-xs text-slate-600 leading-relaxed">
-            You can only order from one restaurant at a time. Do you want to clear your current cart and add <span className="font-bold text-slate-900">{pendingFoodItem?.name}</span>?
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            You can only order from one restaurant at a time. Do you want to clear your current cart and add <span className="font-bold text-slate-900 dark:text-slate-100">{pendingFoodItem?.name}</span>?
           </p>
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button

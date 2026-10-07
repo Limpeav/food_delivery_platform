@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
           <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
             <li><strong>Account Profile:</strong> Your name, email address, phone number, and password credentials.</li>
             <li><strong>Delivery Addresses:</strong> Street coordinates, building details, and delivery instructions to route couriers accurately.</li>
-            <li><strong>Order Records:</strong> Items ordered, merchant details, total amounts, and payment selection (Cash on Delivery or Online Payment).</li>
+            <li><strong>Order Records:</strong> Items ordered, merchant details, total amounts, and payment method (Cash on Delivery).</li>
           </ul>
         </section>
 

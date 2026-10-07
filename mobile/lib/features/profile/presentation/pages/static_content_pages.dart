@@ -103,8 +103,8 @@ class HelpCenterPage extends StatelessWidget {
               'You can cancel your order as long as it is still in "PENDING" or "CONFIRMED" status. Once food preparation begins, orders cannot be cancelled.',
             ),
             _buildFaqItem(
-              'How does KHQR Online Payment work?',
-              'During checkout, select KHQR Online Payment. You will be provided with an official Bakong KHQR code. Scan with any Cambodian banking app (ABA, Wing, ACLEDA, etc.). The system verifies transaction status automatically.',
+              'What payment methods are supported?',
+              'Cravery currently supports Cash on Delivery (COD). You can pay the courier directly in cash when your order arrives at your doorstep.',
             ),
             _buildFaqItem(
               'What if my food arrives cold or items are missing?',
@@ -219,8 +219,8 @@ class PrivacyPolicyPage extends StatelessWidget {
                 'Cravery requests device location access only to recommend nearby restaurants and provide precision drop-off locations to assigned delivery drivers.',
               ),
               _buildPolicySection(
-                '4. Payment Information Security',
-                'We do not store your raw bank credentials or credit card numbers. All electronic payments occur via encrypted Bakong KHQR protocols and secured Spring Boot REST services.',
+                '4. Payment Security',
+                'Cravery operates on Cash on Delivery (COD). We do not collect or store your banking credentials or card details on our servers.',
               ),
               _buildPolicySection(
                 '5. Contact Data Privacy Officer',

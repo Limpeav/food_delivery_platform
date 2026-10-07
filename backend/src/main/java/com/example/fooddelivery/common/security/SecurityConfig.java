@@ -69,11 +69,54 @@ public class SecurityConfig {
         };
     }
 
+    @org.springframework.beans.factory.annotation.Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+        java.util.List<String> allowedOrigins = new java.util.ArrayList<>(java.util.List.of(
+                "http://localhost:3000",
+                "http://localhost:8080",
+                "http://localhost",
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:8080"
+        ));
+        if (frontendUrl != null && !frontendUrl.isBlank() && !allowedOrigins.contains(frontendUrl)) {
+            allowedOrigins.add(frontendUrl.trim());
+        }
+        configuration.setAllowedOrigins(allowedOrigins);
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(java.util.List.of(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "X-Requested-With",
+                "Idempotency-Key",
+                "Cache-Control"
+        ));
+        configuration.setExposedHeaders(java.util.List.of(
+                "Authorization",
+                "Idempotent-Replay"
+        ));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .frameOptions(frame -> frame.sameOrigin())
+                        .contentTypeOptions(Customizer.withDefaults())
+                        .xssProtection(Customizer.withDefaults())
+                )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .securityContext(sc -> sc.securityContextRepository(securityContextRepository()))
                 .exceptionHandling(ex -> ex

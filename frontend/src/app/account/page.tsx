@@ -17,6 +17,7 @@ import {
   KeyRound,
   CheckCircle2,
   AlertCircle,
+  Receipt,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { addressService } from '@/services/addressService';
@@ -27,6 +28,7 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
 import { Loading } from '@/components/ui/Loading';
+import { LocationPicker, LocationPickerValue } from '@/components/ui/LocationPicker';
 
 export default function AccountDashboardPage() {
   const router = useRouter();
@@ -42,6 +44,10 @@ export default function AccountDashboardPage() {
   const [phone, setPhone] = useState('');
   const [addressLine, setAddressLine] = useState('');
   const [city, setCity] = useState('Phnom Penh');
+  const [location, setLocation] = useState<LocationPickerValue>({
+    lat: 11.5564,
+    lng: 104.9282,
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -86,8 +92,8 @@ export default function AccountDashboardPage() {
         phoneNumber: phone,
         addressLine,
         city,
-        latitude: 11.5564,
-        longitude: 104.9282,
+        latitude: location.lat,
+        longitude: location.lng,
         isDefault: addresses.length === 0,
       });
       setAddresses([...addresses, created]);
@@ -178,13 +184,22 @@ export default function AccountDashboardPage() {
             </div>
           </div>
 
-          <Link
-            href="/forgot-password"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-            Reset Password
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/account/payments"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <Receipt className="w-3.5 h-3.5 text-slate-400" />
+              Payment History
+            </Link>
+            <Link
+              href="/forgot-password"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-slate-400" />
+              Reset Password
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -324,39 +339,61 @@ export default function AccountDashboardPage() {
         description="Enter street address and recipient details"
       >
         <form onSubmit={handleCreateAddress} className="space-y-4 pt-2">
-          <Input
-            label="Label"
-            placeholder="Home, Office, Apartment..."
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            required
-          />
-          <Input
-            label="Recipient Name"
-            placeholder="Recipient full name"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-            required
-          />
-          <Input
-            label="Phone Number"
-            placeholder="+855 12 345 678"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
+          {/* Map Location Picker */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              Pin Delivery Location on Map
+            </label>
+            <LocationPicker
+              value={location}
+              onChange={(loc) => {
+                setLocation(loc);
+                if (loc.address && !addressLine) {
+                  setAddressLine(loc.address);
+                }
+              }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Label"
+              placeholder="Home, Office, Apartment..."
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              required
+            />
+            <Input
+              label="City"
+              placeholder="Phnom Penh"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Recipient Name"
+              placeholder="Recipient full name"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              required
+            />
+            <Input
+              label="Phone Number"
+              placeholder="+855 12 345 678"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+            />
+          </div>
+
           <Input
             label="Street Address / Building"
             placeholder="House #24, Street 302"
             value={addressLine}
             onChange={(e) => setAddressLine(e.target.value)}
-            required
-          />
-          <Input
-            label="City"
-            placeholder="Phnom Penh"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
             required
           />
           <div className="pt-2 flex justify-end gap-2">

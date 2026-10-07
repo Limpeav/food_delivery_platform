@@ -26,7 +26,11 @@ public class PaymentService {
 
     @Transactional
     public Payment createInitialPayment(Order order, PaymentMethod paymentMethod) {
-        String txnRef = "SIM-TXN-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        if (paymentMethod == null) {
+            paymentMethod = PaymentMethod.CASH_ON_DELIVERY;
+        }
+        String prefix = (paymentMethod == PaymentMethod.ONLINE_PAYMENT) ? "SIM-TXN-" : "COD-";
+        String txnRef = prefix + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         PaymentStatus initialStatus = (paymentMethod == PaymentMethod.ONLINE_PAYMENT)
                 ? PaymentStatus.SUCCESS // Simulated online payment success
                 : PaymentStatus.PENDING; // COD collected upon delivery
@@ -43,6 +47,11 @@ public class PaymentService {
         log.info("Payment created for order {}: method={}, status={}, txnRef={}",
                 order.getId(), paymentMethod, initialStatus, txnRef);
         return saved;
+    }
+
+    @Transactional
+    public Payment createInitialPayment(Order order) {
+        return createInitialPayment(order, PaymentMethod.CASH_ON_DELIVERY);
     }
 
     @Transactional(readOnly = true)

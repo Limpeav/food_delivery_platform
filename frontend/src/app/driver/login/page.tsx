@@ -143,7 +143,7 @@ export default function DriverLoginPage() {
                   type="email"
                   autoComplete="email"
                   placeholder="driver@gmail.com"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-10 pr-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 pl-10 pr-3.5 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
                   {...register('email')}
                 />
               </div>
@@ -168,7 +168,7 @@ export default function DriverLoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-10 pr-10 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-800 pl-10 pr-10 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
                   {...register('password')}
                 />
                 <button

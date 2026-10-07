@@ -74,23 +74,23 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
       <div
-        className="w-full max-w-lg rounded-3xl bg-white p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-6"
+        className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 p-6 sm:p-7 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 text-[#FF5A1F] border border-orange-100">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-[#FF5A1F] border border-orange-100 dark:border-orange-900/30">
               <Cookie className="h-5 w-5" />
             </div>
             <div>
               <h3
                 id="cookie-preferences-title"
-                className="text-lg font-bold text-slate-900"
+                className="text-lg font-bold text-slate-900 dark:text-white"
               >
                 Cookie Preferences
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Control how Cravery stores cookies on your device
               </p>
             </div>
@@ -98,7 +98,7 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
             aria-label="Close cookie preferences"
           >
             <X className="w-5 h-5" />
@@ -106,17 +106,17 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
         </div>
 
         {/* Options List */}
-        <div className="space-y-3 divide-y divide-slate-100 text-xs">
+        <div className="space-y-3 divide-y divide-slate-100 dark:divide-slate-800 text-xs">
           {/* Essential */}
           <div className="pt-2 flex items-start justify-between gap-4">
             <div className="space-y-0.5 pr-2">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-800">Essential Cookies</span>
-                <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">
+                <span className="font-bold text-slate-800 dark:text-slate-200">Essential Cookies</span>
+                <span className="rounded-md bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
                   Required
                 </span>
               </div>
-              <p className="text-slate-500 leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
                 Necessary for session authentication, shopping cart items, and fraud prevention. These cannot be disabled.
               </p>
             </div>
@@ -125,7 +125,7 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
                 type="checkbox"
                 checked={true}
                 disabled
-                className="h-4 w-4 rounded text-[#FF5A1F] border-slate-300 cursor-not-allowed opacity-75"
+                className="h-4 w-4 rounded text-[#FF5A1F] border-slate-300 dark:border-slate-700 cursor-not-allowed opacity-75"
                 aria-label="Essential cookies required"
               />
             </div>
@@ -134,8 +134,8 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
           {/* Functional */}
           <div className="pt-3 flex items-start justify-between gap-4">
             <div className="space-y-0.5 pr-2">
-              <span className="font-bold text-slate-800">Functional & Address Preferences</span>
-              <p className="text-slate-500 leading-relaxed">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Functional &amp; Address Preferences</span>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
                 Remember your selected delivery location, recent order filters, and notification settings for convenience.
               </p>
             </div>
@@ -147,7 +147,7 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
                 onChange={(e) =>
                   setPreferences({ ...preferences, functional: e.target.checked })
                 }
-                className="h-4 w-4 rounded accent-[#FF5A1F] border-slate-300 cursor-pointer"
+                className="h-4 w-4 rounded accent-[#FF5A1F] border-slate-300 dark:border-slate-700 cursor-pointer"
               />
             </div>
           </div>
@@ -155,8 +155,8 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
           {/* Analytics */}
           <div className="pt-3 flex items-start justify-between gap-4">
             <div className="space-y-0.5 pr-2">
-              <span className="font-bold text-slate-800">Performance & Analytics</span>
-              <p className="text-slate-500 leading-relaxed">
+              <span className="font-bold text-slate-800 dark:text-slate-200">Performance &amp; Analytics</span>
+              <p className="text-slate-500 dark:text-slate-400 leading-relaxed">
                 Collect aggregated, anonymous metrics to help us optimize delivery route speeds and page loading times.
               </p>
             </div>
@@ -168,7 +168,7 @@ export const CookiePreferencesModal: React.FC<CookiePreferencesModalProps> = ({
                 onChange={(e) =>
                   setPreferences({ ...preferences, analytics: e.target.checked })
                 }
-                className="h-4 w-4 rounded accent-[#FF5A1F] border-slate-300 cursor-pointer"
+                className="h-4 w-4 rounded accent-[#FF5A1F] border-slate-300 dark:border-slate-700 cursor-pointer"
               />
             </div>
           </div>

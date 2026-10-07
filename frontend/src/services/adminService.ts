@@ -19,10 +19,11 @@ export const adminService = {
     return res.data.data;
   },
 
-  async getUsers(params?: { role?: Role; page?: number; size?: number }): Promise<PageResponse<User>> {
+  async getUsers(params?: { role?: Role; search?: string; page?: number; size?: number }): Promise<PageResponse<User>> {
     const res = await api.get<ApiResponse<PageResponse<User>>>('/admin/users', { params });
     return res.data.data;
   },
+
 
   async updateUserStatus(id: number, status: UserStatus): Promise<User> {
     const res = await api.patch<ApiResponse<User>>(`/admin/users/${id}/status`, null, {

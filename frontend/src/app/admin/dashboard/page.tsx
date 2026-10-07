@@ -46,22 +46,22 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
           Platform Overview
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Real-time enterprise metrics, marketplace revenue, and partner approval queues
         </p>
       </div>
 
       {/* Pending Approvals Notice */}
       {((stats?.pendingRestaurants ?? 0) > 0 || (stats?.pendingDrivers ?? 0) > 0) && (
-        <div className="rounded-3xl bg-amber-50 border border-amber-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-6 h-6 text-amber-600 shrink-0" />
+            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
             <div>
-              <h3 className="text-sm font-bold text-amber-900">Partner Applications Pending Approval</h3>
-              <p className="text-xs text-amber-700 mt-0.5">
+              <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">Partner Applications Pending Approval</h3>
+              <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
                 {stats?.pendingRestaurants ?? 0} restaurant(s) and {stats?.pendingDrivers ?? 0} driver(s) awaiting your review.
               </p>
             </div>
@@ -88,56 +88,56 @@ export default function AdminDashboardPage() {
 
       {/* Platform KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Users</p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Users</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalCustomers ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Registered customers</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Registered customers</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <Users className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Restaurants</p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Restaurants</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalRestaurants ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Active merchant stores</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Active merchant stores</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <Store className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Delivery Fleet</p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Delivery Fleet</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalDrivers ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Active registered riders</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Active registered riders</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Bike className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Orders</p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Orders</p>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalOrders ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Today: {stats?.todayOrders ?? 0} orders
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-[#FF5A1F] dark:text-[#FF7A45] flex items-center justify-center">
             <ShoppingBag className="w-6 h-6" />
           </div>
         </div>
@@ -145,42 +145,42 @@ export default function AdminDashboardPage() {
 
       {/* Financial Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Today&apos;s GMV</p>
-          <h3 className="text-3xl font-black text-emerald-600">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Today&apos;s GMV</p>
+          <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
             ${stats?.todayRevenue?.toFixed(2) ?? '0.00'}
           </h3>
-          <p className="text-xs text-slate-500">Gross food and delivery volume today</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Gross food and delivery volume today</p>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Monthly GMV</p>
-          <h3 className="text-3xl font-black text-slate-900">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Monthly GMV</p>
+          <h3 className="text-3xl font-black text-slate-900 dark:text-white">
             ${stats?.monthlyRevenue?.toFixed(2) ?? '0.00'}
           </h3>
-          <p className="text-xs text-slate-500">Trailing 30-day processed transactions</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Trailing 30-day processed transactions</p>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Lifetime Platform Volume</p>
-          <h3 className="text-3xl font-black text-[#FF5A1F]">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Lifetime Platform Volume</p>
+          <h3 className="text-3xl font-black text-[#FF5A1F] dark:text-[#FF7A45]">
             ${stats?.totalRevenue?.toFixed(2) ?? '0.00'}
           </h3>
-          <p className="text-xs text-slate-500">Cumulative platform order sales</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Cumulative platform order sales</p>
         </div>
       </div>
 
       {/* Order Status Breakdown Distribution */}
       {stats?.orderStatusDistribution && Object.keys(stats.orderStatusDistribution).length > 0 && (
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4">
-          <h2 className="text-base font-bold text-slate-900">Order Status Distribution</h2>
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Order Status Distribution</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
             {Object.entries(stats.orderStatusDistribution).map(([status, count]) => (
-              <div key={status} className="p-3 rounded-2xl bg-slate-50 border border-slate-100 text-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block truncate">
+              <div key={status} className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60 text-center">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 block truncate">
                   {status.replace(/_/g, ' ')}
                 </span>
-                <span className="text-xl font-black text-slate-900 mt-1 block">
+                <span className="text-xl font-black text-slate-900 dark:text-white mt-1 block">
                   {count}
                 </span>
               </div>

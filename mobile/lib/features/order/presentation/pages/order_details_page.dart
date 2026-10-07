@@ -565,16 +565,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      order.paymentMethod == 'ONLINE_PAYMENT'
-                          ? Icons.qr_code_rounded
-                          : Icons.payments_outlined,
+                    const Icon(
+                      Icons.payments_outlined,
                       size: 20,
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: AppDimensions.sm),
                     Text(
-                      order.paymentMethod == 'ONLINE_PAYMENT' ? 'KHQR Online Payment' : 'Cash on Delivery',
+                      'Cash on Delivery',
                       style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ],

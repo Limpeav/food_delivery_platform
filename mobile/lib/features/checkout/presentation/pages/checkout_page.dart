@@ -234,12 +234,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
         if (state is CheckoutOrderSuccess) {
           // Clear cart on successful order placement
           context.read<CartBloc>().add(CartResetRequested());
-
-          if (state.order.paymentMethod == 'ONLINE_PAYMENT') {
-            context.go(RouteNames.paymentPath(state.order.id));
-          } else {
-            context.go(RouteNames.orderConfirmationPath(state.order.id));
-          }
+          context.go(RouteNames.orderConfirmationPath(state.order.id));
         } else if (state is CheckoutReady && state.selectedAddress != null && _showNewAddressForm) {
           // Address was saved successfully — collapse the form
           _clearNewAddressForm();
@@ -885,25 +880,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           title: 'Cash on Delivery',
                           subtitle: 'Pay when your food arrives',
                           icon: Icons.payments_outlined,
-                          isSelected: state.paymentMethod == 'CASH_ON_DELIVERY',
-                          onTap: () {
-                            context.read<CheckoutBloc>().add(
-                                  const CheckoutPaymentMethodSelected('CASH_ON_DELIVERY'),
-                                );
-                          },
-                        ),
-                        const SizedBox(height: 6),
-                        _buildPaymentTile(
-                          context: context,
-                          title: 'KHQR / Online Payment',
-                          subtitle: 'Scan QR code instantly with any banking app',
-                          icon: Icons.qr_code_scanner_rounded,
-                          isSelected: state.paymentMethod == 'ONLINE_PAYMENT',
-                          onTap: () {
-                            context.read<CheckoutBloc>().add(
-                                  const CheckoutPaymentMethodSelected('ONLINE_PAYMENT'),
-                                );
-                          },
+                          isSelected: true,
+                          onTap: () {},
                         ),
                       ],
                     ),

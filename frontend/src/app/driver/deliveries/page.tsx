@@ -20,6 +20,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { DeliveryTrackingMap } from '@/components/ui/DeliveryTrackingMap';
 
 export default function DriverDeliveriesPage() {
   const router = useRouter();
@@ -154,6 +155,29 @@ export default function DriverDeliveriesPage() {
 
       {/* Main Delivery Card */}
       <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        {/* Interactive Delivery Route Map */}
+        <DeliveryTrackingMap
+          restaurantLocation={{
+            lat: delivery.restaurantLatitude || 11.5564,
+            lng: delivery.restaurantLongitude || 104.9282,
+            name: delivery.restaurantName,
+            address: delivery.restaurantAddress,
+          }}
+          deliveryLocation={{
+            lat: delivery.deliveryLatitude || 11.5621,
+            lng: delivery.deliveryLongitude || 104.9160,
+            name: delivery.customerName,
+            address: delivery.deliveryAddress,
+          }}
+          driverLocation={{
+            lat,
+            lng,
+            name: 'You (Courier)',
+          }}
+          status={delivery.status}
+          height={320}
+        />
+
         {/* Step 1 & 2 Directions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
           {/* Pickup */}

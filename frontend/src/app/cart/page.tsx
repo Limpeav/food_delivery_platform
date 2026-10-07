@@ -52,10 +52,10 @@ export default function CartPage() {
       {/* Title */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
             Shopping Cart
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Review your selected dishes before proceeding to checkout
           </p>
         </div>
@@ -71,12 +71,12 @@ export default function CartPage() {
         {/* Cart Items List */}
         <div className="lg:col-span-8 space-y-4">
           {/* Restaurant Banner */}
-          <div className="flex items-center justify-between rounded-2xl border border-orange-100 bg-[#FFF1EB]/50 p-4">
+          <div className="flex items-center justify-between rounded-2xl border border-orange-100 dark:border-orange-950/60 bg-[#FFF1EB]/50 dark:bg-orange-950/30 p-4">
             <div className="flex items-center gap-2.5">
               <Store className="w-5 h-5 text-[#FF5A1F]" />
               <div>
-                <p className="text-xs text-slate-500 font-medium">Ordering from</p>
-                <h3 className="text-sm font-bold text-slate-900">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Ordering from</p>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   {cart?.restaurantName || 'Restaurant'}
                 </h3>
               </div>
@@ -93,7 +93,7 @@ export default function CartPage() {
 
           {/* Minimum Order Warning */}
           {!minOrderMet && (
-            <div className="flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 font-medium">
+            <div className="flex items-center gap-2 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-800 dark:text-amber-300 font-medium">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
                 Minimum order is ${cart?.restaurantMinimumOrder?.toFixed(2)}. Add $
@@ -103,7 +103,7 @@ export default function CartPage() {
           )}
 
           {/* Items */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-xs divide-y divide-slate-100">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs divide-y divide-slate-100 dark:divide-slate-800">
             {items.map((item) => (
               <div key={item.id} className="p-4 sm:p-5 flex items-center gap-4">
                 {item.foodImageUrl && (
@@ -115,28 +115,28 @@ export default function CartPage() {
                 )}
 
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-slate-900 text-sm truncate">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                     {item.foodName}
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     ${item.unitPrice.toFixed(2)} each
                   </p>
                 </div>
 
                 {/* Quantity Controller */}
-                <div className="flex items-center gap-2 border border-slate-200 rounded-xl p-1 bg-slate-50">
+                <div className="flex items-center gap-2 border border-slate-200 dark:border-slate-700 rounded-xl p-1 bg-slate-50 dark:bg-slate-800">
                   <button
                     onClick={() => updateItem(item.id, item.quantity - 1)}
-                    className="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                    className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
-                  <span className="w-6 text-center text-xs font-bold text-slate-800">
+                  <span className="w-6 text-center text-xs font-bold text-slate-800 dark:text-slate-200">
                     {item.quantity}
                   </span>
                   <button
                     onClick={() => updateItem(item.id, item.quantity + 1)}
-                    className="p-1 rounded-lg hover:bg-white text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                    className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -144,7 +144,7 @@ export default function CartPage() {
 
                 {/* Subtotal */}
                 <div className="text-right min-w-[60px]">
-                  <span className="text-sm font-black text-slate-900">
+                  <span className="text-sm font-black text-slate-900 dark:text-slate-100">
                     ${item.subtotal.toFixed(2)}
                   </span>
                 </div>
@@ -152,7 +152,7 @@ export default function CartPage() {
                 {/* Remove button */}
                 <button
                   onClick={() => removeItem(item.id)}
-                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                   title="Remove item"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -163,23 +163,23 @@ export default function CartPage() {
         </div>
 
         {/* Order Summary Card */}
-        <div className="lg:col-span-4 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-6">
-          <h2 className="text-base font-bold text-slate-900">Order Summary</h2>
+        <div className="lg:col-span-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-6">
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Order Summary</h2>
 
-          <div className="space-y-3 text-xs text-slate-600">
+          <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex justify-between">
               <span>Subtotal ({cart?.totalItems} items)</span>
-              <span className="font-semibold text-slate-800">
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
                 ${cart?.subtotal.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
               <span>Estimated Delivery Fee</span>
-              <span className="font-semibold text-slate-800">
+              <span className="font-semibold text-slate-800 dark:text-slate-200">
                 ${cart?.deliveryFee.toFixed(2)}
               </span>
             </div>
-            <div className="border-t border-slate-100 pt-3 flex justify-between text-sm font-bold text-slate-900">
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between text-sm font-bold text-slate-900 dark:text-slate-100">
               <span>Estimated Total</span>
               <span className="text-base font-black text-[#FF5A1F]">
                 ${cart?.totalAmount.toFixed(2)}

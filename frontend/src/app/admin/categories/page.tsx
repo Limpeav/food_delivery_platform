@@ -8,7 +8,9 @@ import { RestaurantCategory } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Loading } from '@/components/ui/Loading';
+import { toast } from '@/components/ui/Toast';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<RestaurantCategory[]>([]);
@@ -18,6 +20,8 @@ export default function AdminCategoriesPage() {
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [deleteCategoryId, setDeleteCategoryId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadCategories();
@@ -28,7 +32,8 @@ export default function AdminCategoriesPage() {
       setLoading(true);
       const res = await restaurantService.getCategories();
       setCategories(res);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.response?.status === 401) return;
       console.error(err);
     } finally {
       setLoading(false);
@@ -58,13 +63,19 @@ export default function AdminCategoriesPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
+  const handleDelete = async () => {
+    if (!deleteCategoryId) return;
+    setDeleting(true);
     try {
-      await adminService.deleteCategory(id);
-      setCategories(categories.filter((c) => c.id !== id));
-    } catch (err) {
+      await adminService.deleteCategory(deleteCategoryId);
+      setCategories(categories.filter((c) => c.id !== deleteCategoryId));
+      toast.success('Category deleted successfully');
+      setDeleteCategoryId(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete category');
       console.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -76,10 +87,10 @@ export default function AdminCategoriesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Restaurant Cuisine Categories
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Organize merchant discovery with cuisine tags and icons
           </p>
         </div>
@@ -98,10 +109,10 @@ export default function AdminCategoriesPage() {
         {categories.map((c) => (
           <div
             key={c.id}
-            className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between gap-3"
+            className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between gap-3"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 overflow-hidden flex items-center justify-center shrink-0 text-xl font-bold text-[#FF5A1F]">
+              <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/60 overflow-hidden flex items-center justify-center shrink-0 text-xl font-bold text-[#FF5A1F] dark:text-[#FF7A45]">
                 {c.imageUrl ? (
                   <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
                 ) : (
@@ -109,16 +120,16 @@ export default function AdminCategoriesPage() {
                 )}
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">{c.name}</h3>
-                <p className="text-xs text-slate-500 line-clamp-1">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{c.name}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
                   {c.description || 'Cuisine tag'}
                 </p>
               </div>
             </div>
 
             <button
-              onClick={() => handleDelete(c.id)}
-              className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 transition-colors cursor-pointer"
+              onClick={() => setDeleteCategoryId(c.id)}
+              className="p-2 text-slate-400 hover:text-rose-600 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -173,6 +184,19 @@ export default function AdminCategoriesPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteCategoryId !== null}
+        onClose={() => { if (!deleting) setDeleteCategoryId(null); }}
+        onConfirm={handleDelete}
+        isLoading={deleting}
+        variant="danger"
+        title="Delete Cuisine Category?"
+        description="Are you sure you want to delete this category? Restaurants associated with it may lose their categorization."
+        confirmText="Yes, Delete Category"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

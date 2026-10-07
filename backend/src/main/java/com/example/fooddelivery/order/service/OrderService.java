@@ -169,7 +169,9 @@ public class OrderService {
         savedOrder.setItems(orderItems);
 
         // Create initial Payment
-        Payment payment = paymentService.createInitialPayment(savedOrder, request.getPaymentMethod());
+        Payment payment = (request.getPaymentMethod() != null)
+                ? paymentService.createInitialPayment(savedOrder, request.getPaymentMethod())
+                : paymentService.createInitialPayment(savedOrder);
 
         // Clear customer cart
         cartService.clearCart(customerId);

@@ -17,10 +17,10 @@ export const Card: React.FC<CardProps> = ({
       className={`rounded-2xl border transition-all duration-200 ${
         glass
           ? 'glass-panel shadow-sm'
-          : 'bg-white border-slate-200/80 shadow-xs'
+          : 'bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-xs dark:shadow-slate-950/40'
       } ${
         hover
-          ? 'hover:shadow-md hover:border-slate-300 hover:-translate-y-0.5'
+          ? 'hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700 hover:-translate-y-0.5'
           : ''
       } ${className}`}
       {...props}
@@ -36,7 +36,7 @@ export const CardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => {
   return (
-    <div className={`p-5 pb-3 border-b border-slate-100 ${className}`} {...props}>
+    <div className={`p-5 pb-3 border-b border-slate-100 dark:border-slate-800 ${className}`} {...props}>
       {children}
     </div>
   );
@@ -48,7 +48,7 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({
   ...props
 }) => {
   return (
-    <h3 className={`font-semibold text-slate-900 text-lg tracking-tight ${className}`} {...props}>
+    <h3 className={`font-semibold text-slate-900 dark:text-white text-lg tracking-tight ${className}`} {...props}>
       {children}
     </h3>
   );
@@ -60,7 +60,7 @@ export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement
   ...props
 }) => {
   return (
-    <p className={`text-xs text-slate-500 mt-1 ${className}`} {...props}>
+    <p className={`text-xs text-slate-500 dark:text-slate-400 mt-1 ${className}`} {...props}>
       {children}
     </p>
   );
@@ -84,7 +84,7 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   ...props
 }) => {
   return (
-    <div className={`p-5 pt-3 border-t border-slate-100 flex items-center justify-between ${className}`} {...props}>
+    <div className={`p-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between ${className}`} {...props}>
       {children}
     </div>
   );

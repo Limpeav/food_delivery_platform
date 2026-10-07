@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
+import { subscribeToAvailableDeliveries } from '@/lib/websocket';
 
 export default function DriverDashboardPage() {
   const router = useRouter();
@@ -37,8 +38,18 @@ export default function DriverDashboardPage() {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadDeliveries, 7000);
-    return () => clearInterval(interval);
+
+    // Instant real-time dispatch listener via WebSocket
+    const unsubscribe = subscribeToAvailableDeliveries((payload: any) => {
+      console.log('Real-time delivery job alert via WebSocket:', payload);
+      loadDeliveries();
+    });
+
+    const interval = setInterval(loadDeliveries, 15000); // Low-frequency fallback
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   const loadData = async () => {

@@ -23,6 +23,11 @@ export const authService = {
     return res.data.data;
   },
 
+  async customerGoogleLogin(data: { idToken: string }): Promise<AuthResponse> {
+    const res = await api.post<ApiResponse<AuthResponse>>('/auth/customer/google', data);
+    return res.data.data;
+  },
+
   async restaurantLogin(data: { email: string; password: string }): Promise<AuthResponse> {
     const res = await api.post<ApiResponse<AuthResponse>>('/auth/restaurant/login', data);
     return res.data.data;
@@ -67,6 +72,14 @@ export const authService = {
   // Token refresh
   async refresh(refreshToken: string): Promise<AuthResponse> {
     const res = await api.post<ApiResponse<AuthResponse>>('/auth/refresh', { refreshToken });
+    return res.data.data;
+  },
+
+  // Customer onboarding: complete Cambodian phone number
+  async completeProfile(phoneNumber: string): Promise<User> {
+    const res = await api.patch<ApiResponse<User>>('/auth/customer/complete-profile', {
+      phoneNumber,
+    });
     return res.data.data;
   },
 

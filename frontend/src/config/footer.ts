@@ -13,7 +13,7 @@ export const footerBrand = {
   benefits: [
     {
       icon: 'shield',
-      text: 'Secure online & cash payments',
+      text: 'Secure cash on delivery',
     },
     {
       icon: 'clock',
@@ -70,13 +70,7 @@ export const supportedPaymentMethods: PaymentMethodConfig[] = [
     id: 'CASH_ON_DELIVERY',
     name: 'Cash on Delivery',
     badgeText: 'Cash on Delivery',
-    description: 'Pay cash upon arrival',
-  },
-  {
-    id: 'ONLINE_PAYMENT',
-    name: 'Online Payment',
-    badgeText: 'Online Card / QR',
-    description: 'Instant mock card or digital QR checkout',
+    description: 'Pay cash to the courier upon arrival',
   },
 ];
 

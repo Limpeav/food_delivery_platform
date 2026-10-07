@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { restaurantService } from '@/services/restaurantService';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Loading } from '@/components/ui/Loading';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Restaurant } from '@/types';
 
 export default function RestaurantLayout({
@@ -73,6 +74,7 @@ export default function RestaurantLayout({
           </Link>
 
           <div className="flex items-center gap-3 text-xs">
+            <ThemeToggle />
             <Link
               href="/"
               className="hidden sm:inline-flex items-center gap-1 text-slate-400 hover:text-white transition-colors"
@@ -124,16 +126,16 @@ export default function RestaurantLayout({
   // Dedicated full-page review layout for /restaurant/pending
   if (pathname === '/restaurant/pending') {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-white">
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white">
         {/* Onboarding Header */}
-        <header className="border-b border-slate-200 bg-white px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
+        <header className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 sm:px-8 py-3.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-9 h-9 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-black shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
                 <Store className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-base font-black text-slate-900 tracking-tight">
+                <span className="text-base font-black text-slate-900 dark:text-white tracking-tight">
                   Cravery<span className="text-emerald-600">Partner</span>
                 </span>
                 <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold -mt-0.5">
@@ -141,31 +143,32 @@ export default function RestaurantLayout({
                 </span>
               </div>
             </Link>
-            <div className="hidden sm:block h-6 w-px bg-slate-200 mx-2" />
+            <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2" />
             <div className="hidden sm:block">
-              <h2 className="text-xs font-bold text-slate-900 leading-tight">
+              <h2 className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
                 {restaurant?.name || 'Restaurant Application'}
               </h2>
-              <span className="text-[10px] text-slate-500 font-medium">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                 Owner: {user.name} ({user.email})
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
               Under Review
             </span>
+            <ThemeToggle />
             <Link
               href="/"
-              className="hidden sm:inline-flex items-center gap-1 text-slate-500 hover:text-slate-800 transition-colors"
+              className="hidden sm:inline-flex items-center gap-1 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" /> Back to Food App
             </Link>
             <button
               onClick={() => logout()}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign Out
@@ -177,7 +180,7 @@ export default function RestaurantLayout({
         <main className="flex-1 flex flex-col">{children}</main>
 
         {/* Footer */}
-        <footer className="border-t border-slate-200 bg-white py-4 px-4 text-center text-xs text-slate-500">
+        <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-4 px-4 text-center text-xs text-slate-500 dark:text-slate-400">
           <p>© {new Date().getFullYear()} Cravery Partner Network. All restaurant applications undergo administrative review.</p>
         </footer>
       </div>
@@ -185,18 +188,18 @@ export default function RestaurantLayout({
   }
 
   return (
-    <div className="flex-1 flex bg-slate-50 min-h-screen">
+    <div className="h-screen w-full flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
       <Sidebar role="RESTAURANT_OWNER" isPending={isPending} />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Operational Bar */}
-        <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between shrink-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
               <Store className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 leading-tight">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
                 {restaurant?.name || 'Restaurant Management Console'}
               </h2>
               <span className="text-[10px] text-slate-400 font-medium">
@@ -206,23 +209,24 @@ export default function RestaurantLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {isPending ? (
               <Link
                 href="/restaurant/pending"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
               >
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                 Under Review
               </Link>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 Active Partner
               </span>
             )}
             <button
               onClick={() => logout()}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign Out
@@ -232,7 +236,7 @@ export default function RestaurantLayout({
 
         {/* Pending Approval Alert Banner (Requirement 4 & 14) */}
         {isPending && (
-          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-center justify-between gap-4 text-amber-900">
+          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-center justify-between gap-4 text-amber-900 shrink-0">
             <div className="flex items-start gap-3">
               <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div className="text-xs space-y-0.5">
@@ -253,8 +257,11 @@ export default function RestaurantLayout({
           </div>
         )}
 
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto max-w-7xl">
-          {children}
+        {/* Scrollable Right Side Content Only */}
+        <main className="flex-1 overflow-y-auto p-6 sm:p-8 min-w-0 w-full">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>

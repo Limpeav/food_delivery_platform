@@ -45,7 +45,8 @@ export default function AdminReportsPage() {
         setError(null);
         const data = await adminService.getDashboardStats();
         setStats(data);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.response?.status === 401) return;
         console.error('Failed to load dashboard stats:', err);
         setError('Failed to load financial report data. Please refresh the page or try again later.');
       } finally {
@@ -62,7 +63,8 @@ export default function AdminReportsPage() {
         setTimeSeriesError(null);
         const data = await orderService.getRevenueTimeSeries({ granularity });
         setTimeSeries(data);
-      } catch (err) {
+      } catch (err: any) {
+        if (err?.response?.status === 401) return;
         console.error('Failed to load revenue time series:', err);
         setTimeSeriesError('Failed to load revenue trend data. Please try switching granularity or refreshing.');
       } finally {
@@ -124,26 +126,26 @@ export default function AdminReportsPage() {
       {/* Page Title & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
             <TrendingUp className="w-7 h-7 text-[#FF5A1F]" />
             Financial Reports & Analytics
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Platform revenue reconciliation, take-rate analysis, merchant payouts, and unit economics
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Timeframe selector */}
-          <div className="bg-slate-100 p-1 rounded-2xl flex items-center gap-1 text-xs font-bold">
+          <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl flex items-center gap-1 text-xs font-bold">
             {(['today', 'monthly', 'lifetime'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeframe(t)}
                 className={`px-3 py-1.5 rounded-xl capitalize transition-all cursor-pointer ${
                   timeframe === t
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {t === 'today' ? 'Today' : t === 'monthly' ? 'Last 30 Days' : 'All Time'}
@@ -190,60 +192,60 @@ export default function AdminReportsPage() {
 
       {/* Main Revenue KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-2">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Gross Merchandise Value</span>
-            <div className="w-8 h-8 rounded-xl bg-orange-50 text-[#FF5A1F] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-950/60 text-[#FF5A1F] dark:text-[#FF7A45] flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <h3 className="text-3xl font-black text-slate-900">
+          <h3 className="text-3xl font-black text-slate-900 dark:text-white">
             ${selectedGmv.toFixed(2)}
           </h3>
-          <p className="text-[11px] text-slate-500">Total customer spending across all orders</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Total customer spending across all orders</p>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-2">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Platform Take (15% Net)</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <Percent className="w-4 h-4" />
             </div>
           </div>
-          <h3 className="text-3xl font-black text-emerald-600">
+          <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
             ${platformCommission.toFixed(2)}
           </h3>
-          <p className="text-[11px] text-emerald-600 font-medium">Platform gross profit retention</p>
+          <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">Platform gross profit retention</p>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-2">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-2">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Merchant Payouts (85%)</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <CreditCard className="w-4 h-4" />
             </div>
           </div>
-          <h3 className="text-3xl font-black text-slate-800">
+          <h3 className="text-3xl font-black text-slate-800 dark:text-slate-200">
             ${merchantPayouts.toFixed(2)}
           </h3>
-          <p className="text-[11px] text-slate-500">Disbursed to partner restaurant accounts</p>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">Disbursed to partner restaurant accounts</p>
         </div>
       </div>
 
       {/* Revenue & Volume Time Series Visualizer */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-[#FF5A1F]" />
               Revenue & Order Volume Trend
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Historical revenue and completed order frequency aggregated across time windows
             </p>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-bold">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl text-xs font-bold">
             {(['daily', 'weekly', 'monthly'] as const).map((g) => (
               <button
                 key={g}
@@ -251,8 +253,8 @@ export default function AdminReportsPage() {
                 onClick={() => setGranularity(g)}
                 className={`px-3 py-1.5 rounded-xl capitalize transition-all cursor-pointer ${
                   granularity === g
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
+                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
                 {g}
@@ -335,37 +337,37 @@ export default function AdminReportsPage() {
 
       {/* Network Scale & Supply Distribution */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs">
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Customer Base</span>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-black text-slate-900">{stats?.totalCustomers ?? 0}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{stats?.totalCustomers ?? 0}</span>
             <Users className="w-5 h-5 text-purple-500" />
           </div>
           <p className="text-[11px] text-slate-400 mt-1">Total registered consumer accounts</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs">
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Partner Restaurants</span>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-black text-slate-900">{stats?.totalRestaurants ?? 0}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{stats?.totalRestaurants ?? 0}</span>
             <Store className="w-5 h-5 text-emerald-500" />
           </div>
           <p className="text-[11px] text-slate-400 mt-1">{stats?.pendingRestaurants ?? 0} pending onboarding</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs">
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Active Couriers</span>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-black text-slate-900">{stats?.totalDrivers ?? 0}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{stats?.totalDrivers ?? 0}</span>
             <Bike className="w-5 h-5 text-blue-500" />
           </div>
           <p className="text-[11px] text-slate-400 mt-1">{stats?.pendingDrivers ?? 0} pending verification</p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs">
+        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Lifetime Orders</span>
           <div className="flex items-center justify-between mt-2">
-            <span className="text-2xl font-black text-slate-900">{stats?.totalOrders ?? 0}</span>
+            <span className="text-2xl font-black text-slate-900 dark:text-white">{stats?.totalOrders ?? 0}</span>
             <ShoppingBag className="w-5 h-5 text-[#FF5A1F]" />
           </div>
           <p className="text-[11px] text-slate-400 mt-1">{stats?.todayOrders ?? 0} placed today</p>
@@ -374,13 +376,13 @@ export default function AdminReportsPage() {
 
       {/* Order Status Distribution Table & Breakdown */}
       {stats?.orderStatusDistribution && (
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-6">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <PieChart className="w-5 h-5 text-purple-600" />
               Order Pipeline & Status Breakdown
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Live distribution of transaction states throughout the order fulfillment lifecycle
             </p>
           </div>
@@ -388,24 +390,24 @@ export default function AdminReportsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
                   <th className="pb-3">Order Status</th>
                   <th className="pb-3 text-right">Volume</th>
                   <th className="pb-3 text-right">Share of Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {Object.entries(stats.orderStatusDistribution).map(([status, count]) => {
                   const share = stats.totalOrders > 0 ? (count / stats.totalOrders) * 100 : 0;
                   return (
-                    <tr key={status} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3.5 font-bold text-slate-800">
+                    <tr key={status} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 font-bold text-slate-800 dark:text-slate-200">
                         {status.replace(/_/g, ' ')}
                       </td>
-                      <td className="py-3.5 text-right font-black text-slate-900">
+                      <td className="py-3.5 text-right font-black text-slate-900 dark:text-white">
                         {count.toLocaleString()}
                       </td>
-                      <td className="py-3.5 text-right font-semibold text-slate-500">
+                      <td className="py-3.5 text-right font-semibold text-slate-500 dark:text-slate-400">
                         {share.toFixed(1)}%
                       </td>
                     </tr>

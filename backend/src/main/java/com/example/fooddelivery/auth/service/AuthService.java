@@ -225,10 +225,11 @@ public class AuthService {
                 log.info("Linked existing customer email {} with Google Subject {}", email, googleInfo.getSubject());
             } else {
                 // Provision new CUSTOMER user
+                String randomPassword = java.util.UUID.randomUUID().toString();
                 user = User.builder()
                         .name(googleInfo.getName())
                         .email(email)
-                        .password(null)
+                        .password(passwordEncoder.encode(randomPassword))
                         .role(Role.CUSTOMER)
                         .status(UserStatus.ACTIVE)
                         .googleSubject(googleInfo.getSubject())

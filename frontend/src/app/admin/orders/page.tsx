@@ -29,7 +29,8 @@ export default function AdminOrdersPage() {
       setOrders(res.content);
       setTotalPages(res.totalPages || 0);
       setTotalElements(res.totalElements || 0);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.response?.status === 401) return;
       console.error(err);
     } finally {
       setLoading(false);
@@ -55,10 +56,10 @@ export default function AdminOrdersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
           Global Orders Ledger
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
           Complete cross-merchant audit trail of all transactions and fulfillment statuses
         </p>
       </div>
@@ -72,12 +73,12 @@ export default function AdminOrdersPage() {
           description="Platform orders will be listed here as customers order."
         />
       ) : (
-        <div className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-xs divide-y divide-slate-100">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs divide-y divide-slate-100 dark:divide-slate-800">
           {orders.map((o) => (
             <div key={o.id} className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-bold text-slate-900">
+                  <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                     #{o.id.toString().padStart(6, '0')}
                   </span>
                   <Badge variant={getStatusVariant(o.status)} size="sm">
@@ -88,18 +89,18 @@ export default function AdminOrdersPage() {
                   </span>
                 </div>
 
-                <p className="text-xs font-bold text-slate-800">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   {o.restaurantName} → {o.customerName || 'Customer'}
                 </p>
 
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {o.items.map((i) => `${i.quantity}x ${i.foodName}`).join(', ')}
                 </p>
               </div>
 
               <div className="flex items-center gap-4 self-end sm:self-center">
                 <div className="text-right">
-                  <span className="text-base font-black text-slate-900 block">
+                  <span className="text-base font-black text-slate-900 dark:text-white block">
                     ${o.totalAmount.toFixed(2)}
                   </span>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold">
@@ -119,9 +120,9 @@ export default function AdminOrdersPage() {
             currentPage={page + 1}
             totalPages={totalPages}
             totalElements={totalElements}
-            pageSize={20}
+            pageSize={15}
             onPageChange={(p) => setPage(p - 1)}
-            className="px-6 py-4 bg-slate-50/50"
+            className="px-6 py-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800"
           />
         </div>
       )}

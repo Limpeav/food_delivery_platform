@@ -18,7 +18,6 @@ public class CreateOrderRequest {
 
     private String couponCode;
 
-    @NotNull(message = "Payment method is required (CASH_ON_DELIVERY or ONLINE_PAYMENT)")
     private PaymentMethod paymentMethod;
 
     private String notes;

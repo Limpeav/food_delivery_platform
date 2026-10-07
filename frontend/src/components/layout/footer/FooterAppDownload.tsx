@@ -17,10 +17,10 @@ export const FooterAppDownload: React.FC = () => {
   return (
     <div className="space-y-3">
       <div>
-        <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900">
+        <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white">
           {appDownloadConfig.title}
         </h4>
-        <p className="text-[11px] text-slate-500 mt-1">
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
           {appDownloadConfig.subtitle}
         </p>
       </div>

@@ -1,11 +1,54 @@
 import { Client, IMessage } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080/ws';
+function getBrokerUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_WS_URL;
+  if (envUrl) {
+    if (envUrl.startsWith('ws://') || envUrl.startsWith('wss://')) {
+      return envUrl;
+    }
+    if (envUrl.startsWith('http://')) {
+      return envUrl.replace(/^http:\/\//, 'ws://');
+    }
+    if (envUrl.startsWith('https://')) {
+      return envUrl.replace(/^https:\/\//, 'wss://');
+    }
+    if (typeof window !== 'undefined' && envUrl.startsWith('/')) {
+      const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return `${proto}//${window.location.host}${envUrl}`;
+    }
+  }
+  if (typeof window !== 'undefined') {
+    const isHttps = window.location.protocol === 'https:';
+    return isHttps ? 'wss://localhost:8080/ws' : 'ws://localhost:8080/ws';
+  }
+  return 'ws://localhost:8080/ws';
+}
+
+function getAuthToken(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const authData = localStorage.getItem('auth-storage');
+    if (authData) {
+      const parsed = JSON.parse(authData);
+      if (parsed?.state?.token) {
+        return parsed.state.token;
+      }
+      if (parsed?.state?.accessToken) {
+        return parsed.state.accessToken;
+      }
+    }
+    return localStorage.getItem('token') || localStorage.getItem('access_token');
+  } catch {
+    return null;
+  }
+}
+
+type SubscriptionCallback = (data: any) => void;
 
 class WebSocketService {
   private client: Client | null = null;
   private isConnected = false;
+  private activeSubscriptions = new Map<string, Set<SubscriptionCallback>>();
 
   public connect(onConnected?: () => void, onError?: (err: any) => void) {
     if (this.client && this.isConnected) {
@@ -13,20 +56,34 @@ class WebSocketService {
       return;
     }
 
+    const brokerUrl = getBrokerUrl();
+    const token = getAuthToken();
+
     this.client = new Client({
-      webSocketFactory: () => new SockJS(WS_URL),
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+      brokerURL: brokerUrl,
+      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
       debug: () => {
-        // quiet debug in production
+        // Silent in production
+      },
+      beforeConnect: () => {
+        const freshToken = getAuthToken();
+        if (freshToken && this.client) {
+          this.client.connectHeaders = { Authorization: `Bearer ${freshToken}` };
+        }
       },
       onConnect: () => {
         this.isConnected = true;
+        // Re-establish all registered subscriptions on reconnect
+        this.activeSubscriptions.forEach((callbacks, topic) => {
+          this.attachSubscription(topic, callbacks);
+        });
         if (onConnected) onConnected();
       },
       onStompError: (frame) => {
-        console.error('STOMP broker error: ' + frame.headers['message']);
+        console.warn('STOMP broker error:', frame.headers['message']);
         if (onError) onError(frame);
       },
       onDisconnect: () => {
@@ -37,30 +94,41 @@ class WebSocketService {
     this.client.activate();
   }
 
-  public subscribe(topic: string, callback: (data: any) => void) {
-    if (!this.client) {
+  private attachSubscription(topic: string, callbacks: Set<SubscriptionCallback>) {
+    if (!this.client || !this.client.connected) return;
+    this.client.subscribe(topic, (message: IMessage) => {
+      try {
+        const payload = JSON.parse(message.body);
+        callbacks.forEach((cb) => cb(payload));
+      } catch {
+        callbacks.forEach((cb) => cb(message.body));
+      }
+    });
+  }
+
+  public subscribe(topic: string, callback: SubscriptionCallback): () => void {
+    if (!this.activeSubscriptions.has(topic)) {
+      this.activeSubscriptions.set(topic, new Set());
+    }
+    this.activeSubscriptions.get(topic)!.add(callback);
+
+    if (!this.client || !this.isConnected) {
       this.connect(() => {
-        this.subscribe(topic, callback);
+        this.attachSubscription(topic, this.activeSubscriptions.get(topic)!);
       });
-      return () => {};
+    } else if (this.client.connected) {
+      this.attachSubscription(topic, this.activeSubscriptions.get(topic)!);
     }
 
-    if (this.client.connected) {
-      const sub = this.client.subscribe(topic, (message: IMessage) => {
-        try {
-          const payload = JSON.parse(message.body);
-          callback(payload);
-        } catch {
-          callback(message.body);
+    return () => {
+      const set = this.activeSubscriptions.get(topic);
+      if (set) {
+        set.delete(callback);
+        if (set.size === 0) {
+          this.activeSubscriptions.delete(topic);
         }
-      });
-      return () => sub.unsubscribe();
-    } else {
-      const timeout = setTimeout(() => {
-        this.subscribe(topic, callback);
-      }, 1000);
-      return () => clearTimeout(timeout);
-    }
+      }
+    };
   }
 
   public send(destination: string, body: any) {
@@ -77,12 +145,39 @@ class WebSocketService {
       this.client.deactivate();
       this.client = null;
       this.isConnected = false;
+      this.activeSubscriptions.clear();
     }
   }
 }
 
 export const wsService = new WebSocketService();
 
+// Real-time Order Tracking Hook / Helper
+export const subscribeToOrder = (orderId: number, onUpdate: (payload: any) => void) => {
+  return wsService.subscribe(`/topic/orders/${orderId}`, onUpdate);
+};
+
+// Real-time Driver GPS Location for an Order
+export const subscribeToOrderLocation = (orderId: number, onLocation: (location: any) => void) => {
+  return wsService.subscribe(`/topic/orders/${orderId}/location`, onLocation);
+};
+
+// Real-time Kitchen Orders for Restaurant Owners
+export const subscribeToRestaurantOrders = (restaurantId: number, onNewOrder: (order: any) => void) => {
+  return wsService.subscribe(`/topic/restaurants/${restaurantId}/orders`, onNewOrder);
+};
+
+// Real-time Available Deliveries for Drivers
+export const subscribeToAvailableDeliveries = (onDelivery: (delivery: any) => void) => {
+  return wsService.subscribe('/topic/deliveries/available', onDelivery);
+};
+
+// Real-time Driver GPS Location by Driver ID
+export const subscribeToDriverLocation = (driverId: number, onLocation: (location: any) => void) => {
+  return wsService.subscribe(`/topic/drivers/${driverId}/location`, onLocation);
+};
+
+// Real-time In-App Notifications
 export const connectWebSocket = (userId: number, onNotification: (notification: any) => void) => {
   wsService.connect();
   return wsService.subscribe(`/topic/notifications/${userId}`, onNotification);
@@ -93,4 +188,3 @@ export const disconnectWebSocket = () => {
 };
 
 export default wsService;
-

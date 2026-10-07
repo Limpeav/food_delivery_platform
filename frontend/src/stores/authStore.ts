@@ -20,6 +20,7 @@ interface AuthState {
 
   initAuth: () => Promise<void>;
   customerLogin: (email: string, pass: string) => Promise<AuthResponse>;
+  customerGoogleLogin: (idToken: string) => Promise<AuthResponse>;
   restaurantLogin: (email: string, pass: string) => Promise<AuthResponse>;
   driverLogin: (email: string, pass: string) => Promise<AuthResponse>;
   adminLogin: (email: string, pass: string) => Promise<AuthResponse>;
@@ -33,6 +34,7 @@ interface AuthState {
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   setBusinessStatus: (status: string | null, message?: string | null) => void;
+  completeProfile: (phoneNumber: string) => Promise<User>;
 }
 
 let isInitializingAuth = false;
@@ -128,18 +130,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           });
         }
       } catch (err: any) {
-        // If 401 Unauthorized, try refreshing using the refresh token
+        // If 401 Unauthorized, api interceptor has already attempted refresh and failed
         if (err?.response?.status === 401) {
-          if (refreshToken) {
-            try {
-              const refreshResp = await authService.refresh(refreshToken);
-              handleAuthSuccess(refreshResp, set, scope);
-              return;
-            } catch {
-              // Refresh token has also expired or been revoked
-            }
-          }
-          // Both access token and refresh token are invalid
+          // Both access token and refresh token are invalid or expired
           localStorage.removeItem(keys.accessToken);
           localStorage.removeItem(keys.refreshToken);
           localStorage.removeItem(keys.authUser);
@@ -166,6 +159,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const resp = await authService.customerLogin({ email, password });
+      handleAuthSuccess(resp, set, 'customer');
+      return resp;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  customerGoogleLogin: async (idToken: string) => {
+    set({ isLoading: true });
+    try {
+      const resp = await authService.customerGoogleLogin({ idToken });
       handleAuthSuccess(resp, set, 'customer');
       return resp;
     } finally {
@@ -304,6 +308,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setUser: (user) => set({ user }),
   setBusinessStatus: (status, message = null) =>
     set({ businessStatus: status, statusMessage: message }),
+
+  completeProfile: async (phoneNumber: string) => {
+    const updatedUser = await authService.completeProfile(phoneNumber);
+    const currentUser = get().user;
+    const merged: User = currentUser ? { ...currentUser, ...updatedUser } : updatedUser;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_user', JSON.stringify(merged));
+      const keys = getStorageKeys('customer');
+      localStorage.setItem(keys.authUser, JSON.stringify(merged));
+    }
+    set({ user: merged });
+    return merged;
+  },
 }));
 
 function handleAuthSuccess(resp: AuthResponse, set: any, explicitScope?: AuthScope) {

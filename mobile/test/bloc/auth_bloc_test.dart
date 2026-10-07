@@ -17,6 +17,14 @@ void main() {
     name: 'Customer Demo',
     email: 'customer@gmail.com',
     role: 'CUSTOMER',
+    phoneNumber: '+85512345678',
+  );
+
+  const testUserWithoutPhone = UserModel(
+    id: 2,
+    name: 'Google User',
+    email: 'google@gmail.com',
+    role: 'CUSTOMER',
   );
 
   setUp(() {
@@ -40,6 +48,19 @@ void main() {
       expect: () => [
         isA<AuthLoading>(),
         const AuthAuthenticated(testUser),
+      ],
+    );
+
+    blocTest<AuthBloc, AuthState>(
+      'emits [AuthLoading, AuthPhoneRequired] when user has no phone number',
+      build: () {
+        when(() => mockAuthRepository.checkCurrentUser()).thenAnswer((_) async => testUserWithoutPhone);
+        return AuthBloc(authRepository: mockAuthRepository);
+      },
+      act: (bloc) => bloc.add(AuthCheckRequested()),
+      expect: () => [
+        isA<AuthLoading>(),
+        const AuthPhoneRequired(testUserWithoutPhone),
       ],
     );
 

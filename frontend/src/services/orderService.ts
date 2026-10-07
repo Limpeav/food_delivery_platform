@@ -17,39 +17,48 @@ export interface PaymentInfo {
   createdAt: string;
 }
 
-export interface KhqrResponse {
-  orderId: number;
-  qrCode: string;
-  qrImage: string;
-  md5: string;
-  amount: number;
-  currency: string;
-  merchantName: string;
-  merchantAccountId: string;
-  paymentStatus: string;
-  simulated: boolean;
-}
-
-export interface KhqrVerificationResponse {
-  orderId: number;
-  verified: boolean;
-  paymentStatus: string;
-  transactionHash?: string;
-  md5?: string;
-  amount: number;
-  currency: string;
-  message: string;
-  verifiedAt?: string;
-}
-
 export const orderService = {
-  async createOrder(data: {
-    addressId: number;
-    couponCode?: string;
-    paymentMethod: string;
-    notes?: string;
-  }): Promise<Order> {
-    const res = await api.post<ApiResponse<Order>>('/orders', data);
+  async createOrder(
+    data: {
+      addressId: number;
+      couponCode?: string;
+      paymentMethod?: string;
+      notes?: string;
+    },
+    idempotencyKey?: string
+  ): Promise<Order> {
+    const key =
+      idempotencyKey ||
+      (typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`);
+
+    const res = await api.post<ApiResponse<Order>>(
+      '/orders',
+      {
+        ...data,
+        paymentMethod: data.paymentMethod || 'CASH_ON_DELIVERY',
+      },
+      {
+        headers: {
+          'Idempotency-Key': key,
+        },
+      }
+    );
+    return res.data.data;
+  },
+
+  /** Generate or retrieve Bakong KHQR for online payment */
+  async getBakongKhqr(orderId: number): Promise<any> {
+    const res = await api.get<ApiResponse<any>>(`/payments/${orderId}/khqr`);
+    return res.data.data;
+  },
+
+  /** Verify Bakong KHQR payment via Open API */
+  async verifyBakongKhqr(orderId: number, simulate = false): Promise<any> {
+    const res = await api.post<ApiResponse<any>>(
+      `/payments/${orderId}/khqr/verify?simulate=${simulate}`
+    );
     return res.data.data;
   },
 
@@ -118,19 +127,4 @@ export const orderService = {
     const res = await api.get<ApiResponse<any>>('/admin/analytics/revenue', { params });
     return res.data.data;
   },
-
-  /** Generate or retrieve Bakong KHQR for online payment */
-  async getBakongKhqr(orderId: number): Promise<KhqrResponse> {
-    const res = await api.get<ApiResponse<KhqrResponse>>(`/payments/${orderId}/khqr`);
-    return res.data.data;
-  },
-
-  /** Verify Bakong KHQR payment via Open API */
-  async verifyBakongKhqr(orderId: number, simulate = false): Promise<KhqrVerificationResponse> {
-    const res = await api.post<ApiResponse<KhqrVerificationResponse>>(
-      `/payments/${orderId}/khqr/verify?simulate=${simulate}`
-    );
-    return res.data.data;
-  },
 };
-

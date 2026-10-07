@@ -12,6 +12,10 @@ import {
   MapPin,
   Phone,
   RefreshCw,
+  Volume2,
+  VolumeX,
+  Receipt,
+  Bell,
 } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { Order, OrderStatus } from '@/types';
@@ -20,8 +24,12 @@ import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
+import { OrderReceiptModal } from '@/components/ui/OrderReceiptModal';
+import { subscribeToRestaurantOrders } from '@/lib/websocket';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function RestaurantOrdersPage() {
+  const { user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [permissionError, setPermissionError] = useState<string | null>(null);
@@ -30,11 +38,60 @@ export default function RestaurantOrdersPage() {
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<Order | null>(null);
+  const knownOrderIdsRef = useRef<Set<number>>(new Set());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Synthesize dual-tone chime using Web Audio API
+  const playOrderChime = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      // Note 1: D5 (587.33 Hz)
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now);
+      gain1.gain.setValueAtTime(0.3, now);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.35);
+
+      // Note 2: A5 (880 Hz)
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, now + 0.15);
+      gain2.gain.setValueAtTime(0.4, now + 0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(now + 0.15);
+      osc2.stop(now + 0.6);
+    } catch (e) {
+      console.error('Audio chime error:', e);
+    }
+  };
 
   const loadOrders = async () => {
     try {
       const res = await orderService.getRestaurantOrders({ page, size: 20 });
+      
+      // Check if new pending orders arrived
+      const hasNewPending = res.content.some(
+        (o: Order) => o.status === 'PENDING' && !knownOrderIdsRef.current.has(o.id)
+      );
+      if (hasNewPending && soundEnabled && knownOrderIdsRef.current.size > 0) {
+        playOrderChime();
+      }
+      res.content.forEach((o: Order) => knownOrderIdsRef.current.add(o.id));
+
       setOrders(res.content);
       setTotalPages(res.totalPages || 0);
       setTotalElements(res.totalElements || 0);
@@ -56,11 +113,27 @@ export default function RestaurantOrdersPage() {
 
   useEffect(() => {
     loadOrders();
-    intervalRef.current = setInterval(loadOrders, 8000); // Polling for incoming orders
+    intervalRef.current = setInterval(loadOrders, 20000); // Resilient fallback polling
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [page]);
+
+  // Instant real-time WebSocket push for incoming kitchen orders
+  const activeRestaurantId = user?.restaurantId || orders[0]?.restaurantId;
+  useEffect(() => {
+    if (!activeRestaurantId) return;
+
+    const unsubscribe = subscribeToRestaurantOrders(activeRestaurantId, (payload: any) => {
+      console.log('Instant kitchen order notification via WebSocket:', payload);
+      if (soundEnabled) {
+        playOrderChime();
+      }
+      loadOrders();
+    });
+
+    return () => unsubscribe();
+  }, [activeRestaurantId, soundEnabled]);
 
   const handleUpdateStatus = async (orderId: number, status: OrderStatus) => {
     setActionLoading(orderId);
@@ -94,14 +167,38 @@ export default function RestaurantOrdersPage() {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={loadOrders}
-          className="rounded-xl text-xs gap-1.5 self-start"
-        >
-          <RefreshCw className="w-3.5 h-3.5" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) playOrderChime();
+            }}
+            className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs ${
+              soundEnabled
+                ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100'
+                : 'bg-slate-100 border-slate-300 text-slate-500 hover:bg-slate-200'
+            }`}
+            title="Toggle kitchen audio chime for incoming orders"
+          >
+            {soundEnabled ? (
+              <Volume2 className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+            ) : (
+              <VolumeX className="w-3.5 h-3.5 text-slate-400" />
+            )}
+            <span>Kitchen Chime: {soundEnabled ? 'ON' : 'OFF'}</span>
+          </button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadOrders}
+            className="rounded-xl text-xs gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </Button>
+        </div>
       </div>
 
       {permissionError && (
@@ -167,18 +264,28 @@ export default function RestaurantOrdersPage() {
                     </span>
                   </div>
 
-                  <Badge
-                    variant={
-                      order.status === 'DELIVERED'
-                        ? 'success'
-                        : order.status === 'CANCELLED' || order.status === 'REJECTED'
-                        ? 'danger'
-                        : 'primary'
-                    }
-                    size="sm"
-                  >
-                    {order.status.replace(/_/g, ' ')}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedReceiptOrder(order)}
+                      className="p-1 rounded-lg text-slate-400 hover:text-[#FF5A1F] hover:bg-orange-50 transition-colors cursor-pointer"
+                      title="Print Kitchen Ticket"
+                    >
+                      <Receipt className="w-3.5 h-3.5" />
+                    </button>
+                    <Badge
+                      variant={
+                        order.status === 'DELIVERED'
+                          ? 'success'
+                          : order.status === 'CANCELLED' || order.status === 'REJECTED'
+                          ? 'danger'
+                          : 'primary'
+                      }
+                      size="sm"
+                    >
+                      {order.status.replace(/_/g, ' ')}
+                    </Badge>
+                  </div>
                 </div>
 
                 {/* Items List */}
@@ -306,6 +413,15 @@ export default function RestaurantOrdersPage() {
         onPageChange={(p) => setPage(p - 1)}
         className="px-2"
       />
+
+      {/* Kitchen Ticket & Order Invoice Modal */}
+      {selectedReceiptOrder && (
+        <OrderReceiptModal
+          isOpen={!!selectedReceiptOrder}
+          onClose={() => setSelectedReceiptOrder(null)}
+          order={selectedReceiptOrder}
+        />
+      )}
     </div>
   );
 }

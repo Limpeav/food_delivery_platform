@@ -151,12 +151,22 @@ public class DriverService {
 
         // Broadcast real-time location via WebSocket STOMP
         try {
-            messagingTemplate.convertAndSend("/topic/drivers/" + driver.getId() + "/location", Map.of(
+            Map<String, Object> locationPayload = Map.of(
                     "driverId", driver.getId(),
                     "latitude", savedLocation.getLatitude(),
                     "longitude", savedLocation.getLongitude(),
                     "updatedAt", savedLocation.getUpdatedAt().toString()
-            ));
+            );
+            messagingTemplate.convertAndSend("/topic/drivers/" + driver.getId() + "/location", locationPayload);
+
+            // If driver is currently fulfilling an active delivery, broadcast to the order topic for live customer tracking
+            deliveryRepository.findFirstByDriverIdAndStatusIn(
+                    driver.getId(),
+                    List.of(com.example.fooddelivery.delivery.entity.DeliveryStatus.ACCEPTED,
+                            com.example.fooddelivery.delivery.entity.DeliveryStatus.PICKED_UP)
+            ).ifPresent(activeDelivery -> {
+                messagingTemplate.convertAndSend("/topic/orders/" + activeDelivery.getOrder().getId() + "/location", locationPayload);
+            });
         } catch (Exception e) {
             log.warn("Failed to broadcast driver location via WebSocket: {}", e.getMessage());
         }

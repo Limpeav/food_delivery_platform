@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { driverService } from '@/services/driverService';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Loading } from '@/components/ui/Loading';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { Driver } from '@/types';
 
 export default function DriverLayout({
@@ -78,6 +79,7 @@ export default function DriverLayout({
           </Link>
 
           <div className="flex items-center gap-3 text-xs">
+            <ThemeToggle />
             <Link
               href="/"
               className="hidden sm:inline-flex items-center gap-1 text-slate-400 hover:text-white transition-colors"
@@ -126,18 +128,18 @@ export default function DriverLayout({
     (driver && !driver.approved);
 
   return (
-    <div className="flex-1 flex bg-slate-50 min-h-screen">
+    <div className="h-screen w-full flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
       <Sidebar role="DRIVER" />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Operational Driver Topbar */}
-        <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between shrink-0">
+        <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-6 flex items-center justify-between shrink-0 z-20">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
               <Bike className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900 leading-tight">
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
                 {user.name}
               </h2>
               <span className="text-[10px] text-slate-400 font-medium">
@@ -147,6 +149,7 @@ export default function DriverLayout({
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             {/* Online / Offline Toggle */}
             {driver && driver.approved ? (
               <button
@@ -156,14 +159,14 @@ export default function DriverLayout({
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
                   driver.online
                     ? 'bg-emerald-500 text-white shadow-xs shadow-emerald-500/30 hover:bg-emerald-600'
-                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                    : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
                 }`}
               >
                 <Power className="w-3.5 h-3.5" />
                 {driver.online ? 'Online (Accepting Jobs)' : 'Offline'}
               </button>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                 Pending Verification
               </span>
@@ -171,7 +174,7 @@ export default function DriverLayout({
 
             <button
               onClick={() => logout()}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign Out
@@ -181,7 +184,7 @@ export default function DriverLayout({
 
         {/* Pending Review Banner (Requirement 4 & 15) */}
         {isPending && (
-          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-start gap-3 text-amber-900">
+          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-start gap-3 text-amber-900 shrink-0">
             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div className="text-xs space-y-0.5">
               <p className="font-bold">
@@ -194,8 +197,11 @@ export default function DriverLayout({
           </div>
         )}
 
-        <main className="flex-1 p-6 sm:p-8 overflow-y-auto max-w-7xl">
-          {children}
+        {/* Scrollable Right Side Content Only */}
+        <main className="flex-1 overflow-y-auto p-6 sm:p-8 min-w-0 w-full">
+          <div className="max-w-7xl mx-auto w-full">
+            {children}
+          </div>
         </main>
       </div>
     </div>
