@@ -44,10 +44,7 @@ export default function CustomerRegisterPage() {
       if (user.role === 'ADMIN') router.replace('/admin/dashboard');
       else if (user.role === 'RESTAURANT_OWNER') router.replace('/restaurant/dashboard');
       else if (user.role === 'DRIVER') router.replace('/driver/dashboard');
-      else if (user.role === 'CUSTOMER') {
-        if (!user.phoneNumber) return;
-        router.replace('/');
-      } else {
+      else {
         router.replace('/');
       }
     }

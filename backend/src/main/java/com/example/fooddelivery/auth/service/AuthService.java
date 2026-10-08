@@ -8,6 +8,7 @@ import com.example.fooddelivery.auth.repository.RefreshTokenRepository;
 import com.example.fooddelivery.common.exception.BadRequestException;
 import com.example.fooddelivery.common.exception.ResourceNotFoundException;
 import com.example.fooddelivery.common.exception.UnauthorizedException;
+import com.example.fooddelivery.common.util.CambodiaPhoneValidator;
 import com.example.fooddelivery.common.security.JwtTokenProvider;
 import com.example.fooddelivery.common.security.UserPrincipal;
 import com.example.fooddelivery.driver.entity.Driver;
@@ -171,7 +172,7 @@ public class AuthService {
 
         log.info("User {} logged in successfully via portal (role: {})", user.getEmail(), user.getRole());
 
-        boolean phoneRequired = (user.getRole() == Role.CUSTOMER && (user.getPhoneNumber() == null || user.getPhoneNumber().trim().isEmpty()));
+        boolean phoneRequired = (user.getPhoneNumber() == null || user.getPhoneNumber().trim().isEmpty());
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -320,11 +321,20 @@ public class AuthService {
             throw new BadRequestException("Email is already registered");
         }
 
+        String rawPhone = request.getPhoneNumber();
+        String normalizedPhone = null;
+        if (rawPhone != null && !rawPhone.trim().isEmpty()) {
+            normalizedPhone = CambodiaPhoneValidator.normalizeOrTrim(rawPhone);
+            if (userRepository.existsByPhoneNumber(normalizedPhone) || userRepository.existsByPhoneLookup(normalizedPhone)) {
+                throw new BadRequestException("Phone number is already registered");
+            }
+        }
+
         User user = User.builder()
                 .name(request.getName().trim())
                 .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhoneNumber() != null ? request.getPhoneNumber().trim() : null)
+                .phoneNumber(normalizedPhone)
                 .role(Role.CUSTOMER)
                 .status(UserStatus.ACTIVE)
                 .build();
@@ -376,6 +386,15 @@ public class AuthService {
             throw new BadRequestException("Email is already registered");
         }
 
+        String rawPhone = request.getPhone();
+        String normalizedPhone = CambodiaPhoneValidator.normalizeOrTrim(rawPhone);
+        if (normalizedPhone == null) {
+            throw new BadRequestException("Owner phone number is required");
+        }
+        if (userRepository.existsByPhoneNumber(normalizedPhone) || userRepository.existsByPhoneLookup(normalizedPhone)) {
+            throw new BadRequestException("Phone number is already registered");
+        }
+
         RestaurantCategory category = restaurantCategoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant category not found with id: " + request.getCategoryId()));
 
@@ -384,7 +403,7 @@ public class AuthService {
                 .name(request.getName().trim())
                 .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhone().trim())
+                .phoneNumber(normalizedPhone)
                 .role(Role.RESTAURANT_OWNER)
                 .status(UserStatus.ACTIVE)
                 .build();
@@ -450,12 +469,21 @@ public class AuthService {
             throw new BadRequestException("Email is already registered");
         }
 
+        String rawPhone = request.getPhone();
+        String normalizedPhone = CambodiaPhoneValidator.normalizeOrTrim(rawPhone);
+        if (normalizedPhone == null) {
+            throw new BadRequestException("Phone number is required");
+        }
+        if (userRepository.existsByPhoneNumber(normalizedPhone) || userRepository.existsByPhoneLookup(normalizedPhone)) {
+            throw new BadRequestException("Phone number is already registered");
+        }
+
         // 1. Create User
         User user = User.builder()
                 .name(request.getName().trim())
                 .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
-                .phoneNumber(request.getPhone().trim())
+                .phoneNumber(normalizedPhone)
                 .role(Role.DRIVER)
                 .status(UserStatus.ACTIVE)
                 .build();

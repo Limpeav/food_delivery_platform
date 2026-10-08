@@ -142,13 +142,13 @@ export const Navbar: React.FC = () => {
 
             {/* Address Chip */}
             <Link
-              href="/nearby"
-              title="Change location on map"
+              href="/restaurants"
+              title="Browse restaurants in Phnom Penh"
               className="hidden lg:flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/80 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-all cursor-pointer group"
             >
               <MapPin className="h-3.5 w-3.5 text-[#FF5A1F] group-hover:scale-110 transition-transform" />
               <span className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-[#FF5A1F]">Deliver to:</span>
-              <span className="truncate max-w-[150px]">Phnom Penh (5km)</span>
+              <span className="truncate max-w-[150px]">Phnom Penh</span>
             </Link>
           </div>
 
@@ -163,17 +163,6 @@ export const Navbar: React.FC = () => {
               }`}
             >
               Restaurants
-            </Link>
-            <Link
-              href="/nearby"
-              className={`rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-                pathname.startsWith('/nearby')
-                  ? 'bg-[#FFF1EB] dark:bg-orange-950/40 text-[#FF5A1F]'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Navigation className="w-3.5 h-3.5 text-[#FF5A1F]" />
-              Near Me (5km)
             </Link>
             <Link
               href="/promotions"
@@ -389,18 +378,7 @@ export const Navbar: React.FC = () => {
           >
             Browse Restaurants
           </Link>
-          <Link
-            href="/nearby"
-            onClick={() => setMobileMenuOpen(false)}
-            className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
-              pathname.startsWith('/nearby')
-                ? 'bg-[#FFF1EB] dark:bg-orange-950/40 text-[#FF5A1F]'
-                : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Navigation className="w-4 h-4 text-[#FF5A1F]" />
-            Near Me (5km Radar)
-          </Link>
+
           <Link
             href="/promotions"
             onClick={() => setMobileMenuOpen(false)}

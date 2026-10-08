@@ -1,7 +1,9 @@
 package com.example.fooddelivery.user.service;
 
 import com.example.fooddelivery.common.exception.BadRequestException;
+import com.example.fooddelivery.common.exception.ConflictException;
 import com.example.fooddelivery.common.exception.ResourceNotFoundException;
+import com.example.fooddelivery.common.util.CambodiaPhoneValidator;
 import com.example.fooddelivery.user.dto.ChangePasswordRequest;
 import com.example.fooddelivery.user.dto.UpdateProfileRequest;
 import com.example.fooddelivery.user.dto.UserResponse;
@@ -12,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -38,7 +42,22 @@ public class UserService {
         User user = findUserById(userId);
         user.setName(request.getName().trim());
         if (request.getPhoneNumber() != null) {
-            user.setPhoneNumber(request.getPhoneNumber().trim());
+            String rawPhone = request.getPhoneNumber().trim();
+            if (rawPhone.isEmpty()) {
+                user.setPhoneNumber(null);
+            } else {
+                String normalizedPhone = CambodiaPhoneValidator.normalizeOrTrim(rawPhone);
+                Optional<User> existing = userRepository.findByPhoneNumber(normalizedPhone);
+                if (existing.isEmpty()) {
+                    existing = userRepository.findByPhoneLookup(normalizedPhone);
+                }
+                existing.ifPresent(other -> {
+                    if (!other.getId().equals(userId)) {
+                        throw new BadRequestException("This phone number is already registered to another account.");
+                    }
+                });
+                user.setPhoneNumber(normalizedPhone);
+            }
         }
         User updated = userRepository.save(user);
         log.info("User profile updated for user id: {}", userId);
@@ -69,9 +88,13 @@ public class UserService {
         String normalizedPhone = com.example.fooddelivery.common.util.CambodiaPhoneValidator.normalize(rawPhone);
 
         // Enforce phone number uniqueness across accounts
-        userRepository.findByPhoneNumber(normalizedPhone).ifPresent(existing -> {
+        Optional<User> existingUser = userRepository.findByPhoneNumber(normalizedPhone);
+        if (existingUser.isEmpty()) {
+            existingUser = userRepository.findByPhoneLookup(normalizedPhone);
+        }
+        existingUser.ifPresent(existing -> {
             if (!existing.getId().equals(userId)) {
-                throw new com.example.fooddelivery.common.exception.ConflictException(
+                throw new ConflictException(
                         "This phone number is already linked to another account."
                 );
             }

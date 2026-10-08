@@ -3,7 +3,6 @@ package com.example.fooddelivery.restaurant.controller;
 import com.example.fooddelivery.common.response.ApiResponse;
 import com.example.fooddelivery.common.response.PageResponse;
 import com.example.fooddelivery.common.security.UserPrincipal;
-import com.example.fooddelivery.restaurant.dto.NearbyRecommendationResponse;
 import com.example.fooddelivery.restaurant.dto.RestaurantRequest;
 import com.example.fooddelivery.restaurant.dto.RestaurantResponse;
 import com.example.fooddelivery.restaurant.dto.RestaurantStatusUpdateRequest;
@@ -37,17 +36,6 @@ public class RestaurantController {
             @RequestParam(required = false) Long categoryId,
             @PageableDefault(size = 10, sort = "rating", direction = Sort.Direction.DESC) Pageable pageable) {
         PageResponse<RestaurantResponse> response = restaurantService.searchRestaurants(search, categoryId, pageable);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    @GetMapping("/api/restaurants/nearby")
-    @Operation(summary = "Find nearby restaurants within radius (default 5km) with customer recommendations (Public)")
-    public ResponseEntity<ApiResponse<NearbyRecommendationResponse>> getNearbyRestaurants(
-            @RequestParam Double latitude,
-            @RequestParam Double longitude,
-            @RequestParam(required = false, defaultValue = "5.0") Double radiusKm,
-            @RequestParam(required = false, defaultValue = "20") Integer limit) {
-        NearbyRecommendationResponse response = restaurantService.getNearbyRestaurants(latitude, longitude, radiusKm, limit);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

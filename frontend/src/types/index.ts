@@ -145,23 +145,6 @@ export interface FoodItem {
   createdAt: string;
 }
 
-export interface NearbyRestaurant extends Restaurant {
-  distanceKm: number;
-  estimatedDeliveryMinutes: number;
-  isOpen: boolean;
-  recommendationScore: number;
-  recommendedFoods: FoodItem[];
-}
-
-export interface NearbyRecommendationResponse {
-  userLatitude: number;
-  userLongitude: number;
-  radiusKm: number;
-  totalFound: number;
-  restaurants: NearbyRestaurant[];
-  topRecommendedFoods: FoodItem[];
-}
-
 export interface CartItem {
   id: number;
   foodItemId: number;

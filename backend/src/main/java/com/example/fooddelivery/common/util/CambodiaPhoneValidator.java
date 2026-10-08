@@ -107,6 +107,50 @@ public class CambodiaPhoneValidator {
     }
 
     /**
+     * Normalizes a phone number if it is a valid Cambodian mobile number (+855XXXXXXXX),
+     * or returns the trimmed string otherwise.
+     * Returns null if input is null or whitespace.
+     */
+    public static String normalizeOrTrim(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return null;
+        }
+        String trimmed = phone.trim();
+        return isValid(trimmed) ? normalize(trimmed) : trimmed;
+    }
+
+    /**
+     * Returns all potential database representations for a given phone number,
+     * including E.164 (+855XXXXXXXX), local 0-prefixed (0XXXXXXXX), subscriber-only (XXXXXXXX),
+     * and country-digits-only (855XXXXXXXX).
+     */
+    public static Set<String> getLookupVariants(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return Collections.emptySet();
+        }
+        String trimmed = phone.trim();
+        Set<String> variants = new HashSet<>();
+        variants.add(trimmed);
+
+        if (isValid(trimmed)) {
+            String e164 = normalize(trimmed);
+            variants.add(e164);
+            String national = extractNationalNumber(cleanPhoneString(trimmed));
+            if (national != null && !national.isEmpty()) {
+                variants.add(national);
+                variants.add("0" + national);
+                variants.add(COUNTRY_CODE_DIGITS + national);
+            }
+        } else {
+            String digits = cleanPhoneString(trimmed);
+            if (!digits.isEmpty()) {
+                variants.add(digits);
+            }
+        }
+        return variants;
+    }
+
+    /**
      * Extracts subscriber digits without country code or leading local 0.
      */
     private static String extractNationalNumber(String cleanedDigits) {
@@ -124,3 +168,4 @@ public class CambodiaPhoneValidator {
         return phone.replaceAll("[^0-9]", "");
     }
 }
+

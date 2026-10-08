@@ -6,11 +6,13 @@ import { User } from '@/types';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from '@/components/ui/Toast';
 
-export interface GooglePhonePromptModalProps {
+export interface PhonePromptModalProps {
   isOpen: boolean;
   user: User | null;
   onSuccess: (updatedUser: User) => void;
 }
+
+export type GooglePhonePromptModalProps = PhonePromptModalProps;
 
 const OPERATOR_PREFIXES = new Set([
   '10', '11', '12', '15', '16', '17',
@@ -51,12 +53,12 @@ function validateCambodianPhone(raw: string): { isValid: boolean; normalized?: s
   return { isValid: true, normalized: `+855${national}` };
 }
 
-export const GooglePhonePromptModal: React.FC<GooglePhonePromptModalProps> = ({
+export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
   isOpen,
   user,
   onSuccess,
 }) => {
-  const { completeProfile } = useAuthStore();
+  const { completeProfile, logout } = useAuthStore();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -216,9 +218,18 @@ export const GooglePhonePromptModal: React.FC<GooglePhonePromptModalProps> = ({
                 </>
               )}
             </button>
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 mt-2 transition-colors cursor-pointer py-1"
+            >
+              Sign out and use a different account
+            </button>
           </div>
         </form>
       </div>
     </div>
   );
 };
+
+export const GooglePhonePromptModal = PhonePromptModal;

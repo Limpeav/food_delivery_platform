@@ -112,6 +112,24 @@ class AuthServiceTest {
     }
 
     @Test
+    void register_DuplicatePhoneNumber_ThrowsBadRequestException() {
+        RegisterRequest request = RegisterRequest.builder()
+                .name("Jane Doe")
+                .email("jane@gmail.com")
+                .password("password123")
+                .phoneNumber("+85512345678")
+                .role(Role.CUSTOMER)
+                .build();
+
+        when(userRepository.existsByEmail("jane@gmail.com")).thenReturn(false);
+        when(userRepository.existsByPhoneNumber("+85512345678")).thenReturn(true);
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> authService.register(request));
+        assertTrue(ex.getMessage().contains("Phone number is already registered"));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
     void register_AdminRole_ThrowsBadRequestException() {
         RegisterRequest request = RegisterRequest.builder()
                 .name("Hacker")

@@ -23,6 +23,26 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 
     Optional<User> findByPhoneNumber(String phoneNumber);
 
+    @org.springframework.data.jpa.repository.Query("SELECT u FROM User u WHERE u.phoneNumber IN :phones")
+    java.util.List<User> findAllByPhoneNumberIn(@org.springframework.data.repository.query.Param("phones") java.util.Collection<String> phones);
+
+    default Optional<User> findByPhoneLookup(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        java.util.Set<String> variants = com.example.fooddelivery.common.util.CambodiaPhoneValidator.getLookupVariants(phone);
+        java.util.List<User> list = findAllByPhoneNumberIn(variants);
+        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+    }
+
+    default boolean existsByPhoneLookup(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return false;
+        }
+        java.util.Set<String> variants = com.example.fooddelivery.common.util.CambodiaPhoneValidator.getLookupVariants(phone);
+        return !findAllByPhoneNumberIn(variants).isEmpty();
+    }
+
     Page<User> findByRole(Role role, Pageable pageable);
 
     long countByRole(Role role);

@@ -1,19 +1,9 @@
 import api from '@/lib/api';
-import { ApiResponse, PageResponse, Restaurant, RestaurantCategory, MenuCategory, RestaurantDashboardStats, NearbyRecommendationResponse } from '@/types';
+import { ApiResponse, PageResponse, Restaurant, RestaurantCategory, MenuCategory, RestaurantDashboardStats } from '@/types';
 
 export const restaurantService = {
   async getRestaurants(params?: { search?: string; categoryId?: number; page?: number; size?: number; sort?: string }): Promise<PageResponse<Restaurant>> {
     const res = await api.get<ApiResponse<PageResponse<Restaurant>>>('/restaurants', { params });
-    return res.data.data;
-  },
-
-  async getNearbyRecommendations(params: {
-    latitude: number;
-    longitude: number;
-    radiusKm?: number;
-    limit?: number;
-  }): Promise<NearbyRecommendationResponse> {
-    const res = await api.get<ApiResponse<NearbyRecommendationResponse>>('/restaurants/nearby', { params });
     return res.data.data;
   },
 

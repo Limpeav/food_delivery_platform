@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Search, Star, Clock, Bike, Navigation } from 'lucide-react';
+import { Search, Star, Clock, Bike } from 'lucide-react';
 import { restaurantService } from '@/services/restaurantService';
 import { Restaurant, RestaurantCategory } from '@/types';
 import { Badge } from '@/components/ui/Badge';
@@ -122,13 +122,6 @@ function RestaurantsContent() {
             Explore curated places with high hygiene standards and delicious cuisines
           </p>
         </div>
-        <Link
-          href="/nearby"
-          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-[#FF5A1F] text-white px-4 py-2.5 text-xs font-bold shadow-md hover:shadow-lg hover:from-orange-600 hover:to-[#e04a12] transition-all self-start sm:self-auto cursor-pointer"
-        >
-          <Navigation className="w-4 h-4" />
-          <span>5km Map View &amp; Radar</span>
-        </Link>
       </div>
 
       {/* Search & Quick Filters Bar */}
