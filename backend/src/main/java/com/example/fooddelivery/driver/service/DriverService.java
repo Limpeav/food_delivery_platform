@@ -3,6 +3,11 @@ package com.example.fooddelivery.driver.service;
 import com.example.fooddelivery.common.exception.BadRequestException;
 import com.example.fooddelivery.common.exception.ResourceNotFoundException;
 import com.example.fooddelivery.common.response.PageResponse;
+import com.example.fooddelivery.delivery.dto.DeliveryResponse;
+import com.example.fooddelivery.delivery.entity.Delivery;
+import com.example.fooddelivery.delivery.entity.DeliveryStatus;
+import com.example.fooddelivery.delivery.repository.DeliveryRepository;
+import com.example.fooddelivery.driver.dto.DriverDashboardStats;
 import com.example.fooddelivery.driver.dto.DriverLocationUpdateRequest;
 import com.example.fooddelivery.driver.dto.DriverRegisterRequest;
 import com.example.fooddelivery.driver.dto.DriverResponse;
@@ -20,6 +25,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -28,45 +36,52 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DriverService {
 
+    private static final List<DeliveryStatus> ACTIVE_DELIVERY_STATUSES = List.of(
+            DeliveryStatus.DRIVER_ASSIGNED,
+            DeliveryStatus.GOING_TO_RESTAURANT,
+            DeliveryStatus.FOOD_PICKED_UP,
+            DeliveryStatus.DELIVERING
+    );
+
     private final DriverRepository driverRepository;
     private final DriverLocationRepository locationRepository;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
-    private final com.example.fooddelivery.delivery.repository.DeliveryRepository deliveryRepository;
+    private final DeliveryRepository deliveryRepository;
 
     @Transactional(readOnly = true)
-    public com.example.fooddelivery.driver.dto.DriverDashboardStats getDriverDashboardStats(Long userId) {
+    public DriverDashboardStats getDriverDashboardStats(Long userId) {
         Driver driver = findDriverByUserId(userId);
 
-        List<com.example.fooddelivery.delivery.entity.Delivery> allDeliveries =
-                deliveryRepository.findByDriverId(driver.getId(), org.springframework.data.domain.Pageable.unpaged()).getContent();
+        List<Delivery> allDeliveries =
+                deliveryRepository.findByDriverId(driver.getId(), Pageable.unpaged()).getContent();
 
         long completed = allDeliveries.stream()
-                .filter(d -> d.getStatus() == com.example.fooddelivery.delivery.entity.DeliveryStatus.DELIVERED)
+                .filter(d -> d.getStatus() == DeliveryStatus.DELIVERED)
                 .count();
 
-        java.time.LocalDateTime startOfDay = java.time.LocalDate.now().atStartOfDay();
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
 
-        java.math.BigDecimal todayEarnings = allDeliveries.stream()
-                .filter(d -> d.getStatus() == com.example.fooddelivery.delivery.entity.DeliveryStatus.DELIVERED
+        BigDecimal todayEarnings = allDeliveries.stream()
+                .filter(d -> d.getStatus() == DeliveryStatus.DELIVERED
                         && d.getDeliveredTime() != null && d.getDeliveredTime().isAfter(startOfDay))
                 .map(d -> d.getOrder().getDeliveryFee())
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        java.math.BigDecimal totalEarnings = allDeliveries.stream()
-                .filter(d -> d.getStatus() == com.example.fooddelivery.delivery.entity.DeliveryStatus.DELIVERED)
+        BigDecimal totalEarnings = allDeliveries.stream()
+                .filter(d -> d.getStatus() == DeliveryStatus.DELIVERED)
                 .map(d -> d.getOrder().getDeliveryFee())
-                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        com.example.fooddelivery.delivery.dto.DeliveryResponse activeResp = allDeliveries.stream()
-                .filter(d -> d.getStatus() != com.example.fooddelivery.delivery.entity.DeliveryStatus.DELIVERED
-                        && d.getStatus() != com.example.fooddelivery.delivery.entity.DeliveryStatus.CANCELLED
-                        && d.getStatus() != com.example.fooddelivery.delivery.entity.DeliveryStatus.WAITING_FOR_DRIVER)
+        DeliveryResponse activeResp = allDeliveries.stream()
+                .filter(d -> d.getStatus() != DeliveryStatus.DELIVERED
+                        && d.getStatus() != DeliveryStatus.CANCELLED
+                        && d.getStatus() != DeliveryStatus.WAITING_FOR_DRIVER)
                 .findFirst()
-                .map(com.example.fooddelivery.delivery.dto.DeliveryResponse::from)
+                .map(DeliveryResponse::from)
                 .orElse(null);
 
-        return com.example.fooddelivery.driver.dto.DriverDashboardStats.builder()
+        return DriverDashboardStats.builder()
                 .online(driver.getOnline())
                 .approved(driver.getApproved())
                 .rating(driver.getRating())
@@ -162,8 +177,7 @@ public class DriverService {
             // If driver is currently fulfilling an active delivery, broadcast to the order topic for live customer tracking
             deliveryRepository.findFirstByDriverIdAndStatusIn(
                     driver.getId(),
-                    List.of(com.example.fooddelivery.delivery.entity.DeliveryStatus.ACCEPTED,
-                            com.example.fooddelivery.delivery.entity.DeliveryStatus.PICKED_UP)
+                    ACTIVE_DELIVERY_STATUSES
             ).ifPresent(activeDelivery -> {
                 messagingTemplate.convertAndSend("/topic/orders/" + activeDelivery.getOrder().getId() + "/location", locationPayload);
             });
@@ -206,14 +220,14 @@ public class DriverService {
      * Each record includes the delivery fee earned.
      */
     @Transactional(readOnly = true)
-    public com.example.fooddelivery.common.response.PageResponse<com.example.fooddelivery.delivery.dto.DeliveryResponse> getEarningsHistory(
+    public PageResponse<DeliveryResponse> getEarningsHistory(
             Long userId, Pageable pageable) {
         Driver driver = findDriverByUserId(userId);
-        org.springframework.data.domain.Page<com.example.fooddelivery.delivery.dto.DeliveryResponse> page =
+        Page<DeliveryResponse> page =
                 deliveryRepository.findByDriverIdAndStatus(driver.getId(),
-                        com.example.fooddelivery.delivery.entity.DeliveryStatus.DELIVERED, pageable)
-                        .map(com.example.fooddelivery.delivery.dto.DeliveryResponse::from);
-        return com.example.fooddelivery.common.response.PageResponse.from(page);
+                        DeliveryStatus.DELIVERED, pageable)
+                        .map(DeliveryResponse::from);
+        return PageResponse.from(page);
     }
 }
 
