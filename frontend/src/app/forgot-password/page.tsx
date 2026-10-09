@@ -99,21 +99,21 @@ export default function ForgotPasswordPage() {
                   </p>
                 </div>
 
-                {generatedToken ? (
+                {process.env.NODE_ENV === 'development' && generatedToken ? (
                   <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-3 text-[11px] text-emerald-800 dark:text-emerald-300 text-left space-y-1">
                     <p className="font-bold">{t.auth.devResetToken}</p>
                     <p className="font-mono break-all text-[10px] bg-white dark:bg-slate-900 p-1.5 rounded border border-emerald-200 dark:border-emerald-800 text-slate-800 dark:text-slate-200">
                       {generatedToken}
                     </p>
                   </div>
-                ) : (
+                ) : process.env.NODE_ENV === 'development' ? (
                   <div className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-3 text-[11px] text-slate-600 dark:text-slate-300 text-left space-y-1">
                     <p className="font-bold text-slate-800 dark:text-slate-200">{t.auth.devSimulatorNotice}</p>
                     <p className="text-slate-500 dark:text-slate-400">
                       {t.auth.devConsoleLogsNotice}
                     </p>
                   </div>
-                )}
+                ) : null}
 
                 <Link
                   href={generatedToken ? `/reset-password?token=${generatedToken}` : '/reset-password'}
