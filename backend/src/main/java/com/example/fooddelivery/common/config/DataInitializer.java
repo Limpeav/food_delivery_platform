@@ -53,7 +53,7 @@ public class DataInitializer implements CommandLineRunner {
     @org.springframework.beans.factory.annotation.Value("${app.admin.email:admin@gmail.com}")
     private String adminEmail;
 
-    @org.springframework.beans.factory.annotation.Value("${app.admin.password:admin123}")
+    @org.springframework.beans.factory.annotation.Value("${app.admin.password}")
     private String adminPassword;
 
     @org.springframework.beans.factory.annotation.Value("${app.seed.enabled:true}")

@@ -29,11 +29,15 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy the built JAR from builder stage
 COPY --from=builder /app/target/food-delivery-backend-1.0.0.jar app.jar
 
+# Create uploads directory and set correct ownership BEFORE switching user
+RUN mkdir -p /app/uploads && chown -R appuser:appgroup /app/uploads
+
 USER appuser
 
 EXPOSE 8080
 
 # Configure JVM options for container environments (auto-detect memory limits)
-ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+# -Xss512k: reduce thread stack size (saves ~1MB per thread on free tier)
+ENV JAVA_OPTS="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError -Xss512k"
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

@@ -22,6 +22,7 @@ spring:
     hibernate:
       ddl-auto: ${DDL_AUTO:update}  # Set DDL_AUTO=validate in production; use Flyway for migrations
     show-sql: false
+    open-in-view: false
   flyway:
     enabled: ${FLYWAY_ENABLED:false}
     baseline-on-migrate: true
@@ -31,7 +32,6 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    open-in-view: false
   data:
     redis:
       host: ${REDIS_HOST:localhost}
