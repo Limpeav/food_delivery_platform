@@ -40,7 +40,7 @@ spring:
       ssl:
         enabled: ${REDIS_SSL_ENABLED:false}
   cache:
-    type: redis
+    type: ${CACHE_TYPE:simple}   # Use 'redis' only when REDIS_HOST is configured; 'simple' = JVM in-memory
     redis:
       time-to-live: 3600000 # 1 hour
       cache-null-values: false
