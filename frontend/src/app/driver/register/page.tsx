@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Bike, AlertCircle, ArrowRight, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/stores/languageStore';
 
 const driverSchema = z
   .object({
@@ -36,6 +37,7 @@ type DriverFormData = z.infer<typeof driverSchema>;
 
 export default function DriverRegisterPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { driverRegister } = useAuthStore();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,187 +85,187 @@ export default function DriverRegisterPage() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-xl space-y-6">
+    <div className="flex-1 flex items-center justify-center p-3 sm:p-4 my-auto">
+      <div className="w-full max-w-xl space-y-3 sm:space-y-3.5">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-blue-600 text-white shadow-xl shadow-blue-600/25">
-            <Bike className="h-7 w-7" />
+        <div className="text-center space-y-1">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-lg shadow-blue-600/25">
+            <Bike className="h-5 w-5" />
           </div>
-          <h1 className="text-3xl font-black tracking-tight text-white">
-            Apply as Delivery Driver
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+            {t.driver.applyTitle}
           </h1>
-          <p className="text-sm text-slate-400">
-            Submit your courier license and vehicle info to begin onboarding
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            {t.driver.applySubtitle}
           </p>
         </div>
 
         {/* Application Card */}
-        <div className="rounded-3xl border border-slate-800 bg-slate-950/90 p-6 sm:p-8 shadow-2xl">
+        <div className="rounded-2xl sm:rounded-3xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm dark:shadow-2xl transition-colors space-y-3">
           {errorMsg && (
-            <div className="mb-6 flex items-start gap-2.5 rounded-2xl bg-rose-950/60 border border-rose-800/60 p-4 text-xs text-rose-300 font-medium">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+            <div className="flex items-start gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 p-2.5 text-xs text-rose-700 dark:text-rose-300 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Full Legal Name
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                  {t.driver.fullLegalName}
                 </label>
                 <input
                   type="text"
                   placeholder="John Doe"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   {...register('name')}
                 />
                 {errors.name && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.name.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.name.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Email Address
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                  {t.auth.email}
                 </label>
                 <input
                   type="email"
                   placeholder="driver@courier.com"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   {...register('email')}
                 />
                 {errors.email && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.email.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.email.message}</p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Phone Number
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                  {t.auth.phoneNumber}
                 </label>
                 <input
                   type="tel"
                   placeholder="+855 12 345 678"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   {...register('phone')}
                 />
                 {errors.phone && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.phone.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.phone.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Password
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                  {t.auth.password}
                 </label>
                 <input
                   type="password"
                   placeholder="Min 8 chars"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   {...register('password')}
                 />
                 {errors.password && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.password.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.password.message}</p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">
-                  Confirm Password
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                  {t.auth.confirmPassword}
                 </label>
                 <input
                   type="password"
                   placeholder="Confirm password"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   {...register('confirmPassword')}
                 />
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-xs text-rose-400">{errors.confirmPassword.message}</p>
+                  <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.confirmPassword.message}</p>
                 )}
               </div>
             </div>
 
             {/* Vehicle & License Information */}
-            <div className="pt-2 border-t border-slate-800 space-y-3">
-              <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider">
-                Vehicle & License Registration
+            <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+              <h3 className="text-[11px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+                {t.driver.vehicleSectionTitle}
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
-                    Vehicle Type
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {t.driver.vehicleType}
                   </label>
                   <select
-                    className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all cursor-pointer"
                     {...register('vehicleType')}
                   >
-                    <option value="MOTORCYCLE">Motorcycle</option>
-                    <option value="SCOOTER">Electric Scooter</option>
-                    <option value="BICYCLE">Bicycle</option>
-                    <option value="CAR">Car</option>
+                    <option value="MOTORCYCLE">{t.driver.motorcycle}</option>
+                    <option value="SCOOTER">{t.driver.scooter}</option>
+                    <option value="BICYCLE">{t.driver.bicycle}</option>
+                    <option value="CAR">{t.driver.car}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
-                    Plate Number
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {t.driver.plateNumber}
                   </label>
                   <input
                     type="text"
                     placeholder="1AB-9876"
-                    className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     {...register('vehicleNumber')}
                   />
                   {errors.vehicleNumber && (
-                    <p className="mt-1 text-xs text-rose-400">{errors.vehicleNumber.message}</p>
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.vehicleNumber.message}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
-                    Driver License #
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
+                    {t.driver.licenseNumber}
                   </label>
                   <input
                     type="text"
                     placeholder="DL-992817"
-                    className="w-full rounded-xl border border-slate-800 bg-slate-900 px-3.5 py-2 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     {...register('licenseNumber')}
                   />
                   {errors.licenseNumber && (
-                    <p className="mt-1 text-xs text-rose-400">{errors.licenseNumber.message}</p>
+                    <p className="mt-1 text-xs text-rose-600 dark:text-rose-400 font-medium">{errors.licenseNumber.message}</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Application Notice */}
-            <div className="rounded-2xl bg-slate-900 border border-slate-800 p-3.5 text-xs text-slate-400 space-y-1">
-              <p className="font-bold text-blue-400 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4" /> Driver Vetting Process:
+            <div className="rounded-xl bg-blue-50/60 dark:bg-slate-800/80 border border-blue-200 dark:border-slate-700/80 p-2.5 text-xs text-slate-600 dark:text-slate-300 space-y-0.5 transition-colors">
+              <p className="font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1.5 text-[11px]">
+                <ShieldCheck className="w-3.5 h-3.5" /> {t.driver.vettingTitle}
               </p>
-              <p className="leading-relaxed">
-                Your driver account will be submitted with status <span className="text-amber-400 font-semibold">PENDING</span>. Once administrators verify your license number, you will be approved to go online and accept delivery dispatches.
+              <p className="leading-snug text-[10px]">
+                {t.driver.vettingNotice}
               </p>
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black py-3 text-sm transition-all shadow-lg shadow-blue-600/25 disabled:opacity-50 cursor-pointer"
+              className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black py-2.5 text-sm transition-all shadow-md shadow-blue-600/25 disabled:opacity-50 cursor-pointer"
             >
-              {isSubmitting ? 'Submitting Application...' : 'Submit Driver Application'}
+              {isSubmitting ? t.driver.submittingApplication : t.driver.submitApplication}
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-400 pt-4 border-t border-slate-800">
-            Already registered as a driver?{' '}
-            <Link href="/driver/login" className="font-bold text-blue-400 hover:underline">
-              Sign in to Driver Portal
+          <div className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400 pt-3 border-t border-slate-200/80 dark:border-slate-800">
+            {t.driver.alreadyRegisteredDriver}{' '}
+            <Link href="/driver/login" className="font-bold text-blue-600 dark:text-blue-400 hover:underline">
+              {t.driver.signInPortal}
             </Link>
           </div>
         </div>

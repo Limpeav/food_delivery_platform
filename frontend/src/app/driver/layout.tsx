@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { Bike, AlertTriangle, ArrowLeft, LogOut, CheckCircle2, Power, MapPin } from 'lucide-react';
+import { Bike, AlertTriangle, LogOut, CheckCircle2, Power, MapPin } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { driverService } from '@/services/driverService';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Loading } from '@/components/ui/Loading';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { useTranslation } from '@/stores/languageStore';
 import { Driver } from '@/types';
 
 export default function DriverLayout({
@@ -18,6 +20,7 @@ export default function DriverLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const { user, isAuthenticated, isLoading, isInitialized, businessStatus, logout } = useAuthStore();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [toggling, setToggling] = useState(false);
@@ -61,55 +64,50 @@ export default function DriverLayout({
   // Guest layout for /driver/login, /driver/register, /driver/forgot-password
   if (isGuestRoute) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-900 text-slate-100 selection:bg-blue-500 selection:text-white">
+      <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-500 selection:text-white transition-colors overflow-x-hidden">
         {/* Driver Header */}
-        <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-4 sm:px-8 py-3.5 flex items-center justify-between">
+        <header className="shrink-0 border-b border-slate-200/80 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md px-4 sm:px-8 py-3 flex items-center justify-between transition-colors">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
               <Bike className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-base font-black text-white tracking-tight">
-                Cravery<span className="text-blue-400">Driver</span>
+              <span className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+                Cravery<span className="text-blue-600 dark:text-blue-400">Driver</span>
               </span>
-              <span className="block text-[9px] uppercase tracking-widest text-slate-400 font-bold -mt-0.5">
-                Courier Portal
+              <span className="block text-[9px] uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold -mt-0.5">
+                {t.driver.dispatchTitle}
               </span>
             </div>
           </Link>
 
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-2.5 text-xs">
+            <LanguageToggle variant="dropdown" />
             <ThemeToggle />
-            <Link
-              href="/"
-              className="hidden sm:inline-flex items-center gap-1 text-slate-400 hover:text-white transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> Customer App
-            </Link>
             {pathname === '/driver/login' ? (
               <Link
                 href="/driver/register"
                 className="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all shadow-xs"
               >
-                Sign Up as Driver
+                {t.nav.becomeDriver}
               </Link>
             ) : (
               <Link
                 href="/driver/login"
-                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition-all border border-slate-700"
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold transition-all border border-slate-200 dark:border-slate-700 shadow-xs"
               >
-                Driver Sign In
+                {t.nav.driverSignIn}
               </Link>
             )}
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 flex flex-col">{children}</main>
+        <main className="flex-1 flex flex-col justify-center min-h-0 overflow-y-auto">{children}</main>
 
         {/* Driver Footer */}
-        <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-4 text-center text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} Cravery Delivery Network. Flexible courier earnings on your schedule.</p>
+        <footer className="shrink-0 border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 py-2.5 px-4 text-center text-[11px] text-slate-500 dark:text-slate-400 transition-colors">
+          <p>© {new Date().getFullYear()} Cravery Delivery Network. {t.footer.rightsReserved}</p>
         </footer>
       </div>
     );
@@ -143,12 +141,13 @@ export default function DriverLayout({
                 {user.name}
               </h2>
               <span className="text-[10px] text-slate-400 font-medium">
-                {driver?.vehicleType ? `${driver.vehicleType} • ${driver.vehicleNumber}` : 'Courier Active'}
+                {driver?.vehicleType ? `${driver.vehicleType} • ${driver.vehicleNumber}` : t.driver.badge}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <LanguageToggle variant="dropdown" />
             <ThemeToggle />
             {/* Online / Offline Toggle */}
             {driver && driver.approved ? (
@@ -163,12 +162,12 @@ export default function DriverLayout({
                 }`}
               >
                 <Power className="w-3.5 h-3.5" />
-                {driver.online ? 'Online (Accepting Jobs)' : 'Offline'}
+                {driver.online ? t.driver.online : t.driver.offline}
               </button>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
-                Pending Verification
+                {t.restaurant.underReview}
               </span>
             )}
 
@@ -177,21 +176,21 @@ export default function DriverLayout({
               className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <LogOut className="w-3.5 h-3.5" />
-              Sign Out
+              {t.common.signOut}
             </button>
           </div>
         </header>
 
-        {/* Pending Review Banner (Requirement 4 & 15) */}
+        {/* Pending Review Banner */}
         {isPending && (
-          <div className="bg-amber-50 border-b border-amber-200 px-6 py-3.5 flex items-start gap-3 text-amber-900 shrink-0">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-900/60 px-6 py-3.5 flex items-start gap-3 text-amber-900 dark:text-amber-200 shrink-0">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <div className="text-xs space-y-0.5">
               <p className="font-bold">
-                Your driver application is still under review.
+                {t.restaurant.underReviewNotice}
               </p>
-              <p className="text-amber-700 leading-relaxed">
-                Your vehicle registration and driver license are currently being audited by operations administrators. You will be able to go online and accept delivery dispatch requests once your profile is approved.
+              <p className="text-amber-700 dark:text-amber-400 leading-relaxed">
+                {t.driver.vettingNotice}
               </p>
             </div>
           </div>

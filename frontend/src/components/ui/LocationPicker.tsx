@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { MapPin, LocateFixed, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/stores/languageStore';
 
 // Default center: Phnom Penh
 const DEFAULT_LAT = 11.5564;
@@ -18,13 +19,16 @@ interface LocationPickerProps {
   value: LocationPickerValue;
   onChange: (val: LocationPickerValue) => void;
   className?: string;
+  mapHeight?: number;
 }
 
 export const LocationPicker: React.FC<LocationPickerProps> = ({
   value,
   onChange,
   className = '',
+  mapHeight = 200,
 }) => {
+  const { t } = useTranslation();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -51,10 +55,25 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   // Initialise Leaflet map once on mount
   useEffect(() => {
     if (typeof window === 'undefined' || !mapContainerRef.current) return;
-    if (mapRef.current) return; // already initialized
+
+    let isMounted = true;
 
     // Dynamically import Leaflet so it's SSR-safe
     import('leaflet').then((L) => {
+      if (!isMounted || !mapContainerRef.current) return;
+
+      // Clean up any previous map instance or leftover leaflet container state
+      if (mapRef.current) {
+        try {
+          mapRef.current.remove();
+        } catch {}
+        mapRef.current = null;
+      }
+      if ((mapContainerRef.current as any)?._leaflet_id) {
+        delete (mapContainerRef.current as any)._leaflet_id;
+        mapContainerRef.current.innerHTML = '';
+      }
+
       // Fix default icon paths broken by webpack
       // @ts-ignore
       delete L.Icon.Default.prototype._getIconUrl;
@@ -64,11 +83,22 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       });
 
-      const map = L.map(mapContainerRef.current!, {
-        center: [value.lat, value.lng],
+      const initialLat = Number.isFinite(value?.lat) ? value.lat : DEFAULT_LAT;
+      const initialLng = Number.isFinite(value?.lng) ? value.lng : DEFAULT_LNG;
+
+      const map = L.map(mapContainerRef.current, {
+        center: [initialLat, initialLng],
         zoom: DEFAULT_ZOOM,
         zoomControl: true,
       });
+
+      // If unmounted while map was initializing
+      if (!isMounted) {
+        try {
+          map.remove();
+        } catch {}
+        return;
+      }
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
@@ -85,7 +115,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         iconAnchor: [18, 36],
       });
 
-      const marker = L.marker([value.lat, value.lng], { icon, draggable: true }).addTo(map);
+      const marker = L.marker([initialLat, initialLng], { icon, draggable: true }).addTo(map);
 
       // Update on marker drag
       marker.on('dragend', async () => {
@@ -107,8 +137,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     });
 
     return () => {
+      isMounted = false;
       if (mapRef.current) {
-        mapRef.current.remove();
+        try {
+          mapRef.current.remove();
+        } catch {}
         mapRef.current = null;
         markerRef.current = null;
       }
@@ -119,6 +152,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   // Sync marker position when value changes externally (e.g. GPS detect)
   useEffect(() => {
     if (!mapRef.current || !markerRef.current) return;
+    if (!Number.isFinite(value?.lat) || !Number.isFinite(value?.lng)) return;
     markerRef.current.setLatLng([value.lat, value.lng]);
     mapRef.current.setView([value.lat, value.lng], DEFAULT_ZOOM, { animate: true });
   }, [value.lat, value.lng]);
@@ -150,7 +184,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         />
         <div
           ref={mapContainerRef}
-          style={{ height: 280, width: '100%', background: '#1e293b' }}
+          style={{ height: mapHeight, width: '100%', background: '#1e293b' }}
           aria-label="Restaurant location map — click to set pin or drag the marker"
         />
 
@@ -167,7 +201,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
           ) : (
             <LocateFixed className="w-3.5 h-3.5" />
           )}
-          {detecting ? 'Detecting...' : 'Use my location'}
+          {detecting ? t.common.detectingLocation : t.common.useMyLocation}
         </button>
       </div>
 
@@ -176,12 +210,12 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         <MapPin className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           {geocoding ? (
-            <p className="text-xs text-slate-400 animate-pulse">Resolving address...</p>
+            <p className="text-xs text-slate-400 animate-pulse">{t.common.resolvingAddress}</p>
           ) : value.address ? (
             <p className="text-xs text-slate-300 leading-snug break-words">{value.address}</p>
           ) : (
             <p className="text-xs text-slate-500 italic">
-              Click the map or drag the pin to set your restaurant location
+              {t.common.pinLocationInstruction}
             </p>
           )}
           <p className="text-[10px] text-slate-500 mt-1 font-mono">
@@ -191,7 +225,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       </div>
 
       <p className="text-[10px] text-slate-500 px-1">
-        📍 Click anywhere on the map, drag the green pin, or tap &quot;Use my location&quot; to pinpoint your restaurant.
+        {t.common.mapPinHelp}
       </p>
     </div>
   );

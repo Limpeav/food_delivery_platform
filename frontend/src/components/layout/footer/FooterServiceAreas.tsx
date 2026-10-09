@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { MapPin, ChevronDown } from 'lucide-react';
 import { footerServiceAreas, serviceAreaFooterNote } from '@/config/footer';
+import { useTranslation } from '@/stores/languageStore';
 
 export const FooterServiceAreas: React.FC = () => {
+  const { t } = useTranslation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
@@ -18,7 +20,7 @@ export const FooterServiceAreas: React.FC = () => {
       >
         <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5 group-hover:text-[#FF5A1F] sm:group-hover:text-slate-900 dark:sm:group-hover:text-white transition-colors">
           <MapPin className="w-3.5 h-3.5 text-[#FF5A1F]" />
-          <span>Available In</span>
+          <span>{t.footer.serviceAreas}</span>
         </h3>
         <ChevronDown
           className={`w-4 h-4 text-slate-400 sm:hidden transition-transform duration-200 ${

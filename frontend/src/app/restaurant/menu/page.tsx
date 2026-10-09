@@ -114,10 +114,10 @@ export default function RestaurantMenuPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Menu & Food Catalog
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Manage your dishes, prices, preparation times, and instant stock availability
           </p>
         </div>
@@ -126,23 +126,23 @@ export default function RestaurantMenuPage() {
           variant="primary"
           size="sm"
           onClick={() => setModalOpen(true)}
-          className="rounded-xl text-xs gap-1.5 font-bold self-start"
+          className="rounded-xl text-xs gap-1.5 font-bold self-start shadow-xs"
         >
           <Plus className="w-4 h-4" /> Add Food Item
         </Button>
       </div>
 
       {/* Food Items Table / Cards */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white overflow-hidden shadow-xs divide-y divide-slate-100">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden shadow-xs divide-y divide-slate-100 dark:divide-slate-800">
         {foods.length === 0 ? (
-          <div className="py-16 text-center text-xs text-slate-400">
+          <div className="py-16 text-center text-xs text-slate-400 dark:text-slate-500">
             No dishes added yet. Click &quot;Add Food Item&quot; to begin.
           </div>
         ) : (
           foods.map((food) => (
             <div key={food.id} className="p-4 sm:p-5 flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0">
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
                   <img
                     src={
                       food.imageUrl ||
@@ -154,19 +154,19 @@ export default function RestaurantMenuPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-slate-900">{food.name}</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">{food.name}</h3>
                     <Badge variant="primary" size="sm">
                       {food.menuCategoryName || 'Dish'}
                     </Badge>
                   </div>
-                  <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5">
                     {food.description || 'No description provided'}
                   </p>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
-                    <span className="font-black text-slate-900">${food.price.toFixed(2)}</span>
+                  <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    <span className="font-black text-slate-900 dark:text-white">${food.price.toFixed(2)}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3 text-slate-400" /> {food.preparationTime} mins
+                      <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" /> {food.preparationTime} mins
                     </span>
                   </div>
                 </div>
@@ -178,8 +178,8 @@ export default function RestaurantMenuPage() {
                   onClick={() => handleToggleAvailability(food)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     food.available
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                      : 'bg-slate-100 text-slate-500 border border-slate-200'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700'
                   }`}
                 >
                   {food.available ? 'In Stock' : 'Sold Out'}
@@ -187,7 +187,7 @@ export default function RestaurantMenuPage() {
 
                 <button
                   onClick={() => handleDeleteFood(food.id)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                  className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                   title="Delete dish"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -202,7 +202,7 @@ export default function RestaurantMenuPage() {
           totalElements={totalElements}
           pageSize={20}
           onPageChange={(p) => setPage(p - 1)}
-          className="px-6 py-4 bg-slate-50/50"
+          className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800"
         />
       </div>
 
@@ -243,13 +243,13 @@ export default function RestaurantMenuPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
               Menu Category
             </label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(Number(e.target.value))}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-[#FF5A1F]"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-[#FF5A1F]"
               required
             >
               {categories.map((c) => (
@@ -268,7 +268,7 @@ export default function RestaurantMenuPage() {
           />
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
               Description
             </label>
             <textarea
@@ -276,7 +276,7 @@ export default function RestaurantMenuPage() {
               placeholder="Ingredients, flavors, allergen notes..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#FF5A1F]"
             />
           </div>
 

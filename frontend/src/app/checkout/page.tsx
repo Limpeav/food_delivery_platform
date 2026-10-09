@@ -29,9 +29,11 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Loading } from '@/components/ui/Loading';
 import { LocationPicker, LocationPickerValue } from '@/components/ui/LocationPicker';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const { cart, fetchCart } = useCartStore();
 
@@ -93,11 +95,11 @@ export default function CheckoutPage() {
       if (res.valid) {
         setCouponResult(res);
       } else {
-        setCouponError('Invalid coupon code');
+        setCouponError(t.checkoutPage.invalidCoupon);
         setCouponResult(null);
       }
     } catch (err: any) {
-      setCouponError(err.response?.data?.message || 'Invalid or expired coupon code');
+      setCouponError(err.response?.data?.message || t.checkoutPage.invalidCoupon);
       setCouponResult(null);
     } finally {
       setValidatingCoupon(false);
@@ -132,7 +134,7 @@ export default function CheckoutPage() {
 
   const handlePlaceOrder = async () => {
     if (!selectedAddressId) {
-      setOrderError('Please select or add a delivery address');
+      setOrderError(t.checkoutPage.pleaseSelectAddress);
       return;
     }
     setSubmitting(true);
@@ -149,14 +151,14 @@ export default function CheckoutPage() {
       // Navigate to order details / live tracking
       router.push(`/orders/${order.id}`);
     } catch (err: any) {
-      setOrderError(err.response?.data?.message || 'Failed to place order');
+      setOrderError(err.response?.data?.message || t.checkoutPage.orderFailed);
     } finally {
       setSubmitting(false);
     }
   };
 
   if (!cart) {
-    return <Loading fullPage message="Loading checkout details..." />;
+    return <Loading fullPage message={t.checkoutPage.loadingCheckout} />;
   }
 
   const subtotal = cart.subtotal;
@@ -168,10 +170,10 @@ export default function CheckoutPage() {
     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       <div>
         <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-          Checkout
+          {t.checkoutPage.title}
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Complete your delivery details and choose payment method
+          {t.checkoutPage.subtitle}
         </p>
       </div>
 
@@ -191,7 +193,7 @@ export default function CheckoutPage() {
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-[#FF5A1F]" />
                 <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                  Delivery Address
+                  {t.checkoutPage.deliveryAddress}
                 </h2>
               </div>
               <Button
@@ -204,14 +206,14 @@ export default function CheckoutPage() {
                 }}
                 className="rounded-xl text-xs gap-1"
               >
-                <Plus className="w-3.5 h-3.5" /> Add New
+                <Plus className="w-3.5 h-3.5" /> {t.checkoutPage.addNewAddress}
               </Button>
             </div>
 
             {addresses.length === 0 ? (
               <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                  No saved addresses found. Please add a delivery address to proceed.
+                  {t.checkoutPage.noAddressesSaved}
                 </p>
                 <Button
                   size="sm"
@@ -223,7 +225,7 @@ export default function CheckoutPage() {
                   }}
                   className="rounded-xl"
                 >
-                  Add Address
+                  {t.checkoutPage.addNewAddress}
                 </Button>
               </div>
             ) : (
@@ -266,7 +268,7 @@ export default function CheckoutPage() {
             <div className="flex items-center gap-2">
               <Banknote className="w-5 h-5 text-[#FF5A1F]" />
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Payment Method
+                {t.checkoutPage.paymentMethod}
               </h2>
             </div>
 
@@ -275,8 +277,8 @@ export default function CheckoutPage() {
                 <Banknote className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Cash on Delivery</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">Pay cash to the courier upon arrival</p>
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.checkoutPage.cashOnDelivery}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{t.checkoutPage.cashOnDeliveryDesc}</p>
               </div>
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 ml-auto shrink-0" />
             </div>
@@ -286,30 +288,30 @@ export default function CheckoutPage() {
           <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-                Drop-off Instructions (Optional)
+                {t.checkoutPage.dropOffInstructions}
               </label>
             </div>
 
             {/* Quick Presets */}
             <div className="flex flex-wrap gap-2">
               {[
-                'Leave at door',
-                'Meet outside / downstairs',
-                'Leave at lobby / reception',
-                'Call upon arrival',
-                'Ring doorbell',
+                { key: 'leaveAtDoor', label: t.checkoutPage.presets.leaveAtDoor },
+                { key: 'meetOutside', label: t.checkoutPage.presets.meetOutside },
+                { key: 'leaveAtLobby', label: t.checkoutPage.presets.leaveAtLobby },
+                { key: 'callUponArrival', label: t.checkoutPage.presets.callUponArrival },
+                { key: 'ringDoorbell', label: t.checkoutPage.presets.ringDoorbell },
               ].map((preset) => (
                 <button
-                  key={preset}
+                  key={preset.key}
                   type="button"
                   onClick={() => {
                     setOrderNotes((prev) =>
-                      prev ? `${prev}, ${preset}` : preset
+                      prev ? `${prev}, ${preset.label}` : preset.label
                     );
                   }}
                   className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:border-orange-200 dark:hover:border-orange-900 px-2.5 py-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-[#FF5A1F] transition-colors cursor-pointer"
                 >
-                  + {preset}
+                  + {preset.label}
                 </button>
               ))}
             </div>
@@ -318,7 +320,7 @@ export default function CheckoutPage() {
               rows={2}
               value={orderNotes}
               onChange={(e) => setOrderNotes(e.target.value)}
-              placeholder="e.g. Ring doorbell, leave food at condo lobby, extra napkins..."
+              placeholder={t.checkoutPage.notesPlaceholder}
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
             />
           </div>
@@ -330,7 +332,7 @@ export default function CheckoutPage() {
           <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-3">
             <div className="flex items-center gap-2">
               <Tag className="w-4 h-4 text-[#FF5A1F]" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Voucher / Promo Code</span>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.checkoutPage.promoCode}</span>
             </div>
 
             <div className="flex gap-2">
@@ -348,14 +350,14 @@ export default function CheckoutPage() {
                 isLoading={validatingCoupon}
                 className="rounded-xl text-xs"
               >
-                Apply
+                {t.checkoutPage.apply}
               </Button>
             </div>
 
             {couponResult?.valid && (
               <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                Coupon &apos;{couponCode}&apos; applied (-${couponResult.discount.toFixed(2)})
+                {t.checkoutPage.couponDiscountApplied} (-${couponResult.discount.toFixed(2)})
               </p>
             )}
 
@@ -369,25 +371,25 @@ export default function CheckoutPage() {
 
           {/* Order Totals Card */}
           <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Total Breakdown</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t.checkoutPage.orderSummary}</h3>
 
             <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex justify-between">
-                <span>Items Subtotal</span>
+                <span>{t.checkoutPage.itemsSubtotal}</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200">${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Delivery Fee</span>
+                <span>{t.checkoutPage.deliveryFee}</span>
                 <span className="font-semibold text-slate-800 dark:text-slate-200">${deliveryFee.toFixed(2)}</span>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                  <span>Coupon Discount</span>
+                  <span>{t.checkoutPage.discountCoupon}</span>
                   <span>-${discount.toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between text-sm font-bold text-slate-900 dark:text-slate-100">
-                <span>Final Total</span>
+                <span>{t.checkoutPage.finalTotal}</span>
                 <span className="text-lg font-black text-[#FF5A1F]">
                   ${totalAmount.toFixed(2)}
                 </span>
@@ -401,7 +403,7 @@ export default function CheckoutPage() {
               isLoading={submitting}
               className="w-full rounded-2xl gap-2 font-bold"
             >
-              Confirm & Place Order <ArrowRight className="w-4 h-4" />
+              {t.checkoutPage.confirmPlaceOrder} <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -411,14 +413,14 @@ export default function CheckoutPage() {
       <Modal
         isOpen={addressModalOpen}
         onClose={() => setAddressModalOpen(false)}
-        title="Pinpoint Delivery Address"
-        description="Pin your exact location on the map and enter street details"
+        title={t.checkoutPage.addressModal.title}
+        description={t.checkoutPage.addressModal.desc}
       >
         <form onSubmit={handleSaveAddress} className="space-y-4 pt-2">
           {/* Map Pin Location Picker */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
-              Pin Delivery Location on Map
+              {t.checkoutPage.addressModal.pinMap}
             </label>
             <LocationPicker
               value={newLocation}
@@ -433,14 +435,14 @@ export default function CheckoutPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Label"
-              placeholder="Home, Office, Apartment..."
+              label={t.checkoutPage.addressModal.label}
+              placeholder={t.checkoutPage.addressModal.labelPlaceholder}
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
               required
             />
             <Input
-              label="City"
+              label={t.checkoutPage.addressModal.city}
               placeholder="Phnom Penh"
               value={newCity}
               onChange={(e) => setNewCity(e.target.value)}
@@ -450,14 +452,14 @@ export default function CheckoutPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Recipient Name"
+              label={t.checkoutPage.addressModal.recipientName}
               placeholder="John Doe"
               value={newRecipient}
               onChange={(e) => setNewRecipient(e.target.value)}
               required
             />
             <Input
-              label="Phone Number"
+              label={t.checkoutPage.addressModal.phone}
               placeholder="+855 12 345 678"
               value={newPhone}
               onChange={(e) => setNewPhone(e.target.value)}
@@ -466,8 +468,8 @@ export default function CheckoutPage() {
           </div>
 
           <Input
-            label="Street Address / Building / Unit"
-            placeholder="Street 240, Unit 4B, Sky Villa"
+            label={t.checkoutPage.addressModal.addressLine}
+            placeholder={t.checkoutPage.addressModal.addressLinePlaceholder}
             value={newAddressLine}
             onChange={(e) => setNewAddressLine(e.target.value)}
             required
@@ -480,7 +482,7 @@ export default function CheckoutPage() {
               size="sm"
               onClick={() => setAddressModalOpen(false)}
             >
-              Cancel
+              {t.checkoutPage.addressModal.cancel}
             </Button>
             <Button
               type="submit"
@@ -488,7 +490,7 @@ export default function CheckoutPage() {
               size="sm"
               isLoading={savingAddress}
             >
-              Save Address
+              {t.checkoutPage.addressModal.save}
             </Button>
           </div>
         </form>

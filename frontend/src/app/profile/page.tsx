@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, MapPin, Plus, Trash2, CheckCircle2, Phone, Mail, Shield } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/stores/languageStore';
 import { addressService } from '@/services/addressService';
 import { Address } from '@/types';
 import { Button } from '@/components/ui/Button';
@@ -14,6 +15,7 @@ import { Loading } from '@/components/ui/Loading';
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +83,7 @@ export default function ProfilePage() {
   };
 
   const handleDeleteAddress = async (id: number) => {
-    if (!confirm('Are you sure you want to remove this address?')) return;
+    if (!confirm(t.accountPage.confirmRemoveAddress)) return;
     try {
       await addressService.deleteAddress(id);
       setAddresses(addresses.filter((a) => a.id !== id));
@@ -91,37 +93,37 @@ export default function ProfilePage() {
   };
 
   if (authLoading || (loading && !user)) {
-    return <Loading fullPage message="Loading profile..." />;
+    return <Loading fullPage message={t.accountPage.loadingProfile} />;
   }
 
   return (
     <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-slate-900">
-          Account & Preferences
+        <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+          {t.accountPage.preferencesTitle}
         </h1>
-        <p className="text-xs text-slate-500 mt-0.5">
-          Manage your personal profile and delivery destination address book
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          {t.accountPage.preferencesSubtitle}
         </p>
       </div>
 
       {/* User Info Card */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#FFF1EB] text-[#FF5A1F] flex items-center justify-center font-black text-2xl">
+            <div className="w-16 h-16 rounded-2xl bg-[#FFF1EB] dark:bg-orange-950/60 text-[#FF5A1F] flex items-center justify-center font-black text-2xl">
               {user?.name.charAt(0)}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">{user?.name}</h2>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{user?.name}</h2>
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1">
                 <span className="flex items-center gap-1">
-                  <Mail className="w-3.5 h-3.5" /> {user?.email}
+                  <Mail className="w-3.5 h-3.5 text-slate-400" /> {user?.email}
                 </span>
                 {user?.phoneNumber && (
                   <span className="flex items-center gap-1">
-                    <Phone className="w-3.5 h-3.5" /> {user?.phoneNumber}
+                    <Phone className="w-3.5 h-3.5 text-slate-400" /> {user?.phoneNumber}
                   </span>
                 )}
               </div>
@@ -135,14 +137,14 @@ export default function ProfilePage() {
       </div>
 
       {/* Address Book Card */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-[#FF5A1F]" /> Saved Delivery Addresses
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#FF5A1F]" /> {t.accountPage.savedAddresses}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Addresses available for 1-click checkout
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              {t.accountPage.savedAddressesSubtitle}
             </p>
           </div>
 
@@ -156,27 +158,27 @@ export default function ProfilePage() {
             }}
             className="rounded-xl text-xs gap-1.5"
           >
-            <Plus className="w-3.5 h-3.5" /> Add Address
+            <Plus className="w-3.5 h-3.5" /> {t.accountPage.addNewAddress}
           </Button>
         </div>
 
         {addresses.length === 0 ? (
-          <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-xs text-slate-500">
-            No saved addresses. Add your home or office address to start ordering.
+          <div className="p-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-500 dark:text-slate-400">
+            {t.accountPage.noAddresses}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {addresses.map((addr) => (
               <div
                 key={addr.id}
-                className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-2 relative"
+                className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs space-y-2 relative"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900">{addr.label}</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{addr.label}</span>
                     {addr.isDefault && (
-                      <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold">
-                        Default
+                      <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 text-[10px] font-bold">
+                        {t.accountPage.defaultBadge}
                       </span>
                     )}
                   </div>
@@ -185,24 +187,25 @@ export default function ProfilePage() {
                     {!addr.isDefault && (
                       <button
                         onClick={() => handleSetDefault(addr.id)}
-                        className="text-[11px] font-bold text-slate-500 hover:text-slate-900 hover:underline cursor-pointer"
+                        className="text-[11px] font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:underline cursor-pointer"
                       >
-                        Make Default
+                        {t.accountPage.setDefault}
                       </button>
                     )}
                     <button
                       onClick={() => handleDeleteAddress(addr.id)}
                       className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                      aria-label={t.accountPage.deleteAddress}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                <p className="text-xs font-medium text-slate-700">
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
                   {addr.recipientName} ({addr.phoneNumber})
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {addr.addressLine}, {addr.city}
                 </p>
               </div>
@@ -215,41 +218,41 @@ export default function ProfilePage() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Add Delivery Address"
-        description="Enter recipient and street coordinates"
+        title={t.accountPage.addressModalTitle}
+        description={t.accountPage.addressModalDesc}
       >
         <form onSubmit={handleCreateAddress} className="space-y-4 pt-2">
           <Input
-            label="Label"
-            placeholder="Home, Office, Apartment..."
+            label={t.common.status ? 'Label' : 'Label'}
+            placeholder={t.accountPage.labelPrompt}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
             required
           />
           <Input
-            label="Recipient Name"
-            placeholder="Recipient full name"
+            label={t.accountPage.labelRecipientName}
+            placeholder={t.accountPage.recipientPlaceholder}
             value={recipient}
             onChange={(e) => setRecipient(e.target.value)}
             required
           />
           <Input
-            label="Phone Number"
-            placeholder="+855 12 345 678"
+            label={t.accountPage.labelPhoneNumber}
+            placeholder={t.accountPage.phonePlaceholder}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
           />
           <Input
-            label="Street Address / Building"
-            placeholder="House #24, Street 302"
+            label={t.accountPage.streetAddress}
+            placeholder={t.accountPage.streetAddressPlaceholder}
             value={addressLine}
             onChange={(e) => setAddressLine(e.target.value)}
             required
           />
           <Input
-            label="City"
-            placeholder="Phnom Penh"
+            label={t.accountPage.labelCity}
+            placeholder={t.accountPage.cityPlaceholder}
             value={city}
             onChange={(e) => setCity(e.target.value)}
             required
@@ -261,7 +264,7 @@ export default function ProfilePage() {
               size="sm"
               onClick={() => setModalOpen(false)}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               type="submit"
@@ -269,7 +272,7 @@ export default function ProfilePage() {
               size="sm"
               isLoading={saving}
             >
-              Save Address
+              {saving ? t.accountPage.savingAddress : t.accountPage.saveAddress}
             </Button>
           </div>
         </form>

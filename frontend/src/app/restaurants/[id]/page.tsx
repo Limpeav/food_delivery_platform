@@ -28,10 +28,13 @@ import { Loading } from '@/components/ui/Loading';
 import { Modal } from '@/components/ui/Modal';
 import { FoodDetailModal } from '@/components/shared/FoodDetailModal';
 import { toast } from '@/components/ui/Toast';
+import { useTranslation } from '@/stores/languageStore';
+import { localizeCategory } from '@/locales';
 
 function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t, language } = useTranslation();
 
   const { isAuthenticated } = useAuthStore();
   const { cart, addItem, clearCart, openDrawer } = useCartStore();
@@ -149,10 +152,10 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
 
     try {
       await addItem(food.id, quantity);
-      toast.success(`${food.name} added to cart!`);
+      toast.success(`${food.name} ${t.restaurantDetail.addedToCart}`);
     } catch (err) {
       console.error('Error adding to cart:', err);
-      toast.error('Failed to add item. Please try again.');
+      toast.error(t.restaurantDetail.failedToAdd);
     }
   };
 
@@ -160,7 +163,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
     if (pendingFoodItem) {
       await clearCart();
       await addItem(pendingFoodItem.id, pendingQuantity);
-      toast.success(`${pendingFoodItem.name} added to cart!`);
+      toast.success(`${pendingFoodItem.name} ${t.restaurantDetail.addedToCart}`);
       setConflictModalOpen(false);
       setPendingFoodItem(null);
       setPendingQuantity(1);
@@ -168,15 +171,15 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
   };
 
   if (loading) {
-    return <Loading fullPage message="Loading restaurant details..." />;
+    return <Loading fullPage message={t.restaurantDetail.loading} />;
   }
 
   if (!restaurant) {
     return (
       <div className="py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-800">Restaurant not found</h2>
+        <h2 className="text-xl font-bold text-slate-800">{t.restaurantDetail.notFound}</h2>
         <Link href="/restaurants" className="mt-4 inline-block text-sm font-bold text-[#FF5A1F]">
-          ← Browse other restaurants
+          {t.restaurantDetail.browseOther}
         </Link>
       </div>
     );
@@ -212,7 +215,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Badge variant="primary" size="sm">
-                  {restaurant.categoryName}
+                  {localizeCategory(restaurant.categoryName, language)}
                 </Badge>
                 <span className="text-xs text-slate-300 flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-amber-400" />
@@ -229,7 +232,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleToggleFavorite}
-                aria-label="Save restaurant to favorites"
+                aria-label={t.restaurantDetail.saveToFavorites}
                 className={`p-3 rounded-2xl border transition-all cursor-pointer backdrop-blur-md ${
                   isFavorite
                     ? 'bg-rose-500 border-rose-400 text-white'
@@ -245,7 +248,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                   <span>{restaurant.rating.toFixed(1)}</span>
                 </div>
                 <span className="text-[10px] text-slate-300 font-medium">
-                  {restaurant.reviewCount} reviews
+                  {restaurant.reviewCount} {t.restaurantDetail.reviews}
                 </span>
               </div>
             </div>
@@ -264,11 +267,11 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
               </span>
               <span className="flex items-center gap-1.5">
                 <Bike className="w-4 h-4 text-[#FF5A1F]" />
-                Delivery: ${restaurant.deliveryFee.toFixed(2)}
+                {t.restaurantDetail.delivery} ${restaurant.deliveryFee.toFixed(2)}
               </span>
               <span className="hidden md:flex items-center gap-1.5">
                 <Info className="w-4 h-4 text-slate-400 dark:text-slate-500" />
-                Min Order: ${restaurant.minimumOrder.toFixed(2)}
+                {t.restaurantDetail.minOrder} ${restaurant.minimumOrder.toFixed(2)}
               </span>
             </div>
             {restaurant.phone && (
@@ -292,7 +295,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                 : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
             }`}
           >
-            All Items ({foods.length})
+            {t.restaurantDetail.allItems} ({foods.length})
           </button>
           {categories.map((c) => (
             <button
@@ -304,7 +307,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                   : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
-              {c.name}
+              {localizeCategory(c.name, language)}
             </button>
           ))}
         </div>
@@ -314,11 +317,11 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">Menu Dishes</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Click on any dish to view its details and customer reviews</p>
+            <h2 className="text-xl font-black text-slate-900 dark:text-slate-100">{t.restaurantDetail.menuDishes}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t.restaurantDetail.menuDishesDesc}</p>
           </div>
           <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
-            {filteredFoods.length} {filteredFoods.length === 1 ? 'item' : 'items'}
+            {filteredFoods.length} {filteredFoods.length === 1 ? t.restaurantDetail.item : t.restaurantDetail.items}
           </span>
         </div>
 
@@ -337,7 +340,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className="text-[10px] font-bold text-[#FF5A1F] uppercase tracking-wider">
-                        {food.menuCategoryName || 'Specialty'}
+                        {localizeCategory(food.menuCategoryName || 'Specialty', language)}
                       </span>
                     </div>
                     <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm group-hover:text-[#FF5A1F] transition-colors leading-snug">
@@ -354,7 +357,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                         ${food.price.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-medium group-hover:text-[#FF5A1F] transition-colors">
-                        Click for details →
+                        {t.restaurantDetail.clickForDetails}
                       </span>
                     </div>
 
@@ -369,10 +372,10 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                         className="rounded-xl gap-1 text-xs shadow-xs"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        {inCart ? `Add (${inCart.quantity})` : 'Add'}
+                        {inCart ? `${t.restaurantDetail.add} (${inCart.quantity})` : t.restaurantDetail.add}
                       </Button>
                     ) : (
-                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">Sold out</span>
+                      <span className="text-xs font-semibold text-slate-400 dark:text-slate-500">{t.restaurantDetail.soldOut}</span>
                     )}
                   </div>
                 </div>
@@ -404,7 +407,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
         {/* Customer Reviews Section */}
         {reviews.length > 0 && (
           <div className="mt-14 pt-8 border-t border-slate-200 dark:border-slate-800">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">Customer Reviews</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">{t.restaurantDetail.customerReviews}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {reviews.map((r) => (
                 <div
@@ -442,8 +445,8 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
                 {cartItemCount}
               </div>
               <div>
-                <p className="text-xs font-bold text-white group-hover:text-[#FF5A1F] transition-colors">Your Basket</p>
-                <p className="text-[11px] text-slate-400">Subtotal: ${cartSubtotal.toFixed(2)}</p>
+                <p className="text-xs font-bold text-white group-hover:text-[#FF5A1F] transition-colors">{t.restaurantDetail.yourBasket}</p>
+                <p className="text-[11px] text-slate-400">{t.restaurantDetail.subtotal} ${cartSubtotal.toFixed(2)}</p>
               </div>
             </button>
 
@@ -453,7 +456,7 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
               onClick={openDrawer}
               className="rounded-xl gap-1.5 font-bold cursor-pointer"
             >
-              View Basket <ArrowRight className="w-4 h-4" />
+              {t.restaurantDetail.viewBasket} <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -463,12 +466,12 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
       <Modal
         isOpen={conflictModalOpen}
         onClose={() => setConflictModalOpen(false)}
-        title="Start a new basket?"
-        description="Your cart already contains items from another restaurant."
+        title={t.restaurantDetail.startNewBasket}
+        description={t.restaurantDetail.conflictDescription}
       >
         <div className="space-y-4 pt-2">
           <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-            You can only order from one restaurant at a time. Do you want to clear your current cart and add <span className="font-bold text-slate-900 dark:text-slate-100">{pendingFoodItem?.name}</span>?
+            {t.restaurantDetail.conflictMessage} <span className="font-bold text-slate-900 dark:text-slate-100">{pendingFoodItem?.name}</span>?
           </p>
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button
@@ -476,14 +479,14 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
               size="sm"
               onClick={() => setConflictModalOpen(false)}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               variant="primary"
               size="sm"
               onClick={confirmSwitchRestaurant}
             >
-              Start New Cart
+              {t.restaurantDetail.startNewCart}
             </Button>
           </div>
         </div>

@@ -14,6 +14,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/stores/languageStore';
 import { orderService, PaymentInfo } from '@/services/orderService';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -21,6 +22,7 @@ import { Loading } from '@/components/ui/Loading';
 
 export default function PaymentHistoryPage() {
   const router = useRouter();
+  const { t, language } = useTranslation();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const [payments, setPayments] = useState<PaymentInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +56,7 @@ export default function PaymentHistoryPage() {
   const formatDateTime = (dateStr: string) => {
     try {
       const d = new Date(dateStr);
-      return d.toLocaleDateString('en-US', {
+      return d.toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -67,81 +69,81 @@ export default function PaymentHistoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-8">
         {/* Navigation & Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <Link
               href="/account"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 mb-2 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 mb-2 transition-colors"
             >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back to Account
+              <ArrowLeft className="w-3.5 h-3.5" /> {t.paymentHistoryPage.backToAccount}
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
               <span className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
                 <Receipt className="w-5 h-5" />
               </span>
-              Payment History
+              {t.paymentHistoryPage.title}
             </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              View your transaction records and receipts for all delivered and active orders.
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              {t.paymentHistoryPage.subtitle}
             </p>
           </div>
 
           <Link href="/help">
             <Button variant="outline" size="sm" className="rounded-2xl gap-2 text-xs">
               <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
-              Payment FAQ
+              {t.paymentHistoryPage.paymentFaq}
             </Button>
           </Link>
         </div>
 
         {/* Cash On Delivery Policy Notice */}
-        <div className="rounded-3xl border border-amber-200 bg-amber-50/70 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+        <div className="rounded-3xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/70 dark:bg-amber-950/20 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
           <div className="flex items-start sm:items-center gap-3.5">
             <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
               <Banknote className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-amber-950">Cash on Delivery Platform Policy</h2>
-              <p className="text-xs text-amber-800 mt-0.5">
-                All platform orders are completed via Cash on Delivery (COD). Transactions are marked as pending upon checkout and verified as successful once paid to the courier.
+              <h2 className="text-sm font-black text-amber-950 dark:text-amber-200">{t.paymentHistoryPage.codPolicyTitle}</h2>
+              <p className="text-xs text-amber-800 dark:text-amber-400 mt-0.5">
+                {t.paymentHistoryPage.codPolicyDesc}
               </p>
             </div>
           </div>
-          <Badge variant="warning" size="sm" className="shrink-0">COD ONLY</Badge>
+          <Badge variant="warning" size="sm" className="shrink-0">{t.paymentHistoryPage.codOnlyBadge}</Badge>
         </div>
 
         {/* Transactions Section */}
         {loading ? (
           <div className="py-20 flex justify-center">
-            <Loading message="Loading your payment records..." />
+            <Loading message={t.paymentHistoryPage.loading} />
           </div>
         ) : payments.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
-            <div className="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-12 text-center shadow-xs">
+            <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-4">
               <Receipt className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-bold text-slate-800">No payment transactions found</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1 mb-6">
-              You haven&apos;t placed any orders yet. Once you make an order, your transaction receipts will be archived here.
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">{t.paymentHistoryPage.noTransactions}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1 mb-6">
+              {t.paymentHistoryPage.noTransactionsDesc}
             </p>
             <Link href="/restaurants">
               <Button size="sm" className="rounded-2xl">
-                Browse Restaurants
+                {t.paymentHistoryPage.browseRestaurants}
               </Button>
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
-                All Transactions ({payments.length})
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-hidden">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                {t.paymentHistoryPage.allTransactions} ({payments.length})
               </h2>
             </div>
 
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
               {payments.map((p) => {
                 const isSuccess = p.status === 'SUCCESS';
                 const isFailed = p.status === 'FAILED';
@@ -149,16 +151,16 @@ export default function PaymentHistoryPage() {
                 return (
                   <div
                     key={p.id}
-                    className="p-5 sm:p-6 hover:bg-slate-50/80 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="p-5 sm:p-6 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="flex items-start sm:items-center gap-4">
                       <div
                         className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
                           isSuccess
-                            ? 'bg-emerald-50 text-emerald-600'
+                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400'
                             : isFailed
-                            ? 'bg-red-50 text-red-600'
-                            : 'bg-amber-50 text-amber-600'
+                            ? 'bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-400'
+                            : 'bg-amber-50 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400'
                         }`}
                       >
                         {isSuccess ? (
@@ -172,7 +174,7 @@ export default function PaymentHistoryPage() {
 
                       <div className="space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-sm font-black text-slate-900">
+                          <span className="text-sm font-black text-slate-900 dark:text-slate-100">
                             ${p.amount.toFixed(2)}
                           </span>
                           <Badge
@@ -181,12 +183,12 @@ export default function PaymentHistoryPage() {
                           >
                             {p.status}
                           </Badge>
-                          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                            {p.paymentMethod === 'ONLINE_PAYMENT' ? 'Bakong KHQR' : 'Cash on Delivery'}
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                            {p.paymentMethod === 'ONLINE_PAYMENT' ? t.orderTrackingPage.paidOnline : t.checkoutPage.cashOnDelivery}
                           </span>
                         </div>
-                        <div className="text-xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1">
-                          <span>Ref: <strong className="font-mono text-slate-700">{p.transactionReference}</strong></span>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span>{t.paymentHistoryPage.ref} <strong className="font-mono text-slate-700 dark:text-slate-300">{p.transactionReference}</strong></span>
                           <span>&bull;</span>
                           <span>{formatDateTime(p.createdAt)}</span>
                         </div>
@@ -200,7 +202,7 @@ export default function PaymentHistoryPage() {
                           size="sm"
                           className="rounded-xl text-xs gap-1.5 hover:border-amber-300 hover:text-amber-700"
                         >
-                          Order #{p.orderId}
+                          {t.paymentHistoryPage.orderNumber}{p.orderId}
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Button>
                       </Link>

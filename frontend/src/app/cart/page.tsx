@@ -9,9 +9,11 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Loading } from '@/components/ui/Loading';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function CartPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const { cart, isLoading, fetchCart, updateItem, removeItem, clearCart } = useCartStore();
 
@@ -24,7 +26,7 @@ export default function CartPage() {
   }, [isAuthenticated, authLoading, router, fetchCart]);
 
   if (isLoading && !cart) {
-    return <Loading fullPage message="Loading your cart..." />;
+    return <Loading fullPage message={t.cartPage.loading} />;
   }
 
   const items = cart?.items || [];
@@ -35,9 +37,9 @@ export default function CartPage() {
       <div className="mx-auto max-w-2xl px-4 py-16">
         <EmptyState
           icon={<ShoppingBag className="w-8 h-8" />}
-          title="Your cart is empty"
-          description="Looks like you haven't added any delicious food to your cart yet."
-          actionLabel="Explore Restaurants"
+          title={t.cartPage.emptyTitle}
+          description={t.cartPage.emptyDesc}
+          actionLabel={t.cartPage.exploreRestaurants}
           onAction={() => router.push('/restaurants')}
         />
       </div>
@@ -53,17 +55,17 @@ export default function CartPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-            Shopping Cart
+            {t.cartPage.title}
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Review your selected dishes before proceeding to checkout
+            {t.cartPage.subtitle}
           </p>
         </div>
         <button
           onClick={() => clearCart()}
           className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer"
         >
-          <Trash2 className="w-3.5 h-3.5" /> Clear All
+          <Trash2 className="w-3.5 h-3.5" /> {t.cartPage.clearAll}
         </button>
       </div>
 
@@ -75,7 +77,7 @@ export default function CartPage() {
             <div className="flex items-center gap-2.5">
               <Store className="w-5 h-5 text-[#FF5A1F]" />
               <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Ordering from</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t.cartPage.orderingFrom}</p>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
                   {cart?.restaurantName || 'Restaurant'}
                 </h3>
@@ -86,7 +88,7 @@ export default function CartPage() {
                 href={`/restaurants/${cart.restaurantId}`}
                 className="text-xs font-bold text-[#FF5A1F] hover:underline"
               >
-                + Add more items
+                {t.cartPage.addMoreItems}
               </Link>
             )}
           </div>
@@ -96,8 +98,9 @@ export default function CartPage() {
             <div className="flex items-center gap-2 rounded-2xl border border-amber-200 dark:border-amber-900/60 bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-800 dark:text-amber-300 font-medium">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
-                Minimum order is ${cart?.restaurantMinimumOrder?.toFixed(2)}. Add $
-                {diffToMin.toFixed(2)} more to place your order.
+                {t.cartPage.minOrderNotice
+                  .replace('${min}', cart?.restaurantMinimumOrder?.toFixed(2) || '0.00')
+                  .replace('${diff}', diffToMin.toFixed(2))}
               </span>
             </div>
           )}
@@ -119,7 +122,7 @@ export default function CartPage() {
                     {item.foodName}
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    ${item.unitPrice.toFixed(2)} each
+                    ${item.unitPrice.toFixed(2)} {t.cartPage.each}
                   </p>
                 </div>
 
@@ -128,6 +131,7 @@ export default function CartPage() {
                   <button
                     onClick={() => updateItem(item.id, item.quantity - 1)}
                     className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+                    aria-label={t.foodModal.decreaseQuantity}
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -137,6 +141,7 @@ export default function CartPage() {
                   <button
                     onClick={() => updateItem(item.id, item.quantity + 1)}
                     className="p-1 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 transition-colors cursor-pointer"
+                    aria-label={t.foodModal.increaseQuantity}
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -153,7 +158,8 @@ export default function CartPage() {
                 <button
                   onClick={() => removeItem(item.id)}
                   className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
-                  title="Remove item"
+                  title={t.cartPage.removeItem}
+                  aria-label={`${t.cartPage.removeItem} ${item.foodName}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -164,23 +170,23 @@ export default function CartPage() {
 
         {/* Order Summary Card */}
         <div className="lg:col-span-4 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-6">
-          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Order Summary</h2>
+          <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">{t.cartPage.orderSummary}</h2>
 
           <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex justify-between">
-              <span>Subtotal ({cart?.totalItems} items)</span>
+              <span>{t.cartPage.subtotalItems.replace('{count}', String(cart?.totalItems || 0))}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 ${cart?.subtotal.toFixed(2)}
               </span>
             </div>
             <div className="flex justify-between">
-              <span>Estimated Delivery Fee</span>
+              <span>{t.cartPage.estDeliveryFee}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
                 ${cart?.deliveryFee.toFixed(2)}
               </span>
             </div>
             <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between text-sm font-bold text-slate-900 dark:text-slate-100">
-              <span>Estimated Total</span>
+              <span>{t.cartPage.estTotal}</span>
               <span className="text-base font-black text-[#FF5A1F]">
                 ${cart?.totalAmount.toFixed(2)}
               </span>
@@ -194,13 +200,13 @@ export default function CartPage() {
               className="w-full rounded-2xl gap-2 font-bold"
               disabled={!minOrderMet}
             >
-              Checkout Now <ArrowRight className="w-4 h-4" />
+              {t.cartPage.checkoutNow} <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
 
           {!minOrderMet && (
             <p className="text-[11px] text-center text-amber-600 font-medium">
-              Add more items to satisfy minimum order
+              {t.cartPage.minOrderHelp}
             </p>
           )}
         </div>

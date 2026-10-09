@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useTranslation } from '@/stores/languageStore';
 import { Notification } from '@/types';
 
 interface NotificationPopupProps {
@@ -24,6 +25,7 @@ interface NotificationPopupProps {
 
 export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
+  const { t, language } = useTranslation();
   const popupRef = useRef<HTMLDivElement>(null);
   const { notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead } =
     useNotificationStore();
@@ -95,11 +97,11 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-      if (diffMins < 1) return 'Just now';
-      if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-      return past.toLocaleDateString();
+      if (diffMins < 1) return t.notificationsPage.justNow;
+      if (diffMins < 60) return `${diffMins}${t.notificationsPage.mAgo}`;
+      if (diffHours < 24) return `${diffHours}${t.notificationsPage.hAgo}`;
+      if (diffDays < 7) return `${diffDays}${t.notificationsPage.dAgo}`;
+      return past.toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US');
     } catch {
       return '';
     }
@@ -113,10 +115,10 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 px-4 py-3.5 bg-slate-50/70 dark:bg-slate-800/60">
         <div className="flex items-center gap-2">
-          <span className="font-extrabold text-sm text-slate-900 dark:text-white">Notifications</span>
+          <span className="font-extrabold text-sm text-slate-900 dark:text-white">{t.notificationsPage.title}</span>
           {unreadCount > 0 && (
             <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FF5A1F] text-white">
-              {unreadCount} new
+              {unreadCount} {t.notificationsPage.newBadge}
             </span>
           )}
         </div>
@@ -129,7 +131,7 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
               className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-[#FF5A1F] transition-colors flex items-center gap-1 cursor-pointer"
             >
               <CheckCheck className="w-3.5 h-3.5" />
-              Mark read
+              {t.notificationsPage.markAsRead}
             </button>
           )}
           <button
@@ -149,9 +151,9 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
             <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-[#FF5A1F] flex items-center justify-center mx-auto">
               <Bell className="w-5 h-5" />
             </div>
-            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">No notifications yet</p>
+            <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.notificationsPage.emptyTitle}</p>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 max-w-[200px] mx-auto">
-              We&apos;ll notify you about your delivery status and exclusive food promos.
+              {t.notificationsPage.emptyDesc}
             </p>
           </div>
         ) : (
@@ -205,7 +207,7 @@ export const NotificationPopup: React.FC<NotificationPopupProps> = ({ isOpen, on
           onClick={onClose}
           className="w-full text-center py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-850 hover:text-[#FF5A1F] dark:hover:text-[#FF5A1F] hover:shadow-xs transition-all flex items-center justify-center gap-1.5"
         >
-          View all notifications <ExternalLink className="w-3.5 h-3.5" />
+          {t.notificationsPage.viewAll} <ExternalLink className="w-3.5 h-3.5" />
         </Link>
       </div>
     </div>

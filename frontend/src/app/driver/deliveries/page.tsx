@@ -21,9 +21,11 @@ import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { DeliveryTrackingMap } from '@/components/ui/DeliveryTrackingMap';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function DriverDeliveriesPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -108,7 +110,7 @@ export default function DriverDeliveriesPage() {
   };
 
   if (loading) {
-    return <Loading fullPage message="Loading active delivery..." />;
+    return <Loading fullPage message={t.common.loading} />;
   }
 
   if (!delivery) {
@@ -116,9 +118,9 @@ export default function DriverDeliveriesPage() {
       <div className="py-12 max-w-xl mx-auto">
         <EmptyState
           icon={<Bike className="w-8 h-8" />}
-          title="No active delivery in progress"
-          description="You don't have any ongoing deliveries right now. Check available jobs on the dashboard."
-          actionLabel="View Available Jobs"
+          title={t.driver.noActiveJob}
+          description={t.driver.noActiveJobSubtitle}
+          actionLabel={t.driver.availableJobs}
           onAction={() => router.push('/driver/dashboard')}
         />
       </div>
@@ -131,14 +133,14 @@ export default function DriverDeliveriesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
-              Active Delivery Task
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              {t.driver.activeJobTitle}
             </h1>
             <Badge variant="primary" size="md">
               {delivery.status.replace(/_/g, ' ')}
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Order #{delivery.orderId.toString().padStart(6, '0')}
           </p>
         </div>
@@ -147,14 +149,14 @@ export default function DriverDeliveriesPage() {
           variant="outline"
           size="sm"
           onClick={loadActiveDelivery}
-          className="rounded-xl text-xs"
+          className="rounded-xl text-xs border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
         >
-          Refresh Status
+          {t.common.refresh}
         </Button>
       </div>
 
       {/* Main Delivery Card */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-6">
         {/* Interactive Delivery Route Map */}
         <DeliveryTrackingMap
           restaurantLocation={{
@@ -179,27 +181,27 @@ export default function DriverDeliveriesPage() {
         />
 
         {/* Step 1 & 2 Directions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6 border-b border-slate-100 dark:border-slate-800">
           {/* Pickup */}
-          <div className="rounded-2xl border border-orange-100 bg-[#FFF1EB]/30 p-5 space-y-2">
+          <div className="rounded-2xl border border-orange-100 dark:border-orange-950/60 bg-[#FFF1EB]/30 dark:bg-orange-950/20 p-5 space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#FF5A1F]">
-              <Store className="w-4 h-4" /> 1. Pickup Location
+              <Store className="w-4 h-4" /> 1. {t.driver.pickupAt}
             </div>
-            <h3 className="text-base font-bold text-slate-900">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               {delivery.restaurantName}
             </h3>
-            <p className="text-xs text-slate-600">{delivery.restaurantAddress}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300">{delivery.restaurantAddress}</p>
           </div>
 
           {/* Dropoff */}
-          <div className="rounded-2xl border border-blue-100 bg-blue-50/30 p-5 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600">
-              <MapPin className="w-4 h-4" /> 2. Dropoff Destination
+          <div className="rounded-2xl border border-blue-100 dark:border-blue-950/60 bg-blue-50/30 dark:bg-blue-950/20 p-5 space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              <MapPin className="w-4 h-4" /> 2. {t.driver.deliverTo}
             </div>
-            <h3 className="text-base font-bold text-slate-900">
-              {delivery.customerName || 'Customer'}
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              {delivery.customerName || t.roles.CUSTOMER}
             </h3>
-            <p className="text-xs text-slate-600">{delivery.deliveryAddress}</p>
+            <p className="text-xs text-slate-600 dark:text-slate-300">{delivery.deliveryAddress}</p>
           </div>
         </div>
 
@@ -228,7 +230,7 @@ export default function DriverDeliveriesPage() {
             isLoading={gpsSimulating}
             className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs gap-1.5 font-bold"
           >
-            <Navigation className="w-3.5 h-3.5" /> Simulate Moving Towards Customer
+            <Navigation className="w-3.5 h-3.5" /> {t.driver.simulateGPS}
           </Button>
         </div>
 
@@ -242,7 +244,7 @@ export default function DriverDeliveriesPage() {
               isLoading={actionLoading}
               className="w-full rounded-2xl gap-2 font-bold"
             >
-              <PackageCheck className="w-5 h-5" /> I Have Picked Up The Food
+              <PackageCheck className="w-5 h-5" /> {t.driver.pickUpOrder}
             </Button>
           )}
 
@@ -254,7 +256,7 @@ export default function DriverDeliveriesPage() {
               isLoading={actionLoading}
               className="w-full rounded-2xl gap-2 font-bold bg-blue-600 hover:bg-blue-700"
             >
-              <Bike className="w-5 h-5" /> Start Delivering / En Route to Customer
+              <Bike className="w-5 h-5" /> {t.driver.startDelivering}
             </Button>
           )}
 
@@ -266,7 +268,7 @@ export default function DriverDeliveriesPage() {
               isLoading={actionLoading}
               className="w-full rounded-2xl gap-2 font-bold"
             >
-              <CheckCircle2 className="w-5 h-5" /> Arrived & Confirm Delivery Complete
+              <CheckCircle2 className="w-5 h-5" /> {t.driver.completeDelivery}
             </Button>
           )}
         </div>

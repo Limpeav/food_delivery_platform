@@ -20,6 +20,7 @@ import {
   Receipt,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/stores/languageStore';
 import { addressService } from '@/services/addressService';
 import { orderService } from '@/services/orderService';
 import { Address, Order } from '@/types';
@@ -32,6 +33,7 @@ import { LocationPicker, LocationPickerValue } from '@/components/ui/LocationPic
 
 export default function AccountDashboardPage() {
   const router = useRouter();
+  const { t, language } = useTranslation();
   const { user, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [recentOrders, setRecentOrders] = useState<Order[]>([]);
@@ -116,7 +118,7 @@ export default function AccountDashboardPage() {
   };
 
   const handleDeleteAddress = async (id: number) => {
-    if (!confirm('Remove this saved address?')) return;
+    if (!confirm(t.accountPage.confirmRemoveAddress)) return;
     try {
       await addressService.deleteAddress(id);
       setAddresses(addresses.filter((a) => a.id !== id));
@@ -126,7 +128,7 @@ export default function AccountDashboardPage() {
   };
 
   if (authLoading || (loading && !user)) {
-    return <Loading fullPage message="Loading customer account..." />;
+    return <Loading fullPage message={t.accountPage.loadingAccount} />;
   }
 
   return (
@@ -135,13 +137,13 @@ export default function AccountDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold text-[#FF5A1F] uppercase tracking-wider">
-            Customer Dashboard
+            {t.accountPage.customerDashboard}
           </span>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 mt-1">
-            Welcome, {user?.name}
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 mt-1">
+            {t.accountPage.welcome}, {user?.name}
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage your account settings, delivery destinations, and review past orders
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {t.accountPage.subtitle}
           </p>
         </div>
 
@@ -150,25 +152,25 @@ export default function AccountDashboardPage() {
           className="inline-flex items-center gap-2 rounded-2xl bg-[#FF5A1F] px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-[#FF5A1F]/30 hover:bg-[#E04812] transition-all self-start sm:self-auto"
         >
           <ShoppingBag className="w-4 h-4" />
-          Order Food Now
+          {t.accountPage.orderFoodNow}
         </Link>
       </div>
 
       {/* Account Info Card */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs">
+      <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-orange-100 text-[#FF5A1F] flex items-center justify-center font-black text-2xl shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-950/60 text-[#FF5A1F] flex items-center justify-center font-black text-2xl shadow-xs">
               {user?.name.charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900">{user?.name}</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{user?.name}</h2>
                 <Badge variant="success" size="sm">
                   {user?.status}
                 </Badge>
               </div>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 mt-1.5">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-1.5">
                 <span className="flex items-center gap-1">
                   <Mail className="w-3.5 h-3.5 text-slate-400" /> {user?.email}
                 </span>
@@ -178,7 +180,7 @@ export default function AccountDashboardPage() {
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-slate-400">
-                  <Shield className="w-3.5 h-3.5" /> Role: {user?.role}
+                  <Shield className="w-3.5 h-3.5" /> {t.accountPage.role}: {user?.role}
                 </span>
               </div>
             </div>
@@ -187,17 +189,17 @@ export default function AccountDashboardPage() {
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/account/payments"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               <Receipt className="w-3.5 h-3.5 text-slate-400" />
-              Payment History
+              {t.accountPage.paymentHistory}
             </Link>
             <Link
               href="/forgot-password"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               <KeyRound className="w-3.5 h-3.5 text-slate-400" />
-              Reset Password
+              {t.accountPage.resetPassword}
             </Link>
           </div>
         </div>
@@ -206,14 +208,14 @@ export default function AccountDashboardPage() {
       {/* Grid: Saved Addresses & Recent Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Saved Addresses (2 Cols) */}
-        <div className="lg:col-span-2 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-5">
+        <div className="lg:col-span-2 rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-5">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-[#FF5A1F]" /> Saved Delivery Addresses
+              <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-[#FF5A1F]" /> {t.accountPage.savedAddresses}
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Saved destinations for fast 1-click checkout
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {t.accountPage.savedAddressesSubtitle}
               </p>
             </div>
 
@@ -227,27 +229,27 @@ export default function AccountDashboardPage() {
               }}
               className="rounded-xl text-xs gap-1.5"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Address
+              <Plus className="w-3.5 h-3.5" /> {t.accountPage.addNewAddress}
             </Button>
           </div>
 
           {addresses.length === 0 ? (
-            <div className="p-8 text-center border border-dashed border-slate-200 rounded-2xl text-xs text-slate-400">
-              No saved addresses. Click &quot;Add Address&quot; to save your delivery location.
+            <div className="p-8 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-400">
+              {t.accountPage.noAddresses}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {addresses.map((addr) => (
                 <div
                   key={addr.id}
-                  className="p-4 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-2 relative hover:border-orange-200 transition-colors"
+                  className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs space-y-2 relative hover:border-orange-200 dark:hover:border-orange-800 transition-colors"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-slate-900">{addr.label}</span>
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{addr.label}</span>
                       {addr.isDefault && (
-                        <span className="rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-bold">
-                          Default
+                        <span className="rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-850 px-1.5 py-0.5 text-[10px] font-bold">
+                          {t.accountPage.defaultBadge}
                         </span>
                       )}
                     </div>
@@ -256,25 +258,25 @@ export default function AccountDashboardPage() {
                       {!addr.isDefault && (
                         <button
                           onClick={() => handleSetDefault(addr.id)}
-                          className="text-[10px] font-bold text-slate-500 hover:text-slate-900 hover:underline cursor-pointer"
+                          className="text-[10px] font-bold text-slate-500 hover:text-slate-900 dark:hover:text-slate-100 hover:underline cursor-pointer"
                         >
-                          Make Default
+                          {t.accountPage.setDefault}
                         </button>
                       )}
                       <button
                         onClick={() => handleDeleteAddress(addr.id)}
                         className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
-                        aria-label="Delete address"
+                        aria-label={t.accountPage.deleteAddress}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
 
-                  <p className="text-xs font-medium text-slate-700">
+                  <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
                     {addr.recipientName} ({addr.phoneNumber})
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {addr.addressLine}, {addr.city}
                   </p>
                 </div>
@@ -284,22 +286,22 @@ export default function AccountDashboardPage() {
         </div>
 
         {/* Quick Recent Orders (1 Col) */}
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-xs space-y-4">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-500" /> Recent Orders
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-slate-500" /> {t.accountPage.recentOrders}
             </h3>
             <Link
               href="/orders"
               className="text-xs font-bold text-[#FF5A1F] hover:underline flex items-center gap-1"
             >
-              All Orders <ArrowRight className="w-3.5 h-3.5" />
+              {t.accountPage.allOrders} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           {recentOrders.length === 0 ? (
-            <div className="p-6 text-center border border-dashed border-slate-200 rounded-2xl text-xs text-slate-400">
-              No orders placed yet.
+            <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-400">
+              {t.accountPage.noRecentOrders}
             </div>
           ) : (
             <div className="space-y-3">
@@ -307,22 +309,22 @@ export default function AccountDashboardPage() {
                 <Link
                   key={order.id}
                   href={`/orders/${order.id}`}
-                  className="block p-3 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-orange-50/40 hover:border-orange-200 transition-all"
+                  className="block p-3 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 hover:border-orange-200 dark:hover:border-orange-900 transition-all"
                 >
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900">Order #{order.id}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{t.accountPage.orderNumber}{order.id}</span>
                     <Badge variant="primary" size="sm">
                       {order.status}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1 truncate">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
                     {order.restaurantName}
                   </p>
-                  <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/50 text-xs">
+                  <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50 text-xs">
                     <span className="text-slate-400 text-[10px]">
-                      {new Date(order.createdAt).toLocaleDateString()}
+                      {new Date(order.createdAt).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US')}
                     </span>
-                    <span className="font-bold text-slate-900">${order.totalAmount.toFixed(2)}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">${order.totalAmount.toFixed(2)}</span>
                   </div>
                 </Link>
               ))}
@@ -335,14 +337,14 @@ export default function AccountDashboardPage() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Add Delivery Address"
-        description="Enter street address and recipient details"
+        title={t.accountPage.addressModalTitle}
+        description={t.accountPage.addressModalDesc}
       >
         <form onSubmit={handleCreateAddress} className="space-y-4 pt-2">
           {/* Map Location Picker */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-              Pin Delivery Location on Map
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5">
+              {t.accountPage.pinLocationTitle}
             </label>
             <LocationPicker
               value={location}
@@ -357,15 +359,15 @@ export default function AccountDashboardPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Label"
-              placeholder="Home, Office, Apartment..."
+              label={t.common.status ? 'Label' : 'Label'}
+              placeholder={t.accountPage.labelPrompt}
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               required
             />
             <Input
-              label="City"
-              placeholder="Phnom Penh"
+              label={t.accountPage.labelCity}
+              placeholder={t.accountPage.cityPlaceholder}
               value={city}
               onChange={(e) => setCity(e.target.value)}
               required
@@ -374,15 +376,15 @@ export default function AccountDashboardPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Recipient Name"
-              placeholder="Recipient full name"
+              label={t.accountPage.labelRecipientName}
+              placeholder={t.accountPage.recipientPlaceholder}
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
               required
             />
             <Input
-              label="Phone Number"
-              placeholder="+855 12 345 678"
+              label={t.accountPage.labelPhoneNumber}
+              placeholder={t.accountPage.phonePlaceholder}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               required
@@ -390,8 +392,8 @@ export default function AccountDashboardPage() {
           </div>
 
           <Input
-            label="Street Address / Building"
-            placeholder="House #24, Street 302"
+            label={t.accountPage.streetAddress}
+            placeholder={t.accountPage.streetAddressPlaceholder}
             value={addressLine}
             onChange={(e) => setAddressLine(e.target.value)}
             required
@@ -403,7 +405,7 @@ export default function AccountDashboardPage() {
               size="sm"
               onClick={() => setModalOpen(false)}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               type="submit"
@@ -411,7 +413,7 @@ export default function AccountDashboardPage() {
               size="sm"
               isLoading={saving}
             >
-              Save Address
+              {saving ? t.accountPage.savingAddress : t.accountPage.saveAddress}
             </Button>
           </div>
         </form>

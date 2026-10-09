@@ -14,9 +14,11 @@ import { FooterAppDownload } from './footer/FooterAppDownload';
 import { FooterPaymentAndSocial } from './footer/FooterPaymentAndSocial';
 import { FooterLegal } from './footer/FooterLegal';
 import { CookiePreferencesModal } from './CookiePreferencesModal';
+import { useTranslation } from '@/stores/languageStore';
 
 export const Footer: React.FC = () => {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const [cookieModalOpen, setCookieModalOpen] = useState(false);
 
   // Completely hide consumer Footer on dedicated partner, admin portals, and auth pages
@@ -52,7 +54,7 @@ export const Footer: React.FC = () => {
             {/* Col 2: For Customers */}
             <div>
               <FooterLinkGroup
-                title="For Customers"
+                title={t.footer.forCustomers}
                 links={footerCustomerLinks}
                 id="footer-for-customers"
               />
@@ -61,7 +63,7 @@ export const Footer: React.FC = () => {
             {/* Col 3: Partner With Us */}
             <div>
               <FooterLinkGroup
-                title="Partner With Us"
+                title={t.footer.partnerWithUs}
                 links={footerPartnerLinks}
                 id="footer-partners"
               />
@@ -70,7 +72,7 @@ export const Footer: React.FC = () => {
             {/* Col 4: Customer Care & Support */}
             <div>
               <FooterLinkGroup
-                title="Help & Support"
+                title={t.footer.helpSupport}
                 links={footerSupportLinks}
                 id="footer-support"
               />

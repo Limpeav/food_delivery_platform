@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/stores/languageStore';
 
 export interface PaginationProps {
   currentPage: number; // 1-indexed for display
@@ -20,6 +21,8 @@ export const Pagination: React.FC<PaginationProps> = ({
   onPageChange,
   className = '',
 }) => {
+  const { t } = useTranslation();
+
   // Hide pagination if there is only 1 page or none
   if (totalPages <= 1) {
     return null;
@@ -55,9 +58,9 @@ export const Pagination: React.FC<PaginationProps> = ({
     >
       {/* Informative text */}
       <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-        Showing <span className="font-bold text-slate-800 dark:text-slate-200">{startItem}</span> to{' '}
-        <span className="font-bold text-slate-800 dark:text-slate-200">{endItem}</span> of{' '}
-        <span className="font-bold text-slate-900 dark:text-white">{totalElements}</span> items
+        {t.pagination.showing} <span className="font-bold text-slate-800 dark:text-slate-200">{startItem}</span> {t.pagination.to}{' '}
+        <span className="font-bold text-slate-800 dark:text-slate-200">{endItem}</span> {t.pagination.of}{' '}
+        <span className="font-bold text-slate-900 dark:text-white">{totalElements}</span> {t.pagination.items}
       </p>
 
       {/* Pagination controls */}

@@ -30,10 +30,13 @@ import { Badge } from '../ui/Badge';
 import { NotificationPopup } from './NotificationPopup';
 import { CartDrawer } from './CartDrawer';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { LanguageToggle } from '../ui/LanguageToggle';
+import { useTranslation } from '@/stores/languageStore';
 
 export const Navbar: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
+  const { t, language } = useTranslation();
   const { user, isAuthenticated, logout, initAuth } = useAuthStore();
   const { cart, fetchCart, isDrawerOpen, toggleDrawer, closeDrawer } = useCartStore();
   const { unreadCount, fetchUnreadCount, addNotification } = useNotificationStore();
@@ -106,11 +109,11 @@ export const Navbar: React.FC = () => {
     if (!user) return null;
     switch (user.role) {
       case 'ADMIN':
-        return { label: 'Admin Panel', href: '/admin/dashboard', icon: ShieldAlert, color: 'bg-purple-50 text-purple-700 border-purple-200' };
+        return { label: t.nav.adminPanel, href: '/admin/dashboard', icon: ShieldAlert, color: 'bg-purple-50 text-purple-700 border-purple-200' };
       case 'RESTAURANT_OWNER':
-        return { label: 'Restaurant Hub', href: '/restaurant/dashboard', icon: Store, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
+        return { label: t.nav.restaurantHub, href: '/restaurant/dashboard', icon: Store, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
       case 'DRIVER':
-        return { label: 'Driver Portal', href: '/driver/dashboard', icon: Bike, color: 'bg-blue-50 text-blue-700 border-blue-200' };
+        return { label: t.nav.driverPortal, href: '/driver/dashboard', icon: Bike, color: 'bg-blue-50 text-blue-700 border-blue-200' };
       default:
         return null;
     }
@@ -147,8 +150,8 @@ export const Navbar: React.FC = () => {
               className="hidden lg:flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/80 px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300 hover:border-[#FF5A1F] hover:text-[#FF5A1F] transition-all cursor-pointer group"
             >
               <MapPin className="h-3.5 w-3.5 text-[#FF5A1F] group-hover:scale-110 transition-transform" />
-              <span className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-[#FF5A1F]">Deliver to:</span>
-              <span className="truncate max-w-[150px]">Phnom Penh</span>
+              <span className="font-semibold text-slate-800 dark:text-slate-200 group-hover:text-[#FF5A1F]">{t.common.deliverTo}</span>
+              <span className="truncate max-w-[150px]">{t.common.phnomPenh}</span>
             </Link>
           </div>
 
@@ -162,7 +165,7 @@ export const Navbar: React.FC = () => {
                   : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
-              Restaurants
+              {t.nav.restaurants}
             </Link>
             <Link
               href="/promotions"
@@ -173,7 +176,7 @@ export const Navbar: React.FC = () => {
               }`}
             >
               <Tag className="w-3.5 h-3.5 text-[#FF5A1F]" />
-              Deals
+              {t.nav.deals}
             </Link>
             {isAuthenticated && (
               <Link
@@ -185,13 +188,13 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <Clock className="w-3.5 h-3.5 text-slate-400" />
-                My Orders
+                {t.nav.myOrders}
               </Link>
             )}
           </nav>
 
           {/* Actions & User profile */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             {/* Quick Portal Switch Badge */}
             {portal && (
               <Link
@@ -202,6 +205,9 @@ export const Navbar: React.FC = () => {
                 {portal.label}
               </Link>
             )}
+
+            {/* Language Selector */}
+            <LanguageToggle variant="dropdown" />
 
             {/* Dark / Light Theme Toggle */}
             <ThemeToggle />
@@ -291,7 +297,7 @@ export const Navbar: React.FC = () => {
                       <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{user.name}</p>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                       <Badge variant="primary" size="sm" className="mt-1.5">
-                        {user.role.replace('_', ' ')}
+                        {t.roles[user.role] || user.role.replace('_', ' ')}
                       </Badge>
                     </div>
 
@@ -312,7 +318,7 @@ export const Navbar: React.FC = () => {
                         className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
                         <Clock className="w-4 h-4 text-slate-400" />
-                        My Orders
+                        {t.nav.myOrders}
                       </Link>
                       <Link
                         href="/profile"
@@ -320,7 +326,7 @@ export const Navbar: React.FC = () => {
                         className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                       >
                         <UserIcon className="w-4 h-4 text-slate-400" />
-                        Profile &amp; Addresses
+                        {t.nav.myProfile}
                       </Link>
                     </div>
 
@@ -330,7 +336,7 @@ export const Navbar: React.FC = () => {
                         className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                       >
                         <LogOut className="w-4 h-4 text-rose-500" />
-                        Sign Out
+                        {t.common.signOut}
                       </button>
                     </div>
                   </div>
@@ -342,13 +348,13 @@ export const Navbar: React.FC = () => {
                   href="/login"
                   className="rounded-xl px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
-                  Sign In
+                  {t.common.signIn}
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-xl bg-[#FF5A1F] px-4 py-2 text-xs font-bold text-white shadow-sm shadow-[#FF5A1F]/25 hover:bg-[#E04812] transition-all"
                 >
-                  Sign Up
+                  {t.common.register}
                 </Link>
               </div>
             )}
@@ -366,7 +372,12 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-1">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{t.common.language}</span>
+            <LanguageToggle variant="pill" />
+          </div>
+
           <Link
             href="/restaurants"
             onClick={() => setMobileMenuOpen(false)}
@@ -376,7 +387,7 @@ export const Navbar: React.FC = () => {
                 : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
-            Browse Restaurants
+            {t.nav.restaurants}
           </Link>
 
           <Link
@@ -389,7 +400,7 @@ export const Navbar: React.FC = () => {
             }`}
           >
             <Tag className="w-4 h-4 text-[#FF5A1F]" />
-            Promotions &amp; Coupons
+            {t.nav.deals}
           </Link>
           {isAuthenticated && (
             <>
@@ -403,14 +414,14 @@ export const Navbar: React.FC = () => {
                 }`}
               >
                 <Clock className="w-4 h-4 text-slate-400" />
-                My Orders
+                {t.nav.myOrders}
               </Link>
               <button
                 onClick={() => { toggleDrawer(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <ShoppingCart className="w-4 h-4 text-slate-400" />
-                View Cart
+                {t.customer.viewCart}
                 {cartItemCount > 0 && (
                   <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-[#FF5A1F] text-[11px] font-black text-white">
                     {cartItemCount}
@@ -424,7 +435,7 @@ export const Navbar: React.FC = () => {
                   className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                   <Bell className="w-4 h-4 text-slate-400" />
-                  Notifications
+                  {t.nav.notifications}
                   <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-[11px] font-black text-white">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
@@ -438,7 +449,7 @@ export const Navbar: React.FC = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="block rounded-xl px-3 py-2.5 text-sm font-bold text-[#FF5A1F] bg-[#FFF1EB] dark:bg-orange-950/40"
             >
-              Go to {portal.label}
+              {portal.label}
             </Link>
           )}
         </div>

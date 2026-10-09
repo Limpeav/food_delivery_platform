@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Phone, CheckCircle2, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import { User } from '@/types';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/stores/languageStore';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { toast } from '@/components/ui/Toast';
 
 export interface PhonePromptModalProps {
@@ -59,6 +61,7 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
   onSuccess,
 }) => {
   const { completeProfile, logout } = useAuthStore();
+  const { t } = useTranslation();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,6 +128,11 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
 
       {/* Dialog Box */}
       <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-7 shadow-2xl transition-all duration-200 animate-in zoom-in-95 space-y-5">
+        {/* Language selector in top corner */}
+        <div className="flex justify-end -mt-1 -mr-1">
+          <LanguageToggle variant="pill" />
+        </div>
+
         {/* Header Icon */}
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="relative">
@@ -138,17 +146,10 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
 
           <div>
             <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              Welcome to Cravery! 👋
+              {t.auth.phoneModalTitle}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm leading-relaxed">
-              {user?.name ? (
-                <span>
-                  Hi <strong className="text-slate-800 dark:text-slate-200">{user.name}</strong>, please
-                </span>
-              ) : (
-                'Please'
-              )}{' '}
-              provide your mobile phone number so delivery drivers and restaurants can contact you about your food orders.
+              {t.auth.phoneModalSubtitle}
             </p>
           </div>
         </div>
@@ -166,7 +167,7 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Mobile Phone Number <span className="text-[#FF5A1F]">*</span>
+                {t.auth.phoneNumber} <span className="text-[#FF5A1F]">*</span>
               </label>
               {subscriberDigits.length > 0 && (
                 <span
@@ -176,7 +177,7 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
                       : 'text-slate-400 dark:text-slate-500'
                   }`}
                 >
-                  {subscriberDigits.length}/8–9 digits {isNumberCountValid && '✓'}
+                  {subscriberDigits.length}/8–9 {t.auth.digitsRequirement} {isNumberCountValid && '✓'}
                 </span>
               )}
             </div>
@@ -209,11 +210,11 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Saving Phone Number...</span>
+                  <span>{t.auth.savingPhone}</span>
                 </>
               ) : (
                 <>
-                  <span>Save & Continue to Cravery</span>
+                  <span>{t.auth.saveAndContinue}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -223,7 +224,7 @@ export const PhonePromptModal: React.FC<PhonePromptModalProps> = ({
               onClick={() => logout()}
               className="w-full text-center text-xs font-medium text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 mt-2 transition-colors cursor-pointer py-1"
             >
-              Sign out and use a different account
+              {t.auth.signOutDifferentAccount}
             </button>
           </div>
         </form>

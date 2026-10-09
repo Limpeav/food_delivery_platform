@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
+import { useTranslation } from '@/stores/languageStore';
+import { localizeCategory } from '@/locales';
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 
@@ -39,6 +41,7 @@ function useDebounce<T>(value: T, delay: number): T {
 // ─── Main content ─────────────────────────────────────────────────────────────
 
 function RestaurantsContent() {
+  const { t, language } = useTranslation();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('search') || '';
   const initialCategory = searchParams.get('categoryId')
@@ -117,9 +120,11 @@ function RestaurantsContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">All Restaurants</h1>
+          <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+            {t.restaurants.title}
+          </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Explore curated places with high hygiene standards and delicious cuisines
+            {t.restaurants.subtitle}
           </p>
         </div>
       </div>
@@ -134,8 +139,8 @@ function RestaurantsContent() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search restaurants by cuisine, dish, or address..."
-            aria-label="Search restaurants"
+            placeholder={t.restaurants.searchPlaceholder}
+            aria-label={t.restaurants.searchAria}
             className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-10 pr-4 py-2.5 text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F] focus:ring-1 focus:ring-[#FF5A1F]"
           />
         </div>
@@ -153,7 +158,7 @@ function RestaurantsContent() {
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${onlyOpen ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
-            Open Now
+            {t.restaurants.openNow}
           </button>
 
           {/* Rating Filter */}
@@ -164,10 +169,10 @@ function RestaurantsContent() {
             aria-label="Filter by minimum rating"
             className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-[#FF5A1F] cursor-pointer"
           >
-            <option value="">All Ratings</option>
-            <option value="4.5">★ 4.5 &amp; up</option>
-            <option value="4.0">★ 4.0 &amp; up</option>
-            <option value="3.5">★ 3.5 &amp; up</option>
+            <option value="">{t.restaurants.allRatings}</option>
+            <option value="4.5">★ 4.5 {t.restaurants.andUp}</option>
+            <option value="4.0">★ 4.0 {t.restaurants.andUp}</option>
+            <option value="3.5">★ 3.5 {t.restaurants.andUp}</option>
           </select>
 
           {/* Sort Selector */}
@@ -178,9 +183,9 @@ function RestaurantsContent() {
             aria-label="Sort restaurants"
             className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-[#FF5A1F] cursor-pointer"
           >
-            <option value="featured">Sort: Featured</option>
-            <option value="rating">Sort: Highest Rated</option>
-            <option value="fee">Sort: Lowest Delivery Fee</option>
+            <option value="featured">{t.restaurants.sortFeatured}</option>
+            <option value="rating">{t.restaurants.sortRating}</option>
+            <option value="fee">{t.restaurants.sortFee}</option>
           </select>
         </div>
       </div>
@@ -197,7 +202,7 @@ function RestaurantsContent() {
                 : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
             }`}
           >
-            🍽️ All Cuisines
+            🍽️ {t.restaurants.allCuisines}
           </button>
           {categories.map((cat) => (
             <button
@@ -221,7 +226,7 @@ function RestaurantsContent() {
                   className="rounded-sm object-cover"
                 />
               ) : null}
-              {cat.name}
+              {localizeCategory(cat.name, language)}
             </button>
           ))}
         </div>
@@ -229,12 +234,12 @@ function RestaurantsContent() {
 
       {/* Content */}
       {loading ? (
-        <Loading message="Loading restaurants..." />
+        <Loading message={t.restaurants.loading} />
       ) : displayRestaurants.length === 0 ? (
         <EmptyState
-          title="No restaurants found"
-          description="Try broadening your search term or clearing cuisine filters."
-          actionLabel="Clear Filters"
+          title={t.restaurants.emptyTitle}
+          description={t.restaurants.emptyDesc}
+          actionLabel={t.restaurants.clearFilters}
           onAction={() => {
             setSearch('');
             setSelectedCategory(undefined);
@@ -264,7 +269,7 @@ function RestaurantsContent() {
                   />
                   <div className="absolute top-3 left-3 flex items-center gap-2">
                     <Badge variant="primary" size="sm" className="font-bold">
-                      {restaurant.categoryName}
+                      {localizeCategory(restaurant.categoryName, language)}
                     </Badge>
                     <span
                       className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
@@ -276,7 +281,7 @@ function RestaurantsContent() {
                           open ? 'bg-white animate-pulse' : 'bg-white/50'
                         }`}
                       />
-                      {open ? 'Open' : 'Closed'}
+                      {open ? t.common.open : t.common.closed}
                     </span>
                   </div>
                   <div className="absolute bottom-3 right-3">
@@ -308,7 +313,7 @@ function RestaurantsContent() {
 
                     <div className="flex items-center gap-1">
                       <Bike className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                      <span>${restaurant.deliveryFee.toFixed(2)} delivery</span>
+                      <span>${restaurant.deliveryFee.toFixed(2)} {t.restaurants.deliverySuffix}</span>
                     </div>
                   </div>
                 </div>

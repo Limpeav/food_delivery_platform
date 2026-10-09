@@ -24,9 +24,11 @@ import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
 import { subscribeToAvailableDeliveries } from '@/lib/websocket';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function DriverDashboardPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [stats, setStats] = useState<DriverDashboardStats | null>(null);
   const [availableDeliveries, setAvailableDeliveries] = useState<Delivery[]>([]);
@@ -111,7 +113,7 @@ export default function DriverDashboardPage() {
   };
 
   if (loading) {
-    return <Loading fullPage message="Loading driver dashboard..." />;
+    return <Loading fullPage message={t.common.loading} />;
   }
 
   const isOnline = driver?.online ?? false;
@@ -122,18 +124,18 @@ export default function DriverDashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
-              Driver Dispatch
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              {t.driver.dispatchTitle}
             </h1>
             <Badge
               variant={isOnline ? 'success' : 'neutral'}
               size="md"
               dot
             >
-              {isOnline ? 'ONLINE & READY' : 'OFFLINE'}
+              {isOnline ? t.driver.online : t.driver.offline}
             </Badge>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {driver?.vehicleType || 'Motorbike'} • Plate: {driver?.vehicleNumber || 'Phnom Penh 1B-9988'}
           </p>
         </div>
@@ -147,15 +149,15 @@ export default function DriverDashboardPage() {
             className="rounded-2xl gap-2 font-bold shadow-sm"
           >
             <Power className="w-4 h-4" />
-            {isOnline ? 'Go Offline' : 'Go Online'}
+            {isOnline ? t.driver.goOffline : t.driver.goOnline}
           </Button>
 
           <Button
             variant="outline"
             size="md"
             onClick={loadDeliveries}
-            className="rounded-2xl"
-            title="Refresh queue"
+            className="rounded-2xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
+            title={t.common.refresh}
           >
             <RefreshCw className="w-4 h-4" />
           </Button>
@@ -167,13 +169,13 @@ export default function DriverDashboardPage() {
         <div className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 rounded-lg bg-white/20 px-2.5 py-1 text-xs font-bold backdrop-blur-xs">
-              <Bike className="w-3.5 h-3.5" /> Active Job In Progress
+              <Bike className="w-3.5 h-3.5" /> {t.driver.activeDelivery}
             </div>
             <h3 className="text-lg font-black tracking-tight">
               Order #{activeDelivery.orderId.toString().padStart(6, '0')}
             </h3>
             <p className="text-xs text-blue-100">
-              Pick up from {activeDelivery.restaurantName} → Deliver to {activeDelivery.deliveryAddress}
+              {t.driver.pickupAt} {activeDelivery.restaurantName} → {t.driver.deliverTo} {activeDelivery.deliveryAddress}
             </p>
           </div>
 
@@ -181,58 +183,58 @@ export default function DriverDashboardPage() {
             href="/driver/deliveries"
             className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl font-bold text-sm bg-white text-blue-700 hover:bg-blue-50 shadow-md gap-1.5 transition-all shrink-0 cursor-pointer active:scale-95"
           >
-            View Active Job <ArrowRight className="w-4 h-4 text-blue-700" />
+            {t.driver.activeDelivery} <ArrowRight className="w-4 h-4 text-blue-700" />
           </Link>
         </div>
       )}
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Deliveries Completed
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              {t.driver.completedTrips}
             </p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.completedDeliveries ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Total lifetime: {stats?.completedDeliveries ?? 0}
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              {t.common.all}: {stats?.completedDeliveries ?? 0}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Package className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Today&apos;s Earnings
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              {t.driver.todayEarnings}
             </p>
-            <h3 className="text-2xl font-black text-emerald-600 mt-1">
+            <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
               ${stats?.todayEarnings?.toFixed(2) ?? '0.00'}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">Delivery fees earned</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{t.driver.shiftActiveToday}</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <DollarSign className="w-6 h-6" />
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs flex items-center justify-between">
+        <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              Approval Status
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              {t.common.status}
             </p>
-            <h3 className="text-2xl font-black text-slate-900 mt-1">
-              {driver?.approved ? 'Verified' : 'Pending'}
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+              {driver?.approved ? t.common.approved : t.common.pending}
             </h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               License: {driver?.licenseNumber || 'Active'}
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <ShieldCheck className="w-6 h-6" />
           </div>
         </div>
@@ -241,20 +243,20 @@ export default function DriverDashboardPage() {
       {/* Available Jobs Queue */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-900">Available Delivery Jobs</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t.driver.availableJobs}</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {isOnline
-              ? 'New orders ready for delivery near you'
-              : 'Turn your status to ONLINE to receive incoming delivery requests'}
+              ? t.driver.onlineNotice
+              : t.driver.offlineNotice}
           </p>
         </div>
 
         {!isOnline ? (
-          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center space-y-3">
-            <Power className="w-10 h-10 text-slate-300 mx-auto" />
-            <h3 className="text-base font-bold text-slate-800">You are currently offline</h3>
-            <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              Switch your status to online above to view and accept customer deliveries.
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center space-y-3">
+            <Power className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto" />
+            <h3 className="text-base font-bold text-slate-800 dark:text-white">{t.driver.offline}</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
+              {t.driver.offlineNotice}
             </p>
             <Button
               variant="success"
@@ -263,13 +265,13 @@ export default function DriverDashboardPage() {
               isLoading={togglingOnline}
               className="rounded-xl"
             >
-              Go Online Now
+              {t.driver.goOnline}
             </Button>
           </div>
         ) : availableDeliveries.length === 0 ? (
           <EmptyState
             icon={<Clock className="w-8 h-8" />}
-            title="No orders ready for pickup right now"
+            title={t.common.noData}
             description="We are matching you with local restaurant kitchens. New orders will appear automatically."
           />
         ) : (
@@ -280,15 +282,15 @@ export default function DriverDashboardPage() {
                 .map((deliv) => (
                   <div
                     key={deliv.id}
-                    className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs space-y-4 flex flex-col justify-between"
+                    className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4 flex flex-col justify-between"
                   >
                     <div>
-                      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                        <span className="font-mono text-xs font-bold text-slate-900">
+                      <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                           Order #{deliv.orderId.toString().padStart(6, '0')}
                         </span>
                         <Badge variant="primary" size="sm">
-                          Ready for pickup
+                          {t.common.open}
                         </Badge>
                       </div>
 
@@ -296,27 +298,27 @@ export default function DriverDashboardPage() {
                         <div className="flex items-start gap-2.5">
                           <Store className="w-4 h-4 text-[#FF5A1F] shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-bold text-slate-800">{deliv.restaurantName}</p>
-                            <p className="text-slate-500">{deliv.restaurantAddress}</p>
+                            <p className="font-bold text-slate-800 dark:text-slate-200">{deliv.restaurantName}</p>
+                            <p className="text-slate-500 dark:text-slate-400">{deliv.restaurantAddress}</p>
                           </div>
                         </div>
 
                         <div className="flex items-start gap-2.5">
-                          <MapPin className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                          <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                           <div>
-                            <p className="font-bold text-slate-800">{deliv.customerName || 'Customer'}</p>
-                            <p className="text-slate-500">{deliv.deliveryAddress}</p>
+                            <p className="font-bold text-slate-800 dark:text-slate-200">{deliv.customerName || t.roles.CUSTOMER}</p>
+                            <p className="text-slate-500 dark:text-slate-400">{deliv.deliveryAddress}</p>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-slate-400 block uppercase font-bold">
-                          Delivery Payout
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 block uppercase font-bold">
+                          {t.driver.estEarnings}
                         </span>
-                        <span className="text-base font-black text-emerald-600">
+                        <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
                           ${deliv.deliveryFee ? deliv.deliveryFee.toFixed(2) : '2.50'}
                         </span>
                       </div>
@@ -328,7 +330,7 @@ export default function DriverDashboardPage() {
                         isLoading={acceptingId === deliv.id}
                         className="rounded-xl font-bold text-xs gap-1.5"
                       >
-                        Accept Job <ArrowRight className="w-3.5 h-3.5" />
+                        {t.driver.acceptDelivery} <ArrowRight className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </div>

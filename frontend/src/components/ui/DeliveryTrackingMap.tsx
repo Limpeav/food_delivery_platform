@@ -51,12 +51,23 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({
   // Initialize Map
   useEffect(() => {
     if (typeof window === 'undefined' || !mapContainerRef.current) return;
-    if (mapRef.current) return;
 
     let isMounted = true;
 
     import('leaflet').then((L) => {
       if (!isMounted || !mapContainerRef.current) return;
+
+      // Clean up any previous map instance or leftover leaflet container state
+      if (mapRef.current) {
+        try {
+          mapRef.current.remove();
+        } catch {}
+        mapRef.current = null;
+      }
+      if ((mapContainerRef.current as any)?._leaflet_id) {
+        delete (mapContainerRef.current as any)._leaflet_id;
+        mapContainerRef.current.innerHTML = '';
+      }
 
       // Fix icon issues
       // @ts-ignore
@@ -67,6 +78,13 @@ export const DeliveryTrackingMap: React.FC<DeliveryTrackingMapProps> = ({
         zoom: 14,
         zoomControl: false,
       });
+
+      if (!isMounted) {
+        try {
+          map.remove();
+        } catch {}
+        return;
+      }
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap contributors',

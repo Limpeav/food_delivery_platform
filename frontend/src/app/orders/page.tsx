@@ -26,9 +26,11 @@ import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function OrdersPage() {
   const router = useRouter();
+  const { t, language } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,14 +83,14 @@ export default function OrdersPage() {
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            Delivered
+            {t.ordersPage.delivered}
           </span>
         );
       case 'OUT_FOR_DELIVERY':
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 animate-pulse">
             <Bike className="w-3.5 h-3.5 text-blue-600" />
-            Out for Delivery
+            {t.ordersPage.outForDelivery}
           </span>
         );
       case 'PREPARING':
@@ -96,14 +98,14 @@ export default function OrdersPage() {
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200/80">
             <ChefHat className="w-3.5 h-3.5 text-orange-600" />
-            In Kitchen
+            {t.ordersPage.inKitchen}
           </span>
         );
       case 'READY_FOR_PICKUP':
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
             <Package className="w-3.5 h-3.5 text-indigo-600" />
-            Ready for Pickup
+            {t.ordersPage.readyForPickup}
           </span>
         );
       case 'CANCELLED':
@@ -111,14 +113,14 @@ export default function OrdersPage() {
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/80">
             <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
-            {status === 'REJECTED' ? 'Rejected' : 'Cancelled'}
+            {status === 'REJECTED' ? t.ordersPage.rejected : t.ordersPage.cancelled}
           </span>
         );
       default:
         return (
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/80">
             <Clock className="w-3.5 h-3.5 text-amber-600" />
-            Pending confirmation
+            {t.ordersPage.pending}
           </span>
         );
     }
@@ -167,10 +169,10 @@ export default function OrdersPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900">
-            My Orders
+            {t.ordersPage.title}
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            Track live deliveries in real-time, review meal receipts, and reorder your favorites
+            {t.ordersPage.subtitle}
           </p>
         </div>
 
@@ -179,7 +181,7 @@ export default function OrdersPage() {
           <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Active Deliveries
+                {t.ordersPage.activeDeliveriesMetric}
               </span>
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-black text-slate-900">
@@ -198,7 +200,7 @@ export default function OrdersPage() {
           <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Completed Orders
+                {t.ordersPage.completedOrders}
               </span>
               <span className="text-2xl font-black text-slate-900 block">
                 {metrics.completedCount}
@@ -212,7 +214,7 @@ export default function OrdersPage() {
           <div className="p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
             <div className="space-y-1">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Total Meals Enjoyed
+                {t.ordersPage.totalMealsEnjoyed}
               </span>
               <span className="text-2xl font-black text-[#FF5A1F] block">
                 ${metrics.totalSpent.toFixed(2)}
@@ -231,10 +233,10 @@ export default function OrdersPage() {
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {(
             [
-              { id: 'all', label: 'All Orders' },
-              { id: 'active', label: 'Active' },
-              { id: 'completed', label: 'Completed' },
-              { id: 'cancelled', label: 'Cancelled' },
+              { id: 'all', label: t.ordersPage.allOrders },
+              { id: 'active', label: t.ordersPage.activeTab },
+              { id: 'completed', label: t.ordersPage.completedTab },
+              { id: 'cancelled', label: t.ordersPage.cancelledTab },
             ] as const
           ).map((tab) => (
             <button
@@ -256,7 +258,7 @@ export default function OrdersPage() {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search restaurant or food..."
+            placeholder={t.ordersPage.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-3.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs w-full sm:w-60 focus:bg-white focus:outline-none focus:border-[#FF5A1F] transition-all"
@@ -266,21 +268,21 @@ export default function OrdersPage() {
 
       {/* Orders List */}
       {loading ? (
-        <Loading message="Loading orders..." />
+        <Loading message={t.ordersPage.loadingOrders} />
       ) : filteredOrders.length === 0 ? (
         <EmptyState
           icon={<ShoppingBag className="w-8 h-8" />}
           title={
             filter === 'all'
-              ? 'You haven’t placed any orders yet'
-              : `No ${filter} orders found`
+              ? t.ordersPage.noOrdersYet
+              : t.ordersPage.noOrdersFound
           }
           description={
             filter === 'all'
-              ? 'Explore our curated selection of local restaurants and start your order today!'
-              : 'Try changing your search or filters to see past orders.'
+              ? t.ordersPage.noOrdersYetDesc
+              : t.ordersPage.noFilteredOrdersDesc
           }
-          actionLabel="Explore Restaurants"
+          actionLabel={t.ordersPage.startExploring}
           onAction={() => router.push('/restaurants')}
         />
       ) : (
@@ -312,12 +314,12 @@ export default function OrdersPage() {
                       </div>
                       <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        {new Date(order.createdAt).toLocaleDateString(undefined, {
+                        {new Date(order.createdAt).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
                         })}{' '}
-                        at{' '}
+                        {t.ordersPage.at}{' '}
                         {new Date(order.createdAt).toLocaleTimeString([], {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -335,10 +337,10 @@ export default function OrdersPage() {
                 {active && (
                   <div className="rounded-2xl bg-slate-50 border border-slate-200/70 p-4 space-y-2">
                     <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                      <span className={step >= 1 ? 'text-[#FF5A1F]' : ''}>Order Placed</span>
-                      <span className={step >= 2 ? 'text-[#FF5A1F]' : ''}>In Kitchen</span>
-                      <span className={step >= 3 ? 'text-[#FF5A1F]' : ''}>Rider Dispatched</span>
-                      <span className={step >= 4 ? 'text-[#FF5A1F]' : ''}>Delivered</span>
+                      <span className={step >= 1 ? 'text-[#FF5A1F]' : ''}>{t.ordersPage.orderPlaced}</span>
+                      <span className={step >= 2 ? 'text-[#FF5A1F]' : ''}>{t.ordersPage.inKitchen}</span>
+                      <span className={step >= 3 ? 'text-[#FF5A1F]' : ''}>{t.ordersPage.riderDispatched}</span>
+                      <span className={step >= 4 ? 'text-[#FF5A1F]' : ''}>{t.ordersPage.delivered}</span>
                     </div>
 
                     {/* Progress Track */}
@@ -375,7 +377,7 @@ export default function OrdersPage() {
 
                   {order.notes && (
                     <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-100 p-2 rounded-xl">
-                      <span className="font-bold">Special Note:</span> {order.notes}
+                      <span className="font-bold">{t.ordersPage.specialNote}</span> {order.notes}
                     </p>
                   )}
                 </div>
@@ -385,7 +387,7 @@ export default function OrdersPage() {
                   <div className="flex items-center gap-3">
                     <div>
                       <span className="text-[10px] text-slate-400 block uppercase font-bold">
-                        Total Amount ({itemCount} {itemCount === 1 ? 'item' : 'items'})
+                        {t.ordersPage.totalAmount} ({itemCount} {t.ordersPage.items})
                       </span>
                       <span className="text-lg font-black text-slate-900">
                         ${order.totalAmount.toFixed(2)}
@@ -407,7 +409,7 @@ export default function OrdersPage() {
                           className="rounded-xl gap-1.5 font-extrabold shadow-sm"
                         >
                           <Bike className="w-4 h-4" />
-                          Track Live Delivery
+                          {t.ordersPage.trackOrder}
                           <ArrowRight className="w-3.5 h-3.5" />
                         </Button>
                       </Link>
@@ -420,7 +422,7 @@ export default function OrdersPage() {
                             className="rounded-xl text-xs gap-1.5 font-bold"
                           >
                             <Receipt className="w-3.5 h-3.5 text-slate-400" />
-                            View Receipt
+                            {t.ordersPage.viewReceipt}
                           </Button>
                         </Link>
 
@@ -432,7 +434,7 @@ export default function OrdersPage() {
                               className="rounded-xl text-xs gap-1.5 font-bold bg-[#FFF1EB] text-[#FF5A1F] hover:bg-[#FFE3D6]"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
-                              Order Again
+                              {t.ordersPage.orderAgain}
                             </Button>
                           </Link>
                         )}

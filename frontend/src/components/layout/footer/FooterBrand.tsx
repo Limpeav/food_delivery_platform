@@ -1,9 +1,13 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
 import { Utensils, ShieldCheck, Clock, MapPin } from 'lucide-react';
-import { footerBrand } from '@/config/footer';
+import { useTranslation } from '@/stores/languageStore';
 
 export const FooterBrand: React.FC = () => {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       {/* Brand Logo & Name */}
@@ -22,28 +26,23 @@ export const FooterBrand: React.FC = () => {
 
       {/* Description */}
       <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs">
-        {footerBrand.description}
+        {t.footer.tagline}
       </p>
 
       {/* Genuine Platform Benefits */}
       <div className="space-y-2 pt-1">
-        {footerBrand.benefits.map((benefit, idx) => (
-          <div
-            key={idx}
-            className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300"
-          >
-            {benefit.icon === 'shield' && (
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            )}
-            {benefit.icon === 'clock' && (
-              <Clock className="w-3.5 h-3.5 text-[#FF5A1F] shrink-0" />
-            )}
-            {benefit.icon === 'mapPin' && (
-              <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
-            )}
-            <span>{benefit.text}</span>
-          </div>
-        ))}
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span>{t.footer.genuineQuality}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <Clock className="w-3.5 h-3.5 text-[#FF5A1F] shrink-0" />
+          <span>{t.footer.fastDelivery}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300">
+          <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+          <span>{t.footer.liveGps}</span>
+        </div>
       </div>
     </div>
   );

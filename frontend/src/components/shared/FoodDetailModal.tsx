@@ -15,6 +15,8 @@ import {
 import { FoodItem, Review } from '@/types';
 import { reviewService } from '@/services/reviewService';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from '@/stores/languageStore';
+import { localizeCategory } from '@/locales';
 
 interface FoodDetailModalProps {
   food: FoodItem | null;
@@ -31,6 +33,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
   onAddToCart,
   inCartQuantity = 0,
 }) => {
+  const { t, language } = useTranslation();
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
@@ -122,7 +125,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
           {/* Floating Close Button */}
           <button
             onClick={onClose}
-            aria-label="Close food details"
+            aria-label={t.foodModal.close}
             className="absolute top-4 right-4 z-20 rounded-full p-2 bg-black/50 hover:bg-black/70 text-white backdrop-blur-md transition-all cursor-pointer shadow-md"
           >
             <X className="w-5 h-5" />
@@ -131,11 +134,11 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
           {/* Badges on Banner */}
           <div className="absolute top-4 left-4 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#FF5A1F] px-3 py-1 text-xs font-bold text-white shadow-md">
-              {food.menuCategoryName || 'Specialty'}
+              {localizeCategory(food.menuCategoryName || 'Specialty', language)}
             </span>
             {!food.available && (
               <span className="rounded-full bg-rose-600 px-3 py-1 text-xs font-bold text-white shadow-md">
-                Sold Out
+                {t.foodModal.soldOut}
               </span>
             )}
           </div>
@@ -149,7 +152,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               </span>
               <span className="inline-flex items-center gap-1 rounded-xl bg-black/60 backdrop-blur-md px-2.5 py-1 text-xs font-medium text-slate-200">
                 <Clock className="w-3.5 h-3.5 text-[#FF5A1F]" />
-                {food.preparationTime || 15} mins prep
+                {food.preparationTime || 15} {t.foodModal.minsPrep}
               </span>
             </div>
 
@@ -177,11 +180,10 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
           {/* Description */}
           <div className="space-y-1.5">
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              Description
+              {t.foodModal.description}
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              {food.description ||
-                'Prepared fresh with selected premium ingredients, rich flavors, and authentic culinary techniques.'}
+              {food.description || t.foodModal.defaultDescription}
             </p>
           </div>
 
@@ -190,7 +192,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
             <div className="flex items-center gap-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/60 px-3.5 py-2.5 text-xs font-semibold text-amber-800 dark:text-amber-300">
               <ShoppingBag className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>
-                You have <strong className="text-amber-900 dark:text-amber-200">{inCartQuantity}</strong> of this dish already in your basket.
+                {t.foodModal.inBasketNotice.replace('{count}', String(inCartQuantity))}
               </span>
             </div>
           )}
@@ -200,21 +202,21 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <MessageSquare className="w-3.5 h-3.5 text-[#FF5A1F]" />
-                Customer Reviews {reviews.length > 0 && `(${reviews.length})`}
+                {t.foodModal.customerReviews} {reviews.length > 0 && `(${reviews.length})`}
               </h3>
               {food.rating ? (
                 <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
-                  <Star className="w-3 h-3 fill-amber-400" />
+                  <Star className="w-3.5 h-3.5 fill-amber-400" />
                   <span>{food.rating.toFixed(1)} / 5.0</span>
                 </div>
               ) : null}
             </div>
 
             {loadingReviews ? (
-              <div className="py-4 text-center text-xs text-slate-400 dark:text-slate-500">Loading reviews...</div>
+              <div className="py-4 text-center text-xs text-slate-400 dark:text-slate-500">{t.foodModal.loadingReviews}</div>
             ) : reviews.length === 0 ? (
               <p className="text-xs text-slate-400 dark:text-slate-500 italic py-1">
-                No customer reviews yet for this specific dish. Be among the first to order and review!
+                {t.foodModal.noReviews}
               </p>
             ) : (
               <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
@@ -251,7 +253,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               onClick={handleDecrement}
               disabled={quantity <= 1 || !food.available}
               className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              aria-label="Decrease quantity"
+              aria-label={t.foodModal.decreaseQuantity}
             >
               <Minus className="w-4 h-4" />
             </button>
@@ -260,7 +262,7 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
               onClick={handleIncrement}
               disabled={!food.available}
               className="flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-              aria-label="Increase quantity"
+              aria-label={t.foodModal.increaseQuantity}
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -276,20 +278,20 @@ export const FoodDetailModal: React.FC<FoodDetailModalProps> = ({
           >
             {addedRecently ? (
               <span className="w-full flex items-center justify-center gap-2 text-white">
-                <Check className="w-4 h-4" /> Added to Basket!
+                <Check className="w-4 h-4" /> {t.foodModal.addedToBasket}
               </span>
             ) : isAdding ? (
-              <span className="w-full text-center text-white">Adding...</span>
+              <span className="w-full text-center text-white">{t.foodModal.adding}</span>
             ) : food.available ? (
               <>
                 <span className="flex items-center gap-2">
                   <ShoppingBag className="w-4 h-4" />
-                  Add to Basket
+                  {t.foodModal.addToBasket}
                 </span>
                 <span>${totalPrice}</span>
               </>
             ) : (
-              <span className="w-full text-center">Item Sold Out</span>
+              <span className="w-full text-center">{t.foodModal.itemSoldOut}</span>
             )}
           </Button>
         </div>

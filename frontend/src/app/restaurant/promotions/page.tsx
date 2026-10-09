@@ -66,10 +66,10 @@ export default function RestaurantPromotionsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
             Store Deals & Promotions
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Create limited-time percentage discounts to boost store conversion
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function RestaurantPromotionsPage() {
           variant="primary"
           size="sm"
           onClick={() => setModalOpen(true)}
-          className="rounded-xl text-xs gap-1.5 font-bold self-start"
+          className="rounded-xl text-xs gap-1.5 font-bold self-start shadow-xs"
         >
           <Plus className="w-4 h-4" /> Create Deal
         </Button>
@@ -86,27 +86,27 @@ export default function RestaurantPromotionsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {promotions.length === 0 ? (
-          <div className="col-span-full py-16 text-center text-xs text-slate-400">
+          <div className="col-span-full py-16 text-center text-xs text-slate-400 dark:text-slate-500">
             No active store deals. Create one to drive higher order volumes!
           </div>
         ) : (
           promotions.map((p) => (
             <div
               key={p.id}
-              className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xs flex flex-col justify-between"
+              className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <Badge variant="primary" size="sm">
                     {p.discountValue}% OFF
                   </Badge>
-                  <span className="text-[10px] text-slate-400">Active</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Active</span>
                 </div>
-                <h3 className="font-bold text-slate-900 text-base">{p.title}</h3>
-                <p className="text-xs text-slate-500 mt-1">{p.description}</p>
+                <h3 className="font-bold text-slate-900 dark:text-white text-base">{p.title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{p.description}</p>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5" /> 2 Weeks Campaign
                 </span>

@@ -18,8 +18,10 @@ import { AdminDashboardStats } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Loading } from '@/components/ui/Loading';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function AdminDashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +41,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   if (loading) {
-    return <Loading fullPage message="Loading platform metrics..." />;
+    return <Loading fullPage message={t.common.loading} />;
   }
 
   return (
@@ -47,10 +49,10 @@ export default function AdminDashboardPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-          Platform Overview
+          {t.admin.overview}
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Real-time enterprise metrics, marketplace revenue, and partner approval queues
+          {t.admin.systemMetrics}
         </p>
       </div>
 
@@ -60,9 +62,9 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
             <div>
-              <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">Partner Applications Pending Approval</h3>
+              <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">{t.admin.pendingApprovals}</h3>
               <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
-                {stats?.pendingRestaurants ?? 0} restaurant(s) and {stats?.pendingDrivers ?? 0} driver(s) awaiting your review.
+                {stats?.pendingRestaurants ?? 0} {t.admin.restaurants} & {stats?.pendingDrivers ?? 0} {t.admin.drivers} {t.admin.pendingApprovalsDesc}
               </p>
             </div>
           </div>
@@ -71,14 +73,14 @@ export default function AdminDashboardPage() {
             {(stats?.pendingRestaurants ?? 0) > 0 && (
               <Link href="/admin/restaurants">
                 <Button size="sm" variant="secondary" className="rounded-xl text-xs font-bold">
-                  Review Restaurants
+                  {t.admin.reviewRestaurants}
                 </Button>
               </Link>
             )}
             {(stats?.pendingDrivers ?? 0) > 0 && (
               <Link href="/admin/drivers">
                 <Button size="sm" variant="secondary" className="rounded-xl text-xs font-bold">
-                  Review Drivers
+                  {t.admin.reviewDrivers}
                 </Button>
               </Link>
             )}
@@ -90,11 +92,11 @@ export default function AdminDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Users</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">{t.admin.totalCustomers}</p>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalCustomers ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Registered customers</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{t.roles.CUSTOMER}</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center">
             <Users className="w-6 h-6" />
@@ -103,11 +105,11 @@ export default function AdminDashboardPage() {
 
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Restaurants</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">{t.admin.totalRestaurants}</p>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalRestaurants ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Active merchant stores</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{t.roles.RESTAURANT_OWNER}</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <Store className="w-6 h-6" />
@@ -116,11 +118,11 @@ export default function AdminDashboardPage() {
 
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Delivery Fleet</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">{t.admin.activeDrivers}</p>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalDrivers ?? 0}
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Active registered riders</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{t.roles.DRIVER}</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Bike className="w-6 h-6" />
@@ -129,12 +131,12 @@ export default function AdminDashboardPage() {
 
         <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs flex items-center justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">Total Orders</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">{t.admin.totalOrders}</p>
             <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">
               {stats?.totalOrders ?? 0}
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Today: {stats?.todayOrders ?? 0} orders
+              {t.common.status}: {stats?.todayOrders ?? 0}
             </p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-[#FF5A1F] dark:text-[#FF7A45] flex items-center justify-center">

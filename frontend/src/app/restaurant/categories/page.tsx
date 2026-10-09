@@ -70,11 +70,11 @@ export default function RestaurantCategoriesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2.5">
-            <Layers className="w-6 h-6 text-emerald-600" />
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Layers className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
             Menu Categories
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Organize dishes into customer-facing sections (e.g. Appetizers, Mains, Drinks)
           </p>
         </div>
@@ -83,24 +83,24 @@ export default function RestaurantCategoriesPage() {
           variant="primary"
           size="sm"
           onClick={() => setModalOpen(true)}
-          className="rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500"
+          className="rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 shadow-xs"
         >
           <Plus className="w-4 h-4" /> Add Category
         </Button>
       </div>
 
       {categories.length === 0 ? (
-        <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 bg-white space-y-3">
-          <Layers className="w-10 h-10 text-slate-300 mx-auto" />
-          <p className="text-sm font-bold text-slate-700">No categories created yet</p>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto">
+        <div className="p-12 text-center rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-3">
+          <Layers className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto" />
+          <p className="text-sm font-bold text-slate-700 dark:text-slate-200">No categories created yet</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto">
             Create categories like &quot;Burgers&quot;, &quot;Sides&quot;, or &quot;Desserts&quot; to classify your food items.
           </p>
           <Button
             variant="primary"
             size="sm"
             onClick={() => setModalOpen(true)}
-            className="rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 mt-2"
+            className="rounded-xl text-xs gap-1.5 bg-emerald-600 hover:bg-emerald-500 mt-2 shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" /> Create First Category
           </Button>
@@ -110,15 +110,15 @@ export default function RestaurantCategoriesPage() {
           {categories.map((cat, idx) => (
             <div
               key={cat.id}
-              className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3 hover:border-emerald-200 transition-colors"
+              className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3 hover:border-emerald-200 dark:hover:border-emerald-800/60 transition-colors"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-slate-400">
+                <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500">
                   #{idx + 1}
                 </span>
                 <button
                   onClick={() => handleDelete(cat.id)}
-                  className="p-1 text-slate-400 hover:text-rose-600 cursor-pointer"
+                  className="p-1 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 cursor-pointer"
                   title="Delete category"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -126,14 +126,14 @@ export default function RestaurantCategoriesPage() {
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-slate-900">{cat.name}</h3>
-                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">{cat.name}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-2">
                   {cat.description || 'No description provided'}
                 </p>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-                <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+                <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                   <CheckCircle2 className="w-3.5 h-3.5" /> Active Section
                 </span>
               </div>

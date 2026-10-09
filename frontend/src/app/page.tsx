@@ -26,6 +26,8 @@ import { couponService } from '@/services/couponService';
 import { Restaurant, FoodItem, RestaurantCategory, Coupon } from '@/types';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useTranslation } from '@/stores/languageStore';
+import { localizeCategory } from '@/locales';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
@@ -85,24 +87,25 @@ function FoodCardSkeleton() {
 // ─── Coupon copy button ───────────────────────────────────────────────────────
 
 function CouponCard({ coupon }: { coupon: Coupon }) {
+  const { t, language } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(coupon.code).then(() => {
       setCopied(true);
-      toast.success(`Code "${coupon.code}" copied to clipboard!`);
+      toast.success(t.promotionsPage.codeCopied);
       setTimeout(() => setCopied(false), 2000);
     });
   };
 
   const discountLabel =
     coupon.discountType === 'PERCENTAGE'
-      ? `${coupon.discountValue}% OFF`
-      : `$${coupon.discountValue.toFixed(2)} OFF`;
+      ? `${coupon.discountValue}% ${t.promotionsPage.percentOff}`
+      : `$${coupon.discountValue.toFixed(2)} ${t.promotionsPage.percentOff}`;
 
   const maxCap =
     coupon.discountType === 'PERCENTAGE' && coupon.maximumDiscount
-      ? ` (up to $${coupon.maximumDiscount})`
+      ? ` (${t.promotionsPage.maxCap} $${coupon.maximumDiscount})`
       : '';
 
   return (
@@ -110,14 +113,14 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#FF5A1F]">
-            Coupon
+            {t.promotionsPage.badge}
           </span>
           <p className="text-xl font-black text-slate-900 dark:text-white leading-tight mt-0.5">
             {discountLabel}
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{maxCap}</span>
           </p>
           <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Min order: ${coupon.minimumOrderAmount.toFixed(2)}
+            {t.promotionsPage.minSpend}: ${coupon.minimumOrderAmount.toFixed(2)}
           </p>
         </div>
         <Tag className="w-8 h-8 text-[#FF5A1F]/30 shrink-0 mt-1" />
@@ -141,7 +144,7 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
       </div>
 
       <p className="mt-2 text-[10px] text-slate-400 dark:text-slate-500">
-        Expires {new Date(coupon.expirationDate).toLocaleDateString()}
+        {t.promotionsPage.expires}: {new Date(coupon.expirationDate).toLocaleDateString(language === 'km' ? 'km-KH' : 'en-US')}
       </p>
     </div>
   );
@@ -151,6 +154,7 @@ function CouponCard({ coupon }: { coupon: Coupon }) {
 
 export default function HomePage() {
   const router = useRouter();
+  const { t, language } = useTranslation();
   const { isAuthenticated } = useAuthStore();
   const { cart, addItem, clearCart } = useCartStore();
 
@@ -242,18 +246,17 @@ export default function HomePage() {
               <div className="inline-flex flex-wrap items-center gap-2">
                 <div className="inline-flex items-center gap-2 rounded-full border border-orange-200 dark:border-orange-800/60 bg-white/80 dark:bg-slate-900/80 px-4 py-1.5 text-xs font-bold text-[#FF5A1F] shadow-xs backdrop-blur-xs">
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Super Fast Delivery in Phnom Penh</span>
+                  <span>{t.customer.heroBadge}</span>
                 </div>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                Craving Delicious Food? We Deliver In{' '}
-                <span className="text-[#FF5A1F]">Minutes</span>.
+                {t.customer.heroTitle}{' '}
+                <span className="text-[#FF5A1F]">{language === 'km' ? '៣០ នាទី' : 'Minutes'}</span>.
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-                Discover the best local restaurants, gourmet burgers, fresh sushi, and refreshing
-                drinks delivered hot straight to your doorstep.
+                {t.customer.heroSubtitle}
               </p>
 
               {/* Instant Search Bar */}
@@ -268,12 +271,12 @@ export default function HomePage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for restaurants, burgers, pizza, coffee..."
+                  placeholder={t.customer.searchPlaceholder}
                   className="w-full bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
                   aria-label="Search restaurants and foods"
                 />
                 <Button type="submit" variant="primary" size="md" className="shrink-0 rounded-xl">
-                  Search
+                  {t.customer.searchButton}
                 </Button>
               </form>
 
@@ -281,15 +284,15 @@ export default function HomePage() {
               <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
                 <div className="flex items-center gap-1.5">
                   <Zap className="w-4 h-4 text-amber-500" />
-                  <span>25-35 min Average</span>
+                  <span>{t.customer.avgDelivery}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Bike className="w-4 h-4 text-blue-500" />
-                  <span>Real-time GPS Tracking</span>
+                  <span>{t.customer.realtimeGps}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Award className="w-4 h-4 text-emerald-500" />
-                  <span>Top Rated Merchants</span>
+                  <span>{t.customer.topRatedMerchants}</span>
                 </div>
               </div>
             </div>
@@ -350,15 +353,15 @@ export default function HomePage() {
             <div>
               <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                 <Tag className="w-5 h-5 text-[#FF5A1F]" />
-                Active Deals &amp; Coupons
+                {t.customer.featuredDeals}
               </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Copy a code and use it at checkout</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{t.customer.activeDealsSubtitle}</p>
             </div>
             <Link
               href="/promotions"
               className="flex items-center gap-1 text-xs font-bold text-[#FF5A1F] hover:underline"
             >
-              All promotions <ArrowRight className="w-3.5 h-3.5" />
+              {t.customer.allPromotions} <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -379,8 +382,8 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Explore Cuisines</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Find meals that match your cravings</p>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{t.customer.popularCategories}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t.customer.exploreCuisinesSubtitle}</p>
           </div>
           <Link
             href={
@@ -390,7 +393,7 @@ export default function HomePage() {
             }
             className="flex items-center gap-1 text-xs font-bold text-[#FF5A1F] hover:underline"
           >
-            See all <ArrowRight className="w-3.5 h-3.5" />
+            {t.customer.seeAll} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -407,7 +410,7 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950/60 flex items-center justify-center text-lg mb-1.5">
               🍽️
             </div>
-            <span className="text-xs">All Dishes</span>
+            <span className="text-xs">{t.customer.allDishes}</span>
           </button>
 
           {loading
@@ -444,7 +447,7 @@ export default function HomePage() {
                       '🍔'
                     )}
                   </div>
-                  <span className="text-xs truncate max-w-[80px]">{cat.name}</span>
+                  <span className="text-xs truncate max-w-[80px]">{localizeCategory(cat.name, language)}</span>
                 </button>
               ))}
         </div>
@@ -457,9 +460,9 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Featured Restaurants
+              {t.customer.topRestaurants}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Popular spots delivering right now</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t.customer.topRestaurantsSubtitle}</p>
           </div>
           <Link
             href={
@@ -469,7 +472,7 @@ export default function HomePage() {
             }
             className="flex items-center gap-1 text-xs font-bold text-[#FF5A1F] hover:underline"
           >
-            View all restaurants <ArrowRight className="w-3.5 h-3.5" />
+            {t.customer.viewAllRestaurants} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
@@ -503,7 +506,7 @@ export default function HomePage() {
                         />
                         <div className="absolute top-3 left-3 flex items-center gap-2">
                           <Badge variant="primary" size="sm" className="font-bold">
-                            {restaurant.categoryName}
+                            {localizeCategory(restaurant.categoryName, language)}
                           </Badge>
                           <span
                             className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
@@ -517,7 +520,7 @@ export default function HomePage() {
                                 open ? 'bg-white animate-pulse' : 'bg-white/50'
                               }`}
                             />
-                            {open ? 'Open' : 'Closed'}
+                            {open ? t.customer.openNow : t.customer.closedNow}
                           </span>
                         </div>
                         <div className="absolute bottom-3 right-3">
@@ -551,7 +554,7 @@ export default function HomePage() {
 
                           <div className="flex items-center gap-1">
                             <Bike className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-                            <span>${restaurant.deliveryFee.toFixed(2)} delivery</span>
+                            <span>${restaurant.deliveryFee.toFixed(2)} {t.customer.deliverySuffix}</span>
                           </div>
                         </div>
                       </div>
@@ -565,8 +568,8 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">Trending Dishes</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Most ordered foods this week</p>
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">{t.customer.trendingDishes}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{t.customer.trendingSubtitle}</p>
           </div>
         </div>
 
@@ -578,8 +581,8 @@ export default function HomePage() {
           </div>
         ) : popularFoods.length === 0 ? (
           <EmptyState
-            title="No trending dishes yet"
-            description="Check back soon — our top dishes will appear here."
+            title={t.customer.noTrending}
+            description={t.customer.noTrendingSubtitle}
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -626,7 +629,7 @@ export default function HomePage() {
                       ${food.price.toFixed(2)}
                     </span>
                     <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-medium group-hover:text-[#FF5A1F] transition-colors">
-                      View dish details →
+                      {t.customer.viewDishDetails}
                     </span>
                   </div>
                   <Button
@@ -641,7 +644,7 @@ export default function HomePage() {
                     className="rounded-xl gap-1 shadow-xs"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Add
+                    {t.common.add}
                   </Button>
                 </div>
               </Link>
@@ -654,21 +657,20 @@ export default function HomePage() {
       <Modal
         isOpen={conflictModalOpen}
         onClose={() => setConflictModalOpen(false)}
-        title="Start a new basket?"
-        description="Your cart already contains items from another restaurant."
+        title={t.customer.conflictTitle}
+        description={t.customer.conflictMessage}
       >
         <div className="space-y-4 pt-2">
           <p className="text-xs text-slate-600 leading-relaxed">
-            You can only order from one restaurant at a time. Do you want to clear your current
-            cart and add{' '}
+            {t.customer.conflictMessage}{' '}
             <span className="font-bold text-slate-900">{pendingFoodItem?.name}</span>?
           </p>
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={() => setConflictModalOpen(false)}>
-              Keep Current Cart
+              {t.customer.keepCurrentCart}
             </Button>
             <Button variant="primary" size="sm" onClick={confirmSwitchRestaurant}>
-              Start New Cart
+              {t.customer.startNewCart}
             </Button>
           </div>
         </div>

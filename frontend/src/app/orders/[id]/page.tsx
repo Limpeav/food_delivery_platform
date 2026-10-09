@@ -27,6 +27,7 @@ import { Loading } from '@/components/ui/Loading';
 import { DeliveryTrackingMap } from '@/components/ui/DeliveryTrackingMap';
 import { OrderReceiptModal } from '@/components/ui/OrderReceiptModal';
 import { subscribeToOrder, subscribeToOrderLocation } from '@/lib/websocket';
+import { useTranslation } from '@/stores/languageStore';
 
 export default function OrderTrackingPage({
   params,
@@ -36,6 +37,7 @@ export default function OrderTrackingPage({
   const resolvedParams = use(params);
   const orderId = Number(resolvedParams.id);
   const router = useRouter();
+  const { t, language } = useTranslation();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,13 +133,13 @@ export default function OrderTrackingPage({
   }, [order, orderId]);
 
   const handleCancelOrder = async () => {
-    if (!confirm('Are you sure you want to cancel this order?')) return;
+    if (!confirm(t.orderTrackingPage.confirmCancel)) return;
     setCancelling(true);
     try {
       const updated = await orderService.cancelOrder(orderId);
       setOrder(updated);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Could not cancel order');
+      alert(err.response?.data?.message || t.orderTrackingPage.orderCancelled);
     } finally {
       setCancelling(false);
     }
@@ -150,7 +152,7 @@ export default function OrderTrackingPage({
       await orderService.reorder(order.id);
       router.push('/cart');
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Could not re-order items');
+      alert(err.response?.data?.message || t.orderTrackingPage.reorderError);
     } finally {
       setReordering(false);
     }
@@ -168,36 +170,36 @@ export default function OrderTrackingPage({
       });
       setReviewSubmitted(true);
       setReviewModalOpen(false);
-      alert('Thank you for rating your food!');
+      alert(t.orderTrackingPage.reviewSuccess);
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to submit review');
+      alert(err.response?.data?.message || t.orderTrackingPage.reviewError);
     } finally {
       setSubmittingReview(false);
     }
   };
 
   if (loading) {
-    return <Loading fullPage message="Loading tracking status..." />;
+    return <Loading fullPage message={t.orderTrackingPage.loadingTracking} />;
   }
 
   if (!order) {
     return (
       <div className="py-20 text-center">
-        <h2 className="text-xl font-bold text-slate-800">Order not found</h2>
+        <h2 className="text-xl font-bold text-slate-800">{t.orderTrackingPage.orderNotFound}</h2>
         <Link href="/orders" className="mt-4 inline-block text-sm font-bold text-[#FF5A1F]">
-          ← Back to Orders
+          {t.orderTrackingPage.backToOrders}
         </Link>
       </div>
     );
   }
 
   const steps: { label: string; key: OrderStatus }[] = [
-    { label: 'Order Placed', key: 'PENDING' },
-    { label: 'Confirmed', key: 'CONFIRMED' },
-    { label: 'Kitchen Preparing', key: 'PREPARING' },
-    { label: 'Ready for Pickup', key: 'READY_FOR_PICKUP' },
-    { label: 'Out for Delivery', key: 'OUT_FOR_DELIVERY' },
-    { label: 'Delivered', key: 'DELIVERED' },
+    { label: t.orderTrackingPage.stepPlaced, key: 'PENDING' },
+    { label: t.orderTrackingPage.stepConfirmed, key: 'CONFIRMED' },
+    { label: t.orderTrackingPage.stepPreparing, key: 'PREPARING' },
+    { label: t.orderTrackingPage.stepReady, key: 'READY_FOR_PICKUP' },
+    { label: t.orderTrackingPage.stepDelivery, key: 'OUT_FOR_DELIVERY' },
+    { label: t.orderTrackingPage.stepDelivered, key: 'DELIVERED' },
   ];
 
   const getStepStatus = (stepKey: OrderStatus) => {
@@ -229,7 +231,7 @@ export default function OrderTrackingPage({
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-              Order #{formattedOrderNumber}
+              {t.orderTrackingPage.orderNumber}{formattedOrderNumber}
             </h1>
             <Badge
               variant={
@@ -245,7 +247,8 @@ export default function OrderTrackingPage({
             </Badge>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Placed on {new Date(order.createdAt).toLocaleString()}
+            {t.orderTrackingPage.placedOn}{' '}
+            {new Date(order.createdAt).toLocaleString(language === 'km' ? 'km-KH' : 'en-US')}
           </p>
         </div>
 
@@ -256,7 +259,7 @@ export default function OrderTrackingPage({
             onClick={() => setReceiptModalOpen(true)}
             className="rounded-xl text-xs gap-1.5 shadow-xs"
           >
-            <Receipt className="w-3.5 h-3.5 text-[#FF5A1F]" /> Official Receipt
+            <Receipt className="w-3.5 h-3.5 text-[#FF5A1F]" /> {t.orderTrackingPage.officialReceipt}
           </Button>
 
           {order.status === 'PENDING' && (
@@ -267,7 +270,7 @@ export default function OrderTrackingPage({
               isLoading={cancelling}
               className="rounded-xl text-xs"
             >
-              Cancel Order
+              {t.orderTrackingPage.cancelOrder}
             </Button>
           )}
 
@@ -278,7 +281,7 @@ export default function OrderTrackingPage({
               onClick={() => setReviewModalOpen(true)}
               className="rounded-xl text-xs gap-1.5"
             >
-              <Star className="w-3.5 h-3.5 fill-white" /> Rate & Review
+              <Star className="w-3.5 h-3.5 fill-white" /> {t.orderTrackingPage.rateOrder}
             </Button>
           )}
 
@@ -290,7 +293,7 @@ export default function OrderTrackingPage({
               isLoading={reordering}
               className="rounded-xl text-xs gap-1.5"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-[#FF5A1F]" /> Re-order
+              <RotateCcw className="w-3.5 h-3.5 text-[#FF5A1F]" /> {t.orderTrackingPage.reorder}
             </Button>
           )}
         </div>
@@ -303,14 +306,14 @@ export default function OrderTrackingPage({
             <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <div>
               <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                Online Payment (${order.totalAmount.toFixed(2)})
+                {t.orderTrackingPage.onlinePayment} (${order.totalAmount.toFixed(2)})
               </p>
               <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                Payment verified. {order.transactionReference ? `Ref: ${order.transactionReference}` : ''}
+                {t.orderTrackingPage.onlinePaymentDesc} {order.transactionReference ? `Ref: ${order.transactionReference}` : ''}
               </p>
             </div>
           </div>
-          <Badge variant="success" size="sm">PAID ONLINE</Badge>
+          <Badge variant="success" size="sm">{t.orderTrackingPage.paidOnline}</Badge>
         </div>
       ) : (
         <div className="rounded-3xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-center justify-between gap-4">
@@ -318,30 +321,30 @@ export default function OrderTrackingPage({
             <Banknote className="w-6 h-6 text-amber-600 dark:text-amber-400 shrink-0" />
             <div>
               <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                Cash on Delivery (${order.totalAmount.toFixed(2)})
+                {t.orderTrackingPage.cashOnDelivery} (${order.totalAmount.toFixed(2)})
               </p>
               <p className="text-[11px] text-amber-700 dark:text-amber-400">
-                Please prepare exact cash to pay the driver upon arrival.
+                {t.orderTrackingPage.cashOnDeliveryBannerDesc}
               </p>
             </div>
           </div>
-          <Badge variant="warning" size="sm">CASH ON DELIVERY</Badge>
+          <Badge variant="warning" size="sm">{t.checkoutPage.cashOnDelivery}</Badge>
         </div>
       )}
 
       {/* Pipeline Visualizer */}
       <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-xs">
         <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-6">
-          Delivery Pipeline
+          {t.orderTrackingPage.pipelineTitle}
         </h2>
 
         {order.status === 'CANCELLED' || order.status === 'REJECTED' ? (
           <div className="flex items-center gap-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-4 text-rose-700 dark:text-rose-300">
             <AlertCircle className="w-6 h-6 shrink-0 text-rose-500" />
             <div>
-              <p className="text-sm font-bold">This order was {order.status.toLowerCase()}</p>
+              <p className="text-sm font-bold">{t.orderTrackingPage.orderWas} {order.status.toLowerCase()}</p>
               <p className="text-xs text-rose-600 dark:text-rose-400 mt-0.5">
-                Any pre-authorized amounts have been credited back.
+                {t.orderTrackingPage.orderWasDesc}
               </p>
             </div>
           </div>
@@ -386,7 +389,7 @@ export default function OrderTrackingPage({
             <div className="flex items-center gap-2">
               <Bike className="w-5 h-5 text-[#FF5A1F]" />
               <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                Driver & GPS Dispatch
+                {t.orderTrackingPage.driverCardTitle}
               </h2>
             </div>
 
@@ -402,7 +405,7 @@ export default function OrderTrackingPage({
                         {order.driverName}
                       </h4>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {order.vehicleType || 'Motorbike'} • {order.vehicleNumber || 'Phnom Penh 1B-9988'}
+                        {order.vehicleType || t.driver.motorcycle} • {order.vehicleNumber || 'Phnom Penh 1B-9988'}
                       </p>
                     </div>
                   </div>
@@ -436,13 +439,13 @@ export default function OrderTrackingPage({
                         ? {
                             lat: realtimeDriverLocation.lat,
                             lng: realtimeDriverLocation.lng,
-                            name: order.driverName || 'Driver',
+                            name: order.driverName || t.orderTrackingPage.driverInfo,
                           }
                         : order.driverLatitude && order.driverLongitude
                         ? {
                             lat: order.driverLatitude,
                             lng: order.driverLongitude,
-                            name: order.driverName,
+                            name: order.driverName || t.orderTrackingPage.driverInfo,
                           }
                         : undefined
                     }
@@ -454,13 +457,13 @@ export default function OrderTrackingPage({
                     <div className="flex items-center gap-2">
                       <Navigation className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
                       <span className="font-bold text-slate-200">
-                        {order.deliveryStatus ? order.deliveryStatus.replace(/_/g, ' ') : 'IN TRANSIT'}
+                        {order.deliveryStatus ? order.deliveryStatus.replace(/_/g, ' ') : t.orderTrackingPage.inTransit}
                       </span>
                     </div>
                     <div className="text-[11px] text-slate-400 flex items-center gap-2">
-                      <span>ETA:</span>
+                      <span>{t.orderTrackingPage.eta}</span>
                       <span className="font-bold text-emerald-400">
-                        {eta ? `${eta.etaMinutes} mins${eta.distanceKm ? ` (${eta.distanceKm} km)` : ''}` : '~15-20 mins'}
+                        {eta ? `${eta.etaMinutes} ${t.orderTrackingPage.mins}${eta.distanceKm ? ` (${eta.distanceKm} km)` : ''}` : `~15-20 ${t.orderTrackingPage.mins}`}
                       </span>
                     </div>
                   </div>
@@ -486,9 +489,9 @@ export default function OrderTrackingPage({
                 />
                 <div className="p-4 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-500 dark:text-slate-400">
                   <Bike className="w-5 h-5 text-slate-400 dark:text-slate-500 mx-auto mb-1.5" />
-                  <p className="font-medium text-slate-700 dark:text-slate-300">Driver Auto-Assignment In Progress</p>
+                  <p className="font-medium text-slate-700 dark:text-slate-300">{t.orderTrackingPage.driverAutoAssign}</p>
                   <p className="text-[11px] mt-0.5 text-slate-400 dark:text-slate-500">
-                    Nearest available rider will be assigned as soon as food preparation completes.
+                    {t.orderTrackingPage.driverAutoAssignDesc}
                   </p>
                 </div>
               </div>
@@ -497,7 +500,7 @@ export default function OrderTrackingPage({
 
           {/* Restaurant & Destination Card */}
           <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Delivery Route</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t.orderTrackingPage.deliveryRoute}</h3>
             <div className="space-y-3 text-xs">
               <div className="flex items-start gap-3">
                 <Store className="w-4 h-4 text-[#FF5A1F] shrink-0 mt-0.5" />
@@ -525,7 +528,7 @@ export default function OrderTrackingPage({
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
             <Receipt className="w-5 h-5 text-[#FF5A1F]" />
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-              Items Ordered
+              {t.orderTrackingPage.itemsOrdered}
             </h2>
           </div>
 
@@ -547,11 +550,11 @@ export default function OrderTrackingPage({
                     )}
                     {item.specialInstructions && (
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-0.5">
-                        Note: {item.specialInstructions}
+                        {t.orderTrackingPage.specialInstructions} {item.specialInstructions}
                       </p>
                     )}
                     <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                      ${item.unitPrice.toFixed(2)} each
+                      ${item.unitPrice.toFixed(2)} {t.orderTrackingPage.each}
                     </p>
                   </div>
                 </div>
@@ -565,27 +568,27 @@ export default function OrderTrackingPage({
           {/* Pricing Summary */}
           <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2.5 text-xs text-slate-600 dark:text-slate-400">
             <div className="flex justify-between">
-              <span>Subtotal</span>
+              <span>{t.checkoutPage.subtotal}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">${order.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span>Delivery Fee</span>
+              <span>{t.checkoutPage.deliveryFee}</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">${order.deliveryFee.toFixed(2)}</span>
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-semibold">
-                <span>Voucher Discount</span>
+                <span>{t.checkoutPage.discountCoupon}</span>
                 <span>-${order.discount.toFixed(2)}</span>
               </div>
             )}
             <div className="border-t border-slate-100 dark:border-slate-800 pt-3 flex justify-between text-sm font-bold text-slate-900 dark:text-slate-100">
-              <span>Total Paid</span>
+              <span>{t.orderTrackingPage.totalPaid}</span>
               <span className="text-base font-black text-[#FF5A1F]">
                 ${order.totalAmount.toFixed(2)}
               </span>
             </div>
             <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-              <span>Payment Mode:</span>
+              <span>{t.orderTrackingPage.paymentMode}</span>
               <Badge variant="neutral" size="sm">
                 {order.paymentMethod.replace(/_/g, ' ')}
               </Badge>
@@ -593,14 +596,14 @@ export default function OrderTrackingPage({
             {payment && (
               <>
                 <div className="pt-1.5 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
-                  <span>Payment Status:</span>
+                  <span>{t.orderTrackingPage.paymentStatus}</span>
                   <Badge variant={payment.status === 'SUCCESS' ? 'success' : payment.status === 'FAILED' ? 'danger' : 'warning'} size="sm">
                     {payment.status}
                   </Badge>
                 </div>
                 {payment.transactionReference && (
                   <div className="pt-1 flex items-center justify-between text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                    <span>Reference:</span>
+                    <span>{t.orderTrackingPage.reference}</span>
                     <span className="text-slate-600 dark:text-slate-300 font-bold">{payment.transactionReference}</span>
                   </div>
                 )}
@@ -614,13 +617,13 @@ export default function OrderTrackingPage({
       <Modal
         isOpen={reviewModalOpen}
         onClose={() => setReviewModalOpen(false)}
-        title="Rate & Review Your Meal"
-        description="Share your experience to help others and support the restaurant"
+        title={t.orderTrackingPage.reviewModalTitle}
+        description={t.orderTrackingPage.reviewModalDesc}
       >
         <form onSubmit={handleReviewSubmit} className="space-y-4 pt-2">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
-              Overall Rating
+              {t.orderTrackingPage.reviewOverallRating}
             </label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -644,13 +647,13 @@ export default function OrderTrackingPage({
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1">
-              Comments (Optional)
+              {t.orderTrackingPage.reviewComments}
             </label>
             <textarea
               rows={3}
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
-              placeholder="What did you love? How was the food temperature and taste?"
+              placeholder={t.orderTrackingPage.commentPlaceholder}
               className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
             />
           </div>
@@ -662,7 +665,7 @@ export default function OrderTrackingPage({
               size="sm"
               onClick={() => setReviewModalOpen(false)}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               type="submit"
@@ -670,7 +673,7 @@ export default function OrderTrackingPage({
               size="sm"
               isLoading={submittingReview}
             >
-              Submit Review
+              {t.orderTrackingPage.submitReview}
             </Button>
           </div>
         </form>
