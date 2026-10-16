@@ -27,17 +27,14 @@ function getBrokerUrl(): string {
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') return null;
   try {
-    const authData = localStorage.getItem('auth-storage');
-    if (authData) {
-      const parsed = JSON.parse(authData);
-      if (parsed?.state?.token) {
-        return parsed.state.token;
-      }
-      if (parsed?.state?.accessToken) {
-        return parsed.state.accessToken;
-      }
+    // Check all portal-scoped token keys (customer, admin, restaurant, driver)
+    const scopes = ['customer', 'admin', 'restaurant', 'driver'] as const;
+    for (const scope of scopes) {
+      const token = localStorage.getItem(`access_token_${scope}`);
+      if (token) return token;
     }
-    return localStorage.getItem('token') || localStorage.getItem('access_token');
+    // Fallback for legacy bare key
+    return localStorage.getItem('access_token');
   } catch {
     return null;
   }

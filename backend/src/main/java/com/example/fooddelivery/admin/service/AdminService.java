@@ -135,39 +135,33 @@ public class AdminService {
         java.time.LocalDate cursor = from;
 
         while (!cursor.isAfter(to)) {
+            java.time.LocalDate periodStart;
             java.time.LocalDate periodEnd;
             String label;
 
             switch (granularity.toLowerCase()) {
                 case "weekly" -> {
+                    periodStart = cursor;
                     periodEnd = cursor.plusDays(6).isAfter(to) ? to : cursor.plusDays(6);
                     label = cursor + " to " + periodEnd;
                     cursor = cursor.plusWeeks(1);
                 }
                 case "monthly" -> {
+                    periodStart = cursor;
                     periodEnd = cursor.withDayOfMonth(cursor.lengthOfMonth()).isAfter(to)
                             ? to : cursor.withDayOfMonth(cursor.lengthOfMonth());
                     label = cursor.getYear() + "-" + String.format("%02d", cursor.getMonthValue());
                     cursor = cursor.plusMonths(1);
                 }
                 default -> { // daily
+                    periodStart = cursor;
                     periodEnd = cursor;
                     label = cursor.toString();
                     cursor = cursor.plusDays(1);
                 }
             }
 
-            LocalDateTime start = cursor.minusDays(1).atStartOfDay();
-            if ("daily".equalsIgnoreCase(granularity)) {
-                start = periodEnd.atStartOfDay();
-            }
-            LocalDateTime end = periodEnd.atTime(23, 59, 59);
-            LocalDateTime periodStart = (label.equals(cursor.minusDays(1).toString()) || "daily".equalsIgnoreCase(granularity))
-                    ? periodEnd.atStartOfDay()
-                    : from.atStartOfDay();
-
-            // Simpler approach: query per period
-            final java.time.LocalDateTime finalStart = periodEnd.atStartOfDay();
+            final java.time.LocalDateTime finalStart = periodStart.atStartOfDay();
             final java.time.LocalDateTime finalEnd = periodEnd.atTime(23, 59, 59);
 
             java.math.BigDecimal revenue = orderRepository.calculateRevenueInPeriod(finalStart, finalEnd);

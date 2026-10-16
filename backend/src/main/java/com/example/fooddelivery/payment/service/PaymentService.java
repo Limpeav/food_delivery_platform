@@ -29,11 +29,11 @@ public class PaymentService {
         if (paymentMethod == null) {
             paymentMethod = PaymentMethod.CASH_ON_DELIVERY;
         }
-        String prefix = (paymentMethod == PaymentMethod.ONLINE_PAYMENT) ? "SIM-TXN-" : "COD-";
+        String prefix = (paymentMethod == PaymentMethod.ONLINE_PAYMENT) ? "KHQR-" : "COD-";
         String txnRef = prefix + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        PaymentStatus initialStatus = (paymentMethod == PaymentMethod.ONLINE_PAYMENT)
-                ? PaymentStatus.SUCCESS // Simulated online payment success
-                : PaymentStatus.PENDING; // COD collected upon delivery
+        // ONLINE_PAYMENT starts as PENDING — status becomes SUCCESS only after BakongService.verifyPayment() confirms the transaction.
+        // COD also starts as PENDING — it is collected upon delivery.
+        PaymentStatus initialStatus = PaymentStatus.PENDING;
 
         Payment payment = Payment.builder()
                 .order(order)

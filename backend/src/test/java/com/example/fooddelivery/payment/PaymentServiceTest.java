@@ -69,16 +69,17 @@ class PaymentServiceTest {
     }
 
     @Test
-    void createInitialPayment_OnlinePayment_StatusSuccess() {
+    void createInitialPayment_OnlinePayment_StatusPending() {
+        // ONLINE_PAYMENT must start PENDING — only BakongService.verifyPayment() should set SUCCESS
         when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Payment result = paymentService.createInitialPayment(order, PaymentMethod.ONLINE_PAYMENT);
 
         assertNotNull(result);
-        assertEquals(PaymentStatus.SUCCESS, result.getStatus());
+        assertEquals(PaymentStatus.PENDING, result.getStatus());
         assertEquals(PaymentMethod.ONLINE_PAYMENT, result.getPaymentMethod());
         assertEquals(new BigDecimal("25.00"), result.getAmount());
-        assertTrue(result.getTransactionReference().startsWith("SIM-TXN-"));
+        assertTrue(result.getTransactionReference().startsWith("KHQR-"));
     }
 
     @Test

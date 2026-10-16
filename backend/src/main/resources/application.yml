@@ -6,7 +6,7 @@ server:
       cookie:
         name: JSESSIONID
         http-only: true
-        secure: ${SESSION_COOKIE_SECURE:true}
+        secure: ${SESSION_COOKIE_SECURE:false}   # Set to true in production (HTTPS only)
         same-site: lax
         path: /
 

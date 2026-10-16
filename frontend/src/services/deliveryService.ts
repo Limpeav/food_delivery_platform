@@ -17,7 +17,8 @@ export const deliveryService = {
     return res.data.data;
   },
 
-  async registerDriver(data: { vehicleType: string; vehicleNumber: string; licenseNumber: string }): Promise<Driver> {
+  /** Update vehicle/license info for an already-authenticated DRIVER (not a registration endpoint) */
+  async updateVehicleInfo(data: { vehicleType: string; vehicleNumber: string; licenseNumber: string }): Promise<Driver> {
     const res = await api.post<ApiResponse<Driver>>('/driver/register', data);
     return res.data.data;
   },
@@ -61,4 +62,11 @@ export const deliveryService = {
     const res = await api.post<ApiResponse<Delivery>>(`/driver/deliveries/${id}/complete`);
     return res.data.data;
   },
+
+  /** Get paginated earnings history (completed deliveries) for the logged-in driver */
+  async getEarningsHistory(params?: { page?: number; size?: number }): Promise<PageResponse<Delivery>> {
+    const res = await api.get<ApiResponse<PageResponse<Delivery>>>('/driver/earnings/history', { params });
+    return res.data.data;
+  },
 };
+
