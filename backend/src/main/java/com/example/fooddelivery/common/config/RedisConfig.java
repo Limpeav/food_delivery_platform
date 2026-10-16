@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,13 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
+    /**
+     * Redis template — only wired when CACHE_TYPE=redis.
+     * When CACHE_TYPE=simple (default), Spring uses the built-in JVM ConcurrentMapCacheManager
+     * and this bean is never created, so no Redis connection is attempted at startup.
+     */
     @Bean
+    @ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
@@ -45,7 +52,13 @@ public class RedisConfig {
         return template;
     }
 
+    /**
+     * Redis cache manager — only wired when CACHE_TYPE=redis.
+     * Without this, Spring falls back to its default SimpleCacheManager (JVM in-memory),
+     * which still honours @Cacheable/@CacheEvict — no code changes needed in services.
+     */
     @Bean
+    @ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
