@@ -235,7 +235,7 @@ class _HomePageState extends State<HomePage> {
                       fit: BoxFit.cover,
                       color: Colors.black.withValues(alpha: 0.3),
                       colorBlendMode: BlendMode.darken,
-                      errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                      errorWidget: (_, _, _) => const SizedBox.shrink(),
                     ),
                   ),
                 Padding(
@@ -325,7 +325,7 @@ class _HomePageState extends State<HomePage> {
                           ? CachedNetworkImage(
                               imageUrl: cat.imageUrl!,
                               fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) => const Icon(
+                              errorWidget: (_, _, _) => const Icon(
                                 Icons.fastfood_rounded,
                                 color: AppColors.primary,
                                 size: 28,

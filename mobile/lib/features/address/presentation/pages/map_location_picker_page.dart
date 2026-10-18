@@ -8,7 +8,7 @@ import '../../../../app/theme/app_text_styles.dart';
 
 /// A full-screen map picker. Returns a [LatLng] when the user confirms.
 /// Usage:
-///   final LatLng? result = await context.push<LatLng>(RouteNames.mapPicker);
+///   `final LatLng? result = await context.push<LatLng>(RouteNames.mapPicker);`
 class MapLocationPickerPage extends StatefulWidget {
   /// Optional initial position (e.g., previously saved coordinates)
   final LatLng? initialPosition;

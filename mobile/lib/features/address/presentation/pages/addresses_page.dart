@@ -130,7 +130,7 @@ class _AddressesPageState extends State<AddressesPage> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(AppDimensions.md),
                 itemCount: state.addresses.length,
-                separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.md),
+                separatorBuilder: (_, _) => const SizedBox(height: AppDimensions.md),
                 itemBuilder: (context, index) {
                   final address = state.addresses[index];
                   return _buildAddressCard(address);

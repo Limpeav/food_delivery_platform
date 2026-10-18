@@ -78,7 +78,7 @@ class _FoodDetailsSheetState extends State<FoodDetailsSheet> {
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorWidget: (_, __, ___) => _buildFallbackImage(),
+                errorWidget: (_, _, _) => _buildFallbackImage(),
               ),
             )
           else

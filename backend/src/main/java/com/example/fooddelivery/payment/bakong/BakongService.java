@@ -1,6 +1,5 @@
 package com.example.fooddelivery.payment.bakong;
 
-import com.example.fooddelivery.common.exception.BadRequestException;
 import com.example.fooddelivery.common.exception.ForbiddenException;
 import com.example.fooddelivery.common.exception.ResourceNotFoundException;
 import com.example.fooddelivery.notification.entity.NotificationType;

@@ -12,7 +12,6 @@ import com.example.fooddelivery.common.response.PageResponse;
 import com.example.fooddelivery.coupon.service.CouponService;
 import com.example.fooddelivery.delivery.entity.Delivery;
 import com.example.fooddelivery.delivery.service.DeliveryService;
-import com.example.fooddelivery.driver.entity.Driver;
 import com.example.fooddelivery.driver.entity.DriverLocation;
 import com.example.fooddelivery.driver.repository.DriverLocationRepository;
 import com.example.fooddelivery.food.entity.FoodItem;

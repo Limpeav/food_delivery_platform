@@ -53,14 +53,14 @@ class RestaurantCard extends StatelessWidget {
                             height: 140,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            placeholder: (_, __) => Container(
+                            placeholder: (_, _) => Container(
                               height: 140,
                               color: AppColors.divider,
                               child: const Center(
                                 child: Icon(Icons.restaurant_rounded, color: AppColors.textMuted, size: 36),
                               ),
                             ),
-                            errorWidget: (_, __, ___) => _buildFallbackCover(),
+                            errorWidget: (_, _, _) => _buildFallbackCover(),
                           )
                         : _buildFallbackCover(),
                   ),
@@ -151,7 +151,7 @@ class RestaurantCard extends StatelessWidget {
                                 ? CachedNetworkImage(
                                     imageUrl: restaurant.logoUrl!,
                                     fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) => const Icon(
+                                    errorWidget: (_, _, _) => const Icon(
                                       Icons.storefront_rounded,
                                       color: AppColors.primary,
                                       size: 20,

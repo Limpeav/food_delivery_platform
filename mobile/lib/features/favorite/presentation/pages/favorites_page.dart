@@ -186,7 +186,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
           child: ListView.separated(
             padding: const EdgeInsets.all(AppDimensions.md),
             itemCount: foods.length,
-            separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.sm),
+            separatorBuilder: (_, _) => const SizedBox(height: AppDimensions.sm),
             itemBuilder: (context, index) {
               final food = foods[index];
               int quantityInCart = 0;

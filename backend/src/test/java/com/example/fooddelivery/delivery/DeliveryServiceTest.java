@@ -11,7 +11,6 @@ import com.example.fooddelivery.driver.entity.Driver;
 import com.example.fooddelivery.driver.repository.DriverLocationRepository;
 import com.example.fooddelivery.driver.repository.DriverRepository;
 import com.example.fooddelivery.driver.service.DriverService;
-import com.example.fooddelivery.notification.entity.NotificationType;
 import com.example.fooddelivery.notification.service.NotificationService;
 import com.example.fooddelivery.order.entity.Order;
 import com.example.fooddelivery.order.entity.OrderStatus;

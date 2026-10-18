@@ -26,12 +26,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -54,14 +51,14 @@ public class RestaurantService {
         long pending = orderRepository.countByRestaurantIdAndStatus(restaurant.getId(), com.example.fooddelivery.order.entity.OrderStatus.PENDING);
         long completed = orderRepository.countByRestaurantIdAndStatus(restaurant.getId(), com.example.fooddelivery.order.entity.OrderStatus.DELIVERED);
 
-        java.math.BigDecimal todayRevenue = orderRepository.calculateRestaurantRevenueSince(restaurant.getId(), startOfDay);
+        BigDecimal todayRevenue = orderRepository.calculateRestaurantRevenueSince(restaurant.getId(), startOfDay);
 
         List<Object[]> topFoodsRaw = orderItemRepository.findTopSellingFoodsByRestaurant(restaurant.getId());
-        List<java.util.Map<String, Object>> topSelling = new ArrayList<>();
+        List<Map<String, Object>> topSelling = new ArrayList<>();
         int count = 0;
         for (Object[] row : topFoodsRaw) {
             if (count++ >= 5) break;
-            topSelling.add(java.util.Map.of(
+            topSelling.add(Map.of(
                     "foodName", row[0],
                     "totalQuantity", row[1],
                     "totalRevenue", row[2]
@@ -70,7 +67,7 @@ public class RestaurantService {
 
         return com.example.fooddelivery.restaurant.dto.RestaurantDashboardStats.builder()
                 .todayOrders(pending + completed)
-                .todayRevenue(todayRevenue != null ? todayRevenue : java.math.BigDecimal.ZERO)
+                .todayRevenue(todayRevenue != null ? todayRevenue : BigDecimal.ZERO)
                 .pendingOrders(pending)
                 .completedOrders(completed)
                 .rating(restaurant.getRating())

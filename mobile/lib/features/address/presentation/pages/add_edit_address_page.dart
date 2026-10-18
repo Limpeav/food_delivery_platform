@@ -492,7 +492,7 @@ class _AddEditAddressPageState extends State<AddEditAddressPage> {
                       ),
                       Switch(
                         value: _isDefault,
-                        activeColor: AppColors.primary,
+                        activeThumbColor: AppColors.primary,
                         onChanged: (value) {
                           setState(() {
                             _isDefault = value;

@@ -100,13 +100,13 @@ class FoodCard extends StatelessWidget {
                             ? CachedNetworkImage(
                                 imageUrl: food.imageUrl!,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => Container(
+                                placeholder: (_, _) => Container(
                                   color: AppColors.divider,
                                   child: const Center(
                                     child: Icon(Icons.fastfood_rounded, color: AppColors.textMuted),
                                   ),
                                 ),
-                                errorWidget: (_, __, ___) => _buildFallbackFoodImage(),
+                                errorWidget: (_, _, _) => _buildFallbackFoodImage(),
                               )
                             : _buildFallbackFoodImage(),
                       ),

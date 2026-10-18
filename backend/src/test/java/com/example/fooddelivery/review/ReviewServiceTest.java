@@ -6,7 +6,6 @@ import com.example.fooddelivery.food.entity.FoodItem;
 import com.example.fooddelivery.food.repository.FoodItemRepository;
 import com.example.fooddelivery.food.service.FoodItemService;
 import com.example.fooddelivery.order.entity.Order;
-import com.example.fooddelivery.order.entity.OrderItem;
 import com.example.fooddelivery.order.entity.OrderStatus;
 import com.example.fooddelivery.order.service.OrderService;
 import com.example.fooddelivery.restaurant.entity.Restaurant;
@@ -26,8 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;

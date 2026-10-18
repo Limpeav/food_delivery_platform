@@ -148,7 +148,7 @@ class _OrdersPageState extends State<OrdersPage> {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(AppDimensions.md),
                       itemCount: state.filteredOrders.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.md),
+                      separatorBuilder: (_, _) => const SizedBox(height: AppDimensions.md),
                       itemBuilder: (context, index) {
                         final order = state.filteredOrders[index];
                         return _buildOrderCard(order);
@@ -396,8 +396,8 @@ class _OrdersPageState extends State<OrdersPage> {
     return ListView.separated(
       padding: const EdgeInsets.all(AppDimensions.md),
       itemCount: 4,
-      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.md),
-      itemBuilder: (_, __) => const SkeletonLoader(
+      separatorBuilder: (_, _) => const SizedBox(height: AppDimensions.md),
+      itemBuilder: (_, _) => const SkeletonLoader(
         height: 140,
         borderRadius: AppDimensions.radiusLg,
       ),

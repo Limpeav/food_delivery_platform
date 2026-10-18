@@ -105,7 +105,7 @@ class _RestaurantDetailsPageState extends State<RestaurantDetailsPage> {
                         ? CachedNetworkImage(
                             imageUrl: restaurant.coverImageUrl!,
                             fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Container(color: AppColors.primaryLight),
+                            errorWidget: (_, _, _) => Container(color: AppColors.primaryLight),
                           )
                         : Container(color: AppColors.primaryLight),
                   ),
