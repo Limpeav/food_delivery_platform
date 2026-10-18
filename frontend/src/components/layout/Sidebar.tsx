@@ -17,6 +17,7 @@ import {
   Layers,
   MapPin,
   TrendingUp,
+  Tv,
 } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { useTranslation } from '@/stores/languageStore';
@@ -58,6 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, isPending }) => {
         return [
           { label: t.restaurant.dashboard, href: '/restaurant/dashboard', icon: LayoutDashboard },
           { label: t.restaurant.liveOrders, href: '/restaurant/orders', icon: ListOrdered },
+          { label: t.restaurant.kds, href: '/restaurant/kds', icon: Tv },
           { label: t.restaurant.menuAndFood, href: '/restaurant/menu', icon: ShoppingBag },
           { label: t.restaurant.categories, href: '/restaurant/categories', icon: Layers },
           { label: t.restaurant.promotions, href: '/restaurant/promotions', icon: Tag },

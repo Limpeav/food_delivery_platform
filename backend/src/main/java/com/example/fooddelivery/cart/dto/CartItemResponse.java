@@ -30,7 +30,7 @@ public class CartItemResponse {
                 .foodItemId(item.getFoodItem().getId())
                 .foodName(item.getFoodItem().getName())
                 .foodImageUrl(item.getFoodItem().getImageUrl())
-                .unitPrice(item.getFoodItem().getPrice())
+                .unitPrice(item.getUnitPrice() != null ? item.getUnitPrice() : item.getFoodItem().getPrice())
                 .quantity(item.getQuantity())
                 .subtotal(item.getSubtotal())
                 .selectedOptions(item.getSelectedOptions())

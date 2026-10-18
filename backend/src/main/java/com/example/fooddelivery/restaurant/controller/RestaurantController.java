@@ -109,11 +109,12 @@ public class RestaurantController {
     // Admin Endpoints
     @GetMapping("/api/admin/restaurants")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get all restaurants with optional status filter (Admin only)")
+    @Operation(summary = "Get all restaurants with optional status filter and search query (Admin only)")
     public ResponseEntity<ApiResponse<PageResponse<RestaurantResponse>>> getAllRestaurantsForAdmin(
             @RequestParam(required = false) RestaurantStatus status,
+            @RequestParam(required = false) String search,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PageResponse<RestaurantResponse> response = restaurantService.getAllRestaurantsForAdmin(status, pageable);
+        PageResponse<RestaurantResponse> response = restaurantService.getAllRestaurantsForAdmin(status, search, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

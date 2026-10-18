@@ -38,7 +38,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -693,6 +692,7 @@ public class AuthService {
     }
 
     // Legacy register method for backward compatibility
+    @SuppressWarnings("deprecation")
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (request.getRole() == Role.ADMIN) {

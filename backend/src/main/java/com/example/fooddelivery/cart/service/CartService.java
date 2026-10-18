@@ -9,6 +9,9 @@ import com.example.fooddelivery.cart.repository.CartRepository;
 import com.example.fooddelivery.common.exception.BadRequestException;
 import com.example.fooddelivery.common.exception.ResourceNotFoundException;
 import com.example.fooddelivery.food.entity.FoodItem;
+import com.example.fooddelivery.food.entity.FoodOptionGroup;
+import com.example.fooddelivery.food.entity.FoodOptionItem;
+import com.example.fooddelivery.food.repository.FoodOptionItemRepository;
 import com.example.fooddelivery.food.service.FoodItemService;
 import com.example.fooddelivery.restaurant.entity.RestaurantStatus;
 import com.example.fooddelivery.user.entity.User;
@@ -18,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,6 +33,7 @@ public class CartService {
     private final CartRepository cartRepository;
     private final UserService userService;
     private final FoodItemService foodItemService;
+    private final FoodOptionItemRepository foodOptionItemRepository;
 
     @Transactional
     public Cart getOrCreateCartEntity(Long customerId) {
@@ -72,29 +78,78 @@ public class CartService {
             cart.setRestaurant(foodItem.getRestaurant());
         }
 
+        // Validate and compute customized unit price
+        BigDecimal unitPrice = foodItem.getPrice() != null ? foodItem.getPrice() : BigDecimal.ZERO;
+        List<FoodOptionItem> selectedOptionsList = new ArrayList<>();
+
+        if (request.getSelectedOptionItemIds() != null && !request.getSelectedOptionItemIds().isEmpty()) {
+            selectedOptionsList = foodOptionItemRepository.findAllById(request.getSelectedOptionItemIds());
+
+            // Validate that every option belongs to this food item
+            for (FoodOptionItem opt : selectedOptionsList) {
+                if (!opt.getOptionGroup().getFoodItem().getId().equals(foodItem.getId())) {
+                    throw new BadRequestException("Option '" + opt.getName() + "' does not belong to this item");
+                }
+                if (opt.getAdditionalPrice() != null) {
+                    unitPrice = unitPrice.add(opt.getAdditionalPrice());
+                }
+            }
+        }
+
+        // Validate required option groups & limits
+        if (foodItem.getOptionGroups() != null) {
+            Map<Long, Long> selectedCountsByGroup = selectedOptionsList.stream()
+                    .collect(Collectors.groupingBy(opt -> opt.getOptionGroup().getId(), Collectors.counting()));
+
+            for (FoodOptionGroup group : foodItem.getOptionGroups()) {
+                long count = selectedCountsByGroup.getOrDefault(group.getId(), 0L);
+                if (Boolean.TRUE.equals(group.getRequired()) && count < (group.getMinSelect() != null ? group.getMinSelect() : 1)) {
+                    throw new BadRequestException("Please select an option for: " + group.getName());
+                }
+                if (group.getMaxSelect() != null && count > group.getMaxSelect()) {
+                    throw new BadRequestException("You can select at most " + group.getMaxSelect() + " option(s) for: " + group.getName());
+                }
+            }
+        }
+
+        // Generate formatted options summary if not explicitly provided
+        String formattedOptions = request.getSelectedOptions();
+        if ((formattedOptions == null || formattedOptions.trim().isEmpty()) && !selectedOptionsList.isEmpty()) {
+            formattedOptions = selectedOptionsList.stream()
+                    .map(opt -> opt.getName() + (opt.getAdditionalPrice().compareTo(BigDecimal.ZERO) > 0 ? " (+$" + opt.getAdditionalPrice() + ")" : ""))
+                    .collect(Collectors.joining(", "));
+        }
+
+        final String finalOptions = formattedOptions;
+
         // Check if item already exists in cart with same options and instructions
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getFoodItem().getId().equals(foodItem.getId()) &&
-                        java.util.Objects.equals(item.getSelectedOptions(), request.getSelectedOptions()) &&
+                        java.util.Objects.equals(item.getSelectedOptions(), finalOptions) &&
                         java.util.Objects.equals(item.getSpecialInstructions(), request.getSpecialInstructions()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
             item.setQuantity(item.getQuantity() + request.getQuantity());
+            if (item.getUnitPrice() == null) {
+                item.setUnitPrice(unitPrice);
+            }
         } else {
             CartItem newItem = CartItem.builder()
                     .cart(cart)
                     .foodItem(foodItem)
                     .quantity(request.getQuantity())
-                    .selectedOptions(request.getSelectedOptions())
+                    .unitPrice(unitPrice)
+                    .selectedOptions(finalOptions)
                     .specialInstructions(request.getSpecialInstructions())
                     .build();
             cart.getItems().add(newItem);
         }
 
         Cart updated = cartRepository.save(cart);
-        log.info("Added food item {} (qty: {}) to cart for customer {}", foodItem.getId(), request.getQuantity(), customerId);
+        log.info("Added food item {} (unitPrice: ${}, qty: {}) to cart for customer {}",
+                foodItem.getId(), unitPrice, request.getQuantity(), customerId);
         return CartResponse.from(updated);
     }
 

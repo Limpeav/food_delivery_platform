@@ -75,11 +75,12 @@ public class DriverController {
 
     @GetMapping("/api/admin/drivers")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get all drivers for admin approval")
+    @Operation(summary = "Get all drivers with optional search and approval status filter (Admin only)")
     public ResponseEntity<ApiResponse<PageResponse<DriverResponse>>> getAllDrivers(
             @RequestParam(required = false) Boolean approved,
+            @RequestParam(required = false) String search,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PageResponse<DriverResponse> response = driverService.getAllDriversAdmin(approved, pageable);
+        PageResponse<DriverResponse> response = driverService.getAllDriversAdmin(approved, search, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

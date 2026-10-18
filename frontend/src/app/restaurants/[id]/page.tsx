@@ -137,7 +137,13 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
     }
   };
 
-  const handleAddToCart = async (food: FoodItem, quantity: number = 1) => {
+  const handleAddToCart = async (
+    food: FoodItem,
+    quantity: number = 1,
+    selectedOptionItemIds?: number[],
+    selectedOptions?: string,
+    specialInstructions?: string
+  ) => {
     if (!isAuthenticated) {
       router.push('/login');
       return;
@@ -151,11 +157,11 @@ function RestaurantDetailContent({ restaurantId }: { restaurantId: number }) {
     }
 
     try {
-      await addItem(food.id, quantity);
+      await addItem(food.id, quantity, selectedOptionItemIds, selectedOptions, specialInstructions);
       toast.success(`${food.name} ${t.restaurantDetail.addedToCart}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error adding to cart:', err);
-      toast.error(t.restaurantDetail.failedToAdd);
+      toast.error(err?.response?.data?.message || t.restaurantDetail.failedToAdd);
     }
   };
 

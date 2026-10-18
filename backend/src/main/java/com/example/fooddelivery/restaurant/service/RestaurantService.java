@@ -208,11 +208,30 @@ public class RestaurantService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<RestaurantResponse> getAllRestaurantsForAdmin(RestaurantStatus status, Pageable pageable) {
-        Page<Restaurant> page = (status != null)
-                ? restaurantRepository.findByStatus(status, pageable)
-                : restaurantRepository.findAll(pageable);
+    public PageResponse<RestaurantResponse> getAllRestaurantsForAdmin(RestaurantStatus status, String search, Pageable pageable) {
+        Specification<Restaurant> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            if (status != null) {
+                predicates.add(cb.equal(root.get("status"), status));
+            }
+            if (search != null && !search.trim().isEmpty()) {
+                String pattern = "%" + search.trim().toLowerCase() + "%";
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), pattern),
+                        cb.like(cb.lower(root.get("address")), pattern),
+                        cb.like(cb.lower(root.get("phone")), pattern)
+                ));
+            }
+            return predicates.isEmpty() ? cb.conjunction() : cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<Restaurant> page = restaurantRepository.findAll(spec, pageable);
         return PageResponse.from(page.map(RestaurantResponse::from));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<RestaurantResponse> getAllRestaurantsForAdmin(RestaurantStatus status, Pageable pageable) {
+        return getAllRestaurantsForAdmin(status, null, pageable);
     }
 
     public void verifyOwnership(Restaurant restaurant, Long ownerId) {

@@ -113,7 +113,7 @@ export const orderService = {
   },
 
   // Admin methods
-  async getAllOrdersAdmin(params?: { page?: number; size?: number }): Promise<PageResponse<Order>> {
+  async getAllOrdersAdmin(params?: { search?: string; status?: OrderStatus; page?: number; size?: number }): Promise<PageResponse<Order>> {
     const res = await api.get<ApiResponse<PageResponse<Order>>>('/admin/orders', { params });
     return res.data.data;
   },

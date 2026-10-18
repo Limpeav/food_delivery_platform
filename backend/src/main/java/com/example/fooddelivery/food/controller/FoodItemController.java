@@ -118,4 +118,27 @@ public class FoodItemController {
         foodItemService.deleteFoodItem(principal.getId(), id);
         return ResponseEntity.ok(ApiResponse.success("Food item deleted successfully", null));
     }
+
+    @PostMapping("/api/restaurant/foods/{foodId}/option-groups")
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
+    @Operation(summary = "Add an option group (with options) to a food item")
+    public ResponseEntity<ApiResponse<com.example.fooddelivery.food.dto.FoodOptionGroupResponse>> addOptionGroup(
+            @PathVariable Long foodId,
+            @AuthenticationPrincipal UserPrincipal principal,
+            @Valid @RequestBody com.example.fooddelivery.food.dto.FoodOptionGroupRequest request) {
+        com.example.fooddelivery.food.dto.FoodOptionGroupResponse response = foodItemService.addOptionGroup(principal.getId(), foodId, request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Option group added successfully", response));
+    }
+
+    @DeleteMapping("/api/restaurant/foods/{foodId}/option-groups/{groupId}")
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
+    @Operation(summary = "Delete an option group from a food item")
+    public ResponseEntity<ApiResponse<Void>> deleteOptionGroup(
+            @PathVariable Long foodId,
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal UserPrincipal principal) {
+        foodItemService.deleteOptionGroup(principal.getId(), foodId, groupId);
+        return ResponseEntity.ok(ApiResponse.success("Option group deleted successfully", null));
+    }
 }

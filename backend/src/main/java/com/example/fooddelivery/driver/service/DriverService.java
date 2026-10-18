@@ -202,10 +202,15 @@ public class DriverService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<DriverResponse> getAllDriversAdmin(Boolean approved, Pageable pageable) {
-        Page<Driver> page = (approved != null)
-                ? driverRepository.findByApproved(approved, pageable)
-                : driverRepository.findAll(pageable);
+    public PageResponse<DriverResponse> getAllDriversAdmin(Boolean approved, String search, Pageable pageable) {
+        Page<Driver> page;
+        if (search != null && !search.trim().isEmpty()) {
+            page = driverRepository.searchDriversAdmin(approved, search.trim(), pageable);
+        } else if (approved != null) {
+            page = driverRepository.findByApproved(approved, pageable);
+        } else {
+            page = driverRepository.findAll(pageable);
+        }
 
         Page<DriverResponse> dtoPage = page.map(d -> {
             DriverLocation loc = locationRepository.findByDriverId(d.getId()).orElse(null);
@@ -213,6 +218,11 @@ public class DriverService {
         });
 
         return PageResponse.from(dtoPage);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<DriverResponse> getAllDriversAdmin(Boolean approved, Pageable pageable) {
+        return getAllDriversAdmin(approved, null, pageable);
     }
 
     /**

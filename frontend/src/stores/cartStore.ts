@@ -7,7 +7,13 @@ interface CartState {
   isLoading: boolean;
   isDrawerOpen: boolean;
   fetchCart: () => Promise<void>;
-  addItem: (foodItemId: number, quantity?: number) => Promise<void>;
+  addItem: (
+    foodItemId: number,
+    quantity?: number,
+    selectedOptionItemIds?: number[],
+    selectedOptions?: string,
+    specialInstructions?: string
+  ) => Promise<void>;
   updateItem: (itemId: number, quantity: number) => Promise<void>;
   removeItem: (itemId: number) => Promise<void>;
   clearCart: () => Promise<void>;
@@ -35,10 +41,16 @@ export const useCartStore = create<CartState>((set) => ({
     }
   },
 
-  addItem: async (foodItemId, quantity = 1) => {
+  addItem: async (foodItemId, quantity = 1, selectedOptionItemIds, selectedOptions, specialInstructions) => {
     set({ isLoading: true });
     try {
-      const updated = await cartService.addToCart(foodItemId, quantity);
+      const updated = await cartService.addToCart(
+        foodItemId,
+        quantity,
+        selectedOptionItemIds,
+        selectedOptions,
+        specialInstructions
+      );
       set({ cart: updated, isLoading: false });
     } catch (err) {
       set({ isLoading: false });

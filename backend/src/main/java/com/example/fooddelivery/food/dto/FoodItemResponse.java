@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -30,15 +33,18 @@ public class FoodItemResponse implements Serializable {
     private Integer preparationTime;
     private Boolean available;
     private Double rating;
+    @Builder.Default
+    private List<FoodOptionGroupResponse> optionGroups = new ArrayList<>();
     private LocalDateTime createdAt;
 
     public static FoodItemResponse from(FoodItem item) {
+        if (item == null) return null;
         return FoodItemResponse.builder()
                 .id(item.getId())
-                .restaurantId(item.getRestaurant().getId())
-                .restaurantName(item.getRestaurant().getName())
-                .menuCategoryId(item.getMenuCategory().getId())
-                .menuCategoryName(item.getMenuCategory().getName())
+                .restaurantId(item.getRestaurant() != null ? item.getRestaurant().getId() : null)
+                .restaurantName(item.getRestaurant() != null ? item.getRestaurant().getName() : null)
+                .menuCategoryId(item.getMenuCategory() != null ? item.getMenuCategory().getId() : null)
+                .menuCategoryName(item.getMenuCategory() != null ? item.getMenuCategory().getName() : null)
                 .name(item.getName())
                 .description(item.getDescription())
                 .price(item.getPrice())
@@ -46,6 +52,9 @@ public class FoodItemResponse implements Serializable {
                 .preparationTime(item.getPreparationTime())
                 .available(item.getAvailable())
                 .rating(item.getRating())
+                .optionGroups(item.getOptionGroups() != null
+                        ? item.getOptionGroups().stream().map(FoodOptionGroupResponse::from).collect(Collectors.toList())
+                        : new ArrayList<>())
                 .createdAt(item.getCreatedAt())
                 .build();
     }

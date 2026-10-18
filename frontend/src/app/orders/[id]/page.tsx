@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, use } from 'react';
+import React, { useEffect, useState, use, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -16,6 +16,8 @@ import {
   Navigation,
   RotateCcw,
   Banknote,
+  QrCode,
+  Sparkles,
 } from 'lucide-react';
 import { orderService, DeliveryEta, PaymentInfo } from '@/services/orderService';
 import { reviewService } from '@/services/reviewService';
@@ -26,6 +28,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Loading } from '@/components/ui/Loading';
 import { DeliveryTrackingMap } from '@/components/ui/DeliveryTrackingMap';
 import { OrderReceiptModal } from '@/components/ui/OrderReceiptModal';
+import { BakongKhqrModal } from '@/components/payment/BakongKhqrModal';
 import { subscribeToOrder, subscribeToOrderLocation } from '@/lib/websocket';
 import { useTranslation } from '@/stores/languageStore';
 
@@ -54,31 +57,33 @@ export default function OrderTrackingPage({
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [khqrModalOpen, setKhqrModalOpen] = useState(false);
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const o = await orderService.getOrderById(orderId);
+      setOrder(o);
+
+      // Fetch payment details
+      orderService.getPaymentByOrder(orderId).then(setPayment).catch(() => {});
+
+      // Fetch ETA if order is active
+      if (['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(o.status)) {
+        orderService.getDeliveryEta(orderId).then(setEta).catch(() => {});
+      }
+    } catch (err) {
+      console.error('Failed to load order:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const o = await orderService.getOrderById(orderId);
-        setOrder(o);
-
-        // Fetch payment details
-        orderService.getPaymentByOrder(orderId).then(setPayment).catch(() => {});
-
-        // Fetch ETA if order is active
-        if (['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'DRIVER_ASSIGNED', 'FOOD_PICKED_UP', 'DELIVERING'].includes(o.status)) {
-          orderService.getDeliveryEta(orderId).then(setEta).catch(() => {});
-        }
-      } catch (err) {
-        console.error('Failed to load order:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
     if (orderId) {
       loadData();
     }
-  }, [orderId]);
+  }, [orderId, loadData]);
 
   // Real-time WebSocket connection for order updates and driver movement
   useEffect(() => {
@@ -301,20 +306,54 @@ export default function OrderTrackingPage({
 
       {/* Payment Banner */}
       {order.paymentMethod === 'ONLINE_PAYMENT' ? (
-        <div className="rounded-3xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30 p-4 sm:p-5 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-                {t.orderTrackingPage.onlinePayment} (${order.totalAmount.toFixed(2)})
-              </p>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
-                {t.orderTrackingPage.onlinePaymentDesc} {order.transactionReference ? `Ref: ${order.transactionReference}` : ''}
-              </p>
+        payment?.status === 'SUCCESS' ? (
+          <div className="rounded-3xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30 p-4 sm:p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                  {t.orderTrackingPage.onlinePayment} (${order.totalAmount.toFixed(2)})
+                </p>
+                <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                  {t.orderTrackingPage.onlinePaymentDesc} {order.transactionReference ? `Ref: ${order.transactionReference}` : ''}
+                </p>
+              </div>
             </div>
+            <Badge variant="success" size="sm">{t.orderTrackingPage.paidOnline}</Badge>
           </div>
-          <Badge variant="success" size="sm">{t.orderTrackingPage.paidOnline}</Badge>
-        </div>
+        ) : (
+          <div className="rounded-3xl border-2 border-[#E12326]/40 dark:border-[#E12326]/50 bg-gradient-to-r from-red-50 via-white to-red-50/50 dark:from-red-950/40 dark:via-slate-900 dark:to-red-950/20 p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-[#E12326] text-white flex items-center justify-center shadow-xs shrink-0">
+                <QrCode className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-[#E12326] uppercase tracking-wider">
+                    {t.checkoutPage.khqrModal.pendingPaymentAlert}
+                  </span>
+                  <span className="w-2 h-2 rounded-full bg-[#E12326] animate-ping" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5">
+                  ${order.totalAmount.toFixed(2)} USD via Bakong KHQR
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  {t.checkoutPage.khqrModal.pendingPaymentAlertDesc}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setKhqrModalOpen(true)}
+              className="bg-gradient-to-r from-[#E12326] to-[#C91C1F] hover:from-[#C91C1F] hover:to-[#B31417] text-white shadow-md rounded-xl text-xs font-bold gap-2 shrink-0 w-full sm:w-auto"
+            >
+              <QrCode className="w-4 h-4" />
+              {t.checkoutPage.khqrModal.payNow}
+            </Button>
+          </div>
+        )
       ) : (
         <div className="rounded-3xl border border-amber-200 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -685,6 +724,20 @@ export default function OrderTrackingPage({
           isOpen={receiptModalOpen}
           onClose={() => setReceiptModalOpen(false)}
           order={order}
+        />
+      )}
+
+      {/* Bakong KHQR Payment Modal */}
+      {order && (
+        <BakongKhqrModal
+          isOpen={khqrModalOpen}
+          orderId={orderId}
+          amount={order.totalAmount}
+          onClose={() => setKhqrModalOpen(false)}
+          onPaymentSuccess={() => {
+            setKhqrModalOpen(false);
+            loadData();
+          }}
         />
       )}
     </div>

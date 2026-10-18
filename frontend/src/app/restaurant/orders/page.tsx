@@ -16,6 +16,7 @@ import {
   VolumeX,
   Receipt,
   Bell,
+  Tv,
 } from 'lucide-react';
 import { orderService } from '@/services/orderService';
 import { Order, OrderStatus } from '@/types';
@@ -189,6 +190,15 @@ export default function RestaurantOrdersPage() {
             )}
             <span>Kitchen Chime: {soundEnabled ? 'ON' : 'OFF'}</span>
           </button>
+
+          <Link
+            href="/restaurant/kds"
+            className="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-orange-500/20 transition-all cursor-pointer"
+            title="Open Kitchen Display (KDS)"
+          >
+            <Tv className="w-3.5 h-3.5" />
+            <span>KDS Mode</span>
+          </Link>
 
           <Button
             variant="outline"

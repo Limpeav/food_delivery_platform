@@ -99,7 +99,7 @@ public class OrderService {
                 throw new BadRequestException("Item '" + foodItem.getName() + "' does not belong to the restaurant");
             }
 
-            BigDecimal itemPrice = foodItem.getPrice();
+            BigDecimal itemPrice = cartItem.getUnitPrice() != null ? cartItem.getUnitPrice() : foodItem.getPrice();
             BigDecimal itemSubtotal = itemPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             subtotal = subtotal.add(itemSubtotal);
 
@@ -245,9 +245,20 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponse<OrderResponse> getAllOrdersAdmin(Pageable pageable) {
-        Page<Order> page = orderRepository.findAll(pageable);
+    public PageResponse<OrderResponse> getAllOrdersAdmin(String search, OrderStatus status, Pageable pageable) {
+        Page<Order> page;
+        if ((search != null && !search.trim().isEmpty()) || status != null) {
+            String trimmedSearch = (search != null && !search.trim().isEmpty()) ? search.trim() : null;
+            page = orderRepository.searchOrdersAdmin(status, trimmedSearch, pageable);
+        } else {
+            page = orderRepository.findAll(pageable);
+        }
         return PageResponse.from(page.map(this::mapToOrderResponse));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<OrderResponse> getAllOrdersAdmin(Pageable pageable) {
+        return getAllOrdersAdmin(null, null, pageable);
     }
 
     @Transactional

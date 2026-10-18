@@ -1,5 +1,6 @@
 package com.example.fooddelivery.admin.controller;
 import com.example.fooddelivery.admin.dto.AdminDashboardStats;
+import com.example.fooddelivery.admin.dto.AdminSearchResponse;
 import com.example.fooddelivery.admin.service.AdminService;
 import com.example.fooddelivery.common.response.ApiResponse;
 import com.example.fooddelivery.common.response.PageResponse;
@@ -27,6 +28,16 @@ public class AdminController {
 
     private final AdminService adminService;
     private final ReviewService reviewService;
+
+    @GetMapping("/search")
+    @Operation(summary = "Global search across restaurants, users, orders, and drivers")
+    public ResponseEntity<ApiResponse<AdminSearchResponse>> globalSearch(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false, defaultValue = "ALL") String type,
+            @RequestParam(required = false, defaultValue = "8") int limit) {
+        AdminSearchResponse response = adminService.globalSearch(query, type, limit);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
     @GetMapping("/dashboard")
     @Operation(summary = "Get platform-wide dashboard metrics and statistics")

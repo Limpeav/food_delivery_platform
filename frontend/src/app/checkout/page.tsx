@@ -10,13 +10,16 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowRight,
+  QrCode,
+  Sparkles,
 } from 'lucide-react';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { addressService } from '@/services/addressService';
 import { couponService } from '@/services/couponService';
 import { orderService } from '@/services/orderService';
-import { Address } from '@/types';
+import { Address, PaymentMethod } from '@/types';
+import { BakongKhqrModal } from '@/components/payment/BakongKhqrModal';
 
 type CouponValidationResult = {
   code: string;
@@ -40,6 +43,11 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(null);
   const [orderNotes, setOrderNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH_ON_DELIVERY');
+
+  // KHQR Modal State
+  const [createdOrderId, setCreatedOrderId] = useState<number | null>(null);
+  const [khqrModalOpen, setKhqrModalOpen] = useState(false);
 
   // Coupon
   const [couponCode, setCouponCode] = useState('');
@@ -142,14 +150,21 @@ export default function CheckoutPage() {
     try {
       const order = await orderService.createOrder({
         addressId: selectedAddressId,
-        paymentMethod: 'CASH_ON_DELIVERY',
+        paymentMethod,
         couponCode: couponResult?.valid ? couponCode : undefined,
         notes: orderNotes.trim() || undefined,
       });
       // Refresh cart
       await fetchCart();
-      // Navigate to order details / live tracking
-      router.push(`/orders/${order.id}`);
+
+      if (paymentMethod === 'ONLINE_PAYMENT') {
+        // Open Bakong KHQR Modal directly
+        setCreatedOrderId(order.id);
+        setKhqrModalOpen(true);
+      } else {
+        // Navigate directly to live tracking for COD
+        router.push(`/orders/${order.id}`);
+      }
     } catch (err: any) {
       setOrderError(err.response?.data?.message || t.checkoutPage.orderFailed);
     } finally {
@@ -265,22 +280,120 @@ export default function CheckoutPage() {
 
           {/* Section 2: Payment Method */}
           <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2">
-              <Banknote className="w-5 h-5 text-[#FF5A1F]" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                {t.checkoutPage.paymentMethod}
-              </h2>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Banknote className="w-5 h-5 text-[#FF5A1F]" />
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                  {t.checkoutPage.paymentMethod}
+                </h2>
+              </div>
+              <span className="text-xs font-semibold text-slate-500">
+                2 options available
+              </span>
             </div>
 
-            <div className="flex items-center gap-3 p-4 rounded-2xl border border-emerald-300 dark:border-emerald-700/60 bg-emerald-50/60 dark:bg-emerald-950/30 ring-1 ring-emerald-300 dark:ring-emerald-700/60">
-              <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400">
-                <Banknote className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">{t.checkoutPage.cashOnDelivery}</p>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">{t.checkoutPage.cashOnDeliveryDesc}</p>
-              </div>
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 ml-auto shrink-0" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              {/* Option 1: Cash on Delivery */}
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('CASH_ON_DELIVERY')}
+                className={`relative p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                  paymentMethod === 'CASH_ON_DELIVERY'
+                    ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/30 ring-2 ring-emerald-500/30'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        paymentMethod === 'CASH_ON_DELIVERY'
+                          ? 'bg-emerald-500 text-white shadow-xs'
+                          : 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
+                      }`}
+                    >
+                      <Banknote className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {t.checkoutPage.cashOnDelivery}
+                      </p>
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                        Pay upon delivery
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      paymentMethod === 'CASH_ON_DELIVERY'
+                        ? 'border-emerald-600 bg-emerald-600 text-white'
+                        : 'border-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    {paymentMethod === 'CASH_ON_DELIVERY' && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {t.checkoutPage.cashOnDeliveryDesc}
+                </p>
+              </button>
+
+              {/* Option 2: Bakong KHQR */}
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('ONLINE_PAYMENT')}
+                className={`relative p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                  paymentMethod === 'ONLINE_PAYMENT'
+                    ? 'border-[#E12326] bg-[#FFF5F5] dark:bg-red-950/20 ring-2 ring-[#E12326]/30'
+                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl transition-colors ${
+                        paymentMethod === 'ONLINE_PAYMENT'
+                          ? 'bg-[#E12326] text-white shadow-xs'
+                          : 'bg-red-100 dark:bg-red-950/60 text-[#E12326]'
+                      }`}
+                    >
+                      <QrCode className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                          {t.checkoutPage.bakongKhqr}
+                        </p>
+                        <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E12326]/10 text-[#E12326] flex items-center gap-0.5">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          Fast
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                        NBC KHQR Standard
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      paymentMethod === 'ONLINE_PAYMENT'
+                        ? 'border-[#E12326] bg-[#E12326] text-white'
+                        : 'border-slate-300 dark:border-slate-700'
+                    }`}
+                  >
+                    {paymentMethod === 'ONLINE_PAYMENT' && (
+                      <div className="w-2 h-2 rounded-full bg-white" />
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {t.checkoutPage.bakongKhqrDesc}
+                </p>
+              </button>
             </div>
           </div>
 
@@ -373,6 +486,34 @@ export default function CheckoutPage() {
           <div className="rounded-3xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-xs space-y-5">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">{t.checkoutPage.orderSummary}</h3>
 
+            {/* Itemized Cart Items */}
+            {cart.items && cart.items.length > 0 && (
+              <div className="space-y-3 pb-3 border-b border-slate-100 dark:border-slate-800 max-h-52 overflow-y-auto pr-1">
+                {cart.items.map((item) => (
+                  <div key={item.id} className="flex items-start justify-between text-xs gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="font-bold text-slate-800 dark:text-slate-200">
+                        {item.quantity}x {item.foodName}
+                      </span>
+                      {item.selectedOptions && (
+                        <p className="text-[10px] text-[#FF5A1F] dark:text-orange-400 font-medium line-clamp-1 mt-0.5">
+                          {item.selectedOptions}
+                        </p>
+                      )}
+                      {item.specialInstructions && (
+                        <p className="text-[10px] text-slate-400 italic line-clamp-1">
+                          &ldquo;{item.specialInstructions}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 shrink-0">
+                      ${item.subtotal.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="space-y-3 text-xs text-slate-600 dark:text-slate-400">
               <div className="flex justify-between">
                 <span>{t.checkoutPage.itemsSubtotal}</span>
@@ -397,13 +538,22 @@ export default function CheckoutPage() {
             </div>
 
             <Button
-              variant="primary"
+              variant={paymentMethod === 'ONLINE_PAYMENT' ? 'primary' : 'primary'}
               size="lg"
               onClick={handlePlaceOrder}
               isLoading={submitting}
-              className="w-full rounded-2xl gap-2 font-bold"
+              className={`w-full rounded-2xl gap-2 font-bold ${
+                paymentMethod === 'ONLINE_PAYMENT'
+                  ? 'bg-gradient-to-r from-[#E12326] to-[#C91C1F] hover:from-[#C91C1F] hover:to-[#B31417] text-white shadow-md'
+                  : ''
+              }`}
             >
-              {t.checkoutPage.confirmPlaceOrder} <ArrowRight className="w-4 h-4" />
+              {submitting
+                ? t.checkoutPage.placingOrder
+                : paymentMethod === 'ONLINE_PAYMENT'
+                ? t.checkoutPage.payWithKhqr
+                : t.checkoutPage.confirmPlaceOrder}{' '}
+              <ArrowRight className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -495,6 +645,22 @@ export default function CheckoutPage() {
           </div>
         </form>
       </Modal>
+
+      {/* Bakong KHQR Online Payment Modal */}
+      {createdOrderId && (
+        <BakongKhqrModal
+          isOpen={khqrModalOpen}
+          orderId={createdOrderId}
+          amount={totalAmount}
+          onClose={() => {
+            setKhqrModalOpen(false);
+            if (createdOrderId) router.push(`/orders/${createdOrderId}`);
+          }}
+          onPaymentSuccess={() => {
+            if (createdOrderId) router.push(`/orders/${createdOrderId}`);
+          }}
+        />
+      )}
     </div>
   );
 }

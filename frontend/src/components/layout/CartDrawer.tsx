@@ -231,6 +231,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose }) => {
                     <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate leading-snug">
                       {item.foodName}
                     </h4>
+                    {item.selectedOptions && (
+                      <p className="text-[11px] font-medium text-[#FF5A1F] dark:text-orange-400 mt-0.5 line-clamp-1">
+                        {item.selectedOptions}
+                      </p>
+                    )}
+                    {item.specialInstructions && (
+                      <p className="text-[10px] text-slate-400 italic mt-0.5 line-clamp-1">
+                        &ldquo;{item.specialInstructions}&rdquo;
+                      </p>
+                    )}
                     <p className="text-xs font-semibold text-slate-400 dark:text-slate-400 mt-0.5">
                       ${item.unitPrice.toFixed(2)} {t.cartPage.each}
                     </p>

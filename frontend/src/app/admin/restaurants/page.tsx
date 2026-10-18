@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Store, Check, X, Ban, Star, Clock, MapPin } from 'lucide-react';
+import { Store, Check, X, Ban, Star, Clock, MapPin, Search } from 'lucide-react';
 import { adminService } from '@/services/adminService';
 import { Restaurant, RestaurantStatus } from '@/types';
 import { Badge } from '@/components/ui/Badge';
@@ -14,24 +14,32 @@ export default function AdminRestaurantsPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<RestaurantStatus | 'ALL'>('ALL');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
     setPage(0);
-  }, [statusFilter]);
+  }, [statusFilter, debouncedSearch]);
 
   useEffect(() => {
     loadRestaurants();
-  }, [statusFilter, page]);
+  }, [statusFilter, debouncedSearch, page]);
 
   const loadRestaurants = async () => {
     try {
       setLoading(true);
       const res = await adminService.getRestaurants({
         status: statusFilter === 'ALL' ? undefined : statusFilter,
+        search: debouncedSearch.trim() || undefined,
         page,
         size: 20,
       });
@@ -85,17 +93,40 @@ export default function AdminRestaurantsPage() {
           </p>
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-[#FF5A1F]"
-        >
-          <option value="ALL">All Statuses</option>
-          <option value="PENDING">Pending Review</option>
-          <option value="APPROVED">Approved</option>
-          <option value="REJECTED">Rejected</option>
-          <option value="SUSPENDED">Suspended</option>
-        </select>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-64 md:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, address, phone..."
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 transition-colors shadow-2xs"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as any)}
+            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-500 transition-colors shadow-2xs cursor-pointer"
+          >
+            <option value="ALL">All Statuses</option>
+            <option value="PENDING">Pending Review</option>
+            <option value="APPROVED">Approved</option>
+            <option value="REJECTED">Rejected</option>
+            <option value="SUSPENDED">Suspended</option>
+          </select>
+        </div>
       </div>
 
       {/* List */}

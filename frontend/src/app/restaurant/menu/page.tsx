@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, Edit2, Utensils, DollarSign, Clock, Check, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Utensils, DollarSign, Clock, Check, X, Layers, Sparkles } from 'lucide-react';
 import { foodService } from '@/services/foodService';
 import { restaurantService } from '@/services/restaurantService';
 import { FoodItem, MenuCategory, Restaurant } from '@/types';
@@ -30,6 +30,16 @@ export default function RestaurantMenuPage() {
   const [imageUrl, setImageUrl] = useState('');
   const [categoryId, setCategoryId] = useState<number | ''>('');
   const [submitting, setSubmitting] = useState(false);
+
+  // Modifier Groups Modal
+  const [modifierModalOpen, setModifierModalOpen] = useState(false);
+  const [targetFood, setTargetFood] = useState<FoodItem | null>(null);
+  const [groupName, setGroupName] = useState('');
+  const [groupRequired, setGroupRequired] = useState(false);
+  const [optionsList, setOptionsList] = useState<{ name: string; additionalPrice: string }[]>([
+    { name: '', additionalPrice: '0.00' },
+  ]);
+  const [savingModifiers, setSavingModifiers] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -105,6 +115,63 @@ export default function RestaurantMenuPage() {
     }
   };
 
+  const handleOpenModifierModal = (food: FoodItem) => {
+    setTargetFood(food);
+    setGroupName('');
+    setGroupRequired(false);
+    setOptionsList([
+      { name: '', additionalPrice: '0.00' },
+      { name: '', additionalPrice: '0.00' },
+    ]);
+    setModifierModalOpen(true);
+  };
+
+  const handleSaveModifierGroup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetFood || !groupName.trim()) return;
+
+    const validOptions = optionsList.filter((o) => o.name.trim().length > 0);
+    if (validOptions.length === 0) {
+      alert('Please provide at least one option item (e.g. Regular, Large)');
+      return;
+    }
+
+    setSavingModifiers(true);
+    try {
+      await foodService.addOptionGroup(targetFood.id, {
+        name: groupName.trim(),
+        required: groupRequired,
+        minSelect: groupRequired ? 1 : 0,
+        maxSelect: 1,
+        options: validOptions.map((o, idx) => ({
+          name: o.name.trim(),
+          additionalPrice: parseFloat(o.additionalPrice) || 0,
+          isDefault: idx === 0,
+        })),
+      });
+
+      const itemsPage = await foodService.getOwnerFoods({ page, size: 20 });
+      setFoods(itemsPage.content || []);
+      setModifierModalOpen(false);
+      setTargetFood(null);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to save option group');
+    } finally {
+      setSavingModifiers(false);
+    }
+  };
+
+  const handleDeleteOptionGroup = async (foodId: number, groupId: number) => {
+    if (!confirm('Are you sure you want to delete this option group?')) return;
+    try {
+      await foodService.deleteOptionGroup(foodId, groupId);
+      const itemsPage = await foodService.getOwnerFoods({ page, size: 20 });
+      setFoods(itemsPage.content || []);
+    } catch (err: any) {
+      alert(err.response?.data?.message || 'Failed to delete option group');
+    }
+  };
+
   if (loading) {
     return <Loading fullPage message="Loading menu items..." />;
   }
@@ -169,11 +236,46 @@ export default function RestaurantMenuPage() {
                       <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" /> {food.preparationTime} mins
                     </span>
                   </div>
+
+                  {/* Option Group Badges */}
+                  {food.optionGroups && food.optionGroups.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {food.optionGroups.map((g) => (
+                        <span
+                          key={g.id}
+                          className="inline-flex items-center gap-1.5 text-[10px] bg-orange-50 dark:bg-orange-950/40 text-[#FF5A1F] border border-orange-200/80 dark:border-orange-900/60 font-semibold px-2 py-0.5 rounded-lg"
+                        >
+                          <span>{g.name} ({g.options?.length || 0})</span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteOptionGroup(food.id, g.id);
+                            }}
+                            className="text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                            title="Delete option group"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* Status Toggle & Actions */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleOpenModifierModal(food)}
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-orange-50 dark:hover:bg-orange-950/30 hover:text-[#FF5A1F] hover:border-orange-200 border border-slate-200 dark:border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Configure modifiers and option groups"
+                >
+                  <Layers className="w-3.5 h-3.5 text-[#FF5A1F]" />
+                  <span className="hidden sm:inline">Modifiers</span>
+                </button>
+
                 <button
                   onClick={() => handleToggleAvailability(food)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -296,6 +398,107 @@ export default function RestaurantMenuPage() {
               isLoading={submitting}
             >
               Add Food Item
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Add Modifier Group Modal */}
+      <Modal
+        isOpen={modifierModalOpen}
+        onClose={() => setModifierModalOpen(false)}
+        title={`Customize Modifiers — ${targetFood?.name || 'Dish'}`}
+        description="Configure options like sizes, toppings, spice levels, or sauces"
+      >
+        <form onSubmit={handleSaveModifierGroup} className="space-y-4 pt-2">
+          <Input
+            label="Option Group Name"
+            placeholder="e.g. Size, Crust Type, Add-on Toppings"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            required
+          />
+
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <input
+              type="checkbox"
+              id="groupRequired"
+              checked={groupRequired}
+              onChange={(e) => setGroupRequired(e.target.checked)}
+              className="w-4 h-4 text-[#FF5A1F] rounded-md focus:ring-[#FF5A1F] cursor-pointer"
+            />
+            <label htmlFor="groupRequired" className="text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+              Required selection (customer must pick at least 1 option)
+            </label>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Option Items & Extra Prices
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  setOptionsList([...optionsList, { name: '', additionalPrice: '0.00' }])
+                }
+                className="text-xs font-bold text-[#FF5A1F] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <Plus className="w-3 h-3" /> Add Item
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              {optionsList.map((opt, idx) => (
+                <div key={idx} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder={`e.g. ${idx === 0 ? 'Regular' : 'Large (14")'}`}
+                    value={opt.name}
+                    onChange={(e) => {
+                      const updated = [...optionsList];
+                      updated[idx].name = e.target.value;
+                      setOptionsList(updated);
+                    }}
+                    className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
+                    required
+                  />
+                  <div className="relative w-28">
+                    <span className="absolute left-2.5 top-2 text-xs font-bold text-slate-400">$</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={opt.additionalPrice}
+                      onChange={(e) => {
+                        const updated = [...optionsList];
+                        updated[idx].additionalPrice = e.target.value;
+                        setOptionsList(updated);
+                      }}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 pl-6 pr-3 py-2 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-[#FF5A1F]"
+                      required
+                    />
+                  </div>
+                  {optionsList.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => setOptionsList(optionsList.filter((_, i) => i !== idx))}
+                      className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" size="sm" type="button" onClick={() => setModifierModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" type="submit" isLoading={savingModifiers}>
+              Save Modifiers
             </Button>
           </div>
         </form>

@@ -18,6 +18,9 @@ import com.example.fooddelivery.restaurant.entity.RestaurantStatus;
 import com.example.fooddelivery.restaurant.repository.RestaurantRepository;
 import com.example.fooddelivery.restaurantcategory.entity.RestaurantCategory;
 import com.example.fooddelivery.restaurantcategory.repository.RestaurantCategoryRepository;
+import com.example.fooddelivery.food.entity.FoodOptionGroup;
+import com.example.fooddelivery.food.entity.FoodOptionItem;
+import com.example.fooddelivery.food.repository.FoodOptionGroupRepository;
 import com.example.fooddelivery.user.entity.Role;
 import com.example.fooddelivery.user.entity.User;
 import com.example.fooddelivery.user.entity.UserStatus;
@@ -44,6 +47,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RestaurantRepository restaurantRepository;
     private final MenuCategoryRepository menuCategoryRepository;
     private final FoodItemRepository foodItemRepository;
+    private final FoodOptionGroupRepository foodOptionGroupRepository;
     private final DriverRepository driverRepository;
     private final DriverLocationRepository driverLocationRepository;
     private final AddressRepository addressRepository;
@@ -80,6 +84,11 @@ public class DataInitializer implements CommandLineRunner {
 
         if (restaurantRepository.count() < 40) {
             executeSqlScriptDirectly("seed_restaurants_foods_batch2.sql", "Batch 2");
+        }
+
+        if (foodOptionGroupRepository.count() == 0) {
+            log.info("Seeding demo food option groups and modifiers...");
+            seedDemoOptionGroups();
         }
     }
 
@@ -369,5 +378,208 @@ public class DataInitializer implements CommandLineRunner {
         couponRepository.saveAll(List.of(coupon1, coupon2, coupon3));
 
         log.info("Seed data initialized successfully!");
+    }
+
+    private void seedDemoOptionGroups() {
+        List<FoodItem> allFoods = foodItemRepository.findAll();
+        if (allFoods.isEmpty()) {
+            return;
+        }
+
+        for (FoodItem food : allFoods) {
+            String nameLower = food.getName().toLowerCase();
+            String catName = food.getMenuCategory() != null ? food.getMenuCategory().getName().toLowerCase() : "";
+
+            if (nameLower.contains("burger") || nameLower.contains("whopper")) {
+                FoodOptionGroup sizeGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Patty & Size")
+                        .required(true)
+                        .minSelect(1)
+                        .maxSelect(1)
+                        .build();
+
+                FoodOptionItem optSingle = FoodOptionItem.builder()
+                        .optionGroup(sizeGroup)
+                        .name("Single Patty")
+                        .additionalPrice(BigDecimal.ZERO)
+                        .isDefault(true)
+                        .build();
+
+                FoodOptionItem optDouble = FoodOptionItem.builder()
+                        .optionGroup(sizeGroup)
+                        .name("Double Patty")
+                        .additionalPrice(new BigDecimal("2.50"))
+                        .isDefault(false)
+                        .build();
+
+                FoodOptionItem optTriple = FoodOptionItem.builder()
+                        .optionGroup(sizeGroup)
+                        .name("Triple Monster Patty")
+                        .additionalPrice(new BigDecimal("4.50"))
+                        .isDefault(false)
+                        .build();
+
+                sizeGroup.getOptions().addAll(List.of(optSingle, optDouble, optTriple));
+
+                FoodOptionGroup addGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Extra Toppings & Cheese")
+                        .required(false)
+                        .minSelect(0)
+                        .maxSelect(4)
+                        .build();
+
+                FoodOptionItem addCheddar = FoodOptionItem.builder()
+                        .optionGroup(addGroup)
+                        .name("Extra Melted Cheddar")
+                        .additionalPrice(new BigDecimal("0.75"))
+                        .isDefault(false)
+                        .build();
+
+                FoodOptionItem addBacon = FoodOptionItem.builder()
+                        .optionGroup(addGroup)
+                        .name("Crispy Bacon Strips")
+                        .additionalPrice(new BigDecimal("1.50"))
+                        .isDefault(false)
+                        .build();
+
+                FoodOptionItem addJalapeno = FoodOptionItem.builder()
+                        .optionGroup(addGroup)
+                        .name("Spicy Pickled Jalapeños")
+                        .additionalPrice(new BigDecimal("0.50"))
+                        .isDefault(false)
+                        .build();
+
+                addGroup.getOptions().addAll(List.of(addCheddar, addBacon, addJalapeno));
+
+                foodOptionGroupRepository.saveAll(List.of(sizeGroup, addGroup));
+            } else if (nameLower.contains("pizza") || catName.contains("pizza")) {
+                FoodOptionGroup sizeGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Pizza Size")
+                        .required(true)
+                        .minSelect(1)
+                        .maxSelect(1)
+                        .build();
+
+                FoodOptionItem opt10 = FoodOptionItem.builder()
+                        .optionGroup(sizeGroup)
+                        .name("Regular 10\"")
+                        .additionalPrice(BigDecimal.ZERO)
+                        .isDefault(true)
+                        .build();
+
+                FoodOptionItem opt14 = FoodOptionItem.builder()
+                        .optionGroup(sizeGroup)
+                        .name("Large 14\"")
+                        .additionalPrice(new BigDecimal("3.50"))
+                        .isDefault(false)
+                        .build();
+
+                FoodOptionItem opt18 = FoodOptionItem.builder()
+                        .optionGroup(sizeGroup)
+                        .name("Party 18\"")
+                        .additionalPrice(new BigDecimal("6.50"))
+                        .isDefault(false)
+                        .build();
+
+                sizeGroup.getOptions().addAll(List.of(opt10, opt14, opt18));
+
+                FoodOptionGroup crustGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Crust Type")
+                        .required(true)
+                        .minSelect(1)
+                        .maxSelect(1)
+                        .build();
+
+                FoodOptionItem crThin = FoodOptionItem.builder()
+                        .optionGroup(crustGroup)
+                        .name("Classic Thin & Crispy")
+                        .additionalPrice(BigDecimal.ZERO)
+                        .isDefault(true)
+                        .build();
+
+                FoodOptionItem crCheese = FoodOptionItem.builder()
+                        .optionGroup(crustGroup)
+                        .name("Stuffed Mozzarella Cheese Crust")
+                        .additionalPrice(new BigDecimal("2.00"))
+                        .isDefault(false)
+                        .build();
+
+                crustGroup.getOptions().addAll(List.of(crThin, crCheese));
+
+                FoodOptionGroup topGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Extra Toppings")
+                        .required(false)
+                        .minSelect(0)
+                        .maxSelect(3)
+                        .build();
+
+                FoodOptionItem topMozz = FoodOptionItem.builder()
+                        .optionGroup(topGroup)
+                        .name("Extra Mozzarella")
+                        .additionalPrice(new BigDecimal("1.50"))
+                        .isDefault(false)
+                        .build();
+
+                FoodOptionItem topMush = FoodOptionItem.builder()
+                        .optionGroup(topGroup)
+                        .name("Sliced Mushrooms")
+                        .additionalPrice(new BigDecimal("1.00"))
+                        .isDefault(false)
+                        .build();
+
+                topGroup.getOptions().addAll(List.of(topMozz, topMush));
+
+                foodOptionGroupRepository.saveAll(List.of(sizeGroup, crustGroup, topGroup));
+            } else if (nameLower.contains("coffee") || nameLower.contains("tea") || nameLower.contains("latte") || nameLower.contains("drink") || nameLower.contains("shake") || catName.contains("coffee") || catName.contains("drinks")) {
+                FoodOptionGroup sweetGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Sweetness Level")
+                        .required(true)
+                        .minSelect(1)
+                        .maxSelect(1)
+                        .build();
+
+                FoodOptionItem sw100 = FoodOptionItem.builder().optionGroup(sweetGroup).name("100% Regular Sweet").additionalPrice(BigDecimal.ZERO).isDefault(true).build();
+                FoodOptionItem sw70 = FoodOptionItem.builder().optionGroup(sweetGroup).name("70% Less Sweet").additionalPrice(BigDecimal.ZERO).isDefault(false).build();
+                FoodOptionItem sw50 = FoodOptionItem.builder().optionGroup(sweetGroup).name("50% Half Sweet").additionalPrice(BigDecimal.ZERO).isDefault(false).build();
+                FoodOptionItem sw0 = FoodOptionItem.builder().optionGroup(sweetGroup).name("0% Sugar Free").additionalPrice(BigDecimal.ZERO).isDefault(false).build();
+                sweetGroup.getOptions().addAll(List.of(sw100, sw70, sw50, sw0));
+
+                FoodOptionGroup iceGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Ice Level")
+                        .required(true)
+                        .minSelect(1)
+                        .maxSelect(1)
+                        .build();
+
+                FoodOptionItem iceReg = FoodOptionItem.builder().optionGroup(iceGroup).name("Regular Ice").additionalPrice(BigDecimal.ZERO).isDefault(true).build();
+                FoodOptionItem iceLess = FoodOptionItem.builder().optionGroup(iceGroup).name("Less Ice").additionalPrice(BigDecimal.ZERO).isDefault(false).build();
+                FoodOptionItem iceNone = FoodOptionItem.builder().optionGroup(iceGroup).name("No Ice").additionalPrice(BigDecimal.ZERO).isDefault(false).build();
+                iceGroup.getOptions().addAll(List.of(iceReg, iceLess, iceNone));
+
+                foodOptionGroupRepository.saveAll(List.of(sweetGroup, iceGroup));
+            } else {
+                FoodOptionGroup portionGroup = FoodOptionGroup.builder()
+                        .foodItem(food)
+                        .name("Portion Size")
+                        .required(true)
+                        .minSelect(1)
+                        .maxSelect(1)
+                        .build();
+
+                FoodOptionItem pReg = FoodOptionItem.builder().optionGroup(portionGroup).name("Standard Portion").additionalPrice(BigDecimal.ZERO).isDefault(true).build();
+                FoodOptionItem pLarge = FoodOptionItem.builder().optionGroup(portionGroup).name("Upsize / Large Portion").additionalPrice(new BigDecimal("1.75")).isDefault(false).build();
+                portionGroup.getOptions().addAll(List.of(pReg, pLarge));
+
+                foodOptionGroupRepository.save(portionGroup);
+            }
+        }
+        log.info("Demo option groups and items seeded successfully across dishes!");
     }
 }

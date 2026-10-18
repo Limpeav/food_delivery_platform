@@ -6,6 +6,11 @@ import com.example.fooddelivery.food.dto.FoodItemRequest;
 import com.example.fooddelivery.food.dto.FoodItemResponse;
 import com.example.fooddelivery.food.entity.FoodItem;
 import com.example.fooddelivery.food.repository.FoodItemRepository;
+import com.example.fooddelivery.food.dto.FoodOptionGroupRequest;
+import com.example.fooddelivery.food.dto.FoodOptionGroupResponse;
+import com.example.fooddelivery.food.entity.FoodOptionGroup;
+import com.example.fooddelivery.food.entity.FoodOptionItem;
+import com.example.fooddelivery.food.repository.FoodOptionGroupRepository;
 import com.example.fooddelivery.menu.entity.MenuCategory;
 import com.example.fooddelivery.menu.service.MenuCategoryService;
 import com.example.fooddelivery.restaurant.entity.Restaurant;
@@ -33,6 +38,7 @@ import java.util.stream.Collectors;
 public class FoodItemService {
 
     private final FoodItemRepository foodItemRepository;
+    private final FoodOptionGroupRepository foodOptionGroupRepository;
     private final RestaurantRepository restaurantRepository;
     private final RestaurantService restaurantService;
     private final MenuCategoryService menuCategoryService;
@@ -190,5 +196,53 @@ public class FoodItemService {
         restaurantService.verifyOwnership(item.getRestaurant(), ownerId);
         foodItemRepository.delete(item);
         log.info("Food item deleted: {}", foodId);
+    }
+
+    @CacheEvict(value = "popular_foods", allEntries = true)
+    @Transactional
+    public FoodOptionGroupResponse addOptionGroup(Long ownerId, Long foodId, FoodOptionGroupRequest request) {
+        FoodItem item = findFoodItemById(foodId);
+        restaurantService.verifyOwnership(item.getRestaurant(), ownerId);
+
+        FoodOptionGroup group = FoodOptionGroup.builder()
+                .foodItem(item)
+                .name(request.getName().trim())
+                .required(Boolean.TRUE.equals(request.getRequired()))
+                .minSelect(request.getMinSelect() != null ? request.getMinSelect() : (Boolean.TRUE.equals(request.getRequired()) ? 1 : 0))
+                .maxSelect(request.getMaxSelect() != null ? request.getMaxSelect() : 1)
+                .build();
+
+        if (request.getOptions() != null) {
+            for (var optReq : request.getOptions()) {
+                FoodOptionItem optItem = FoodOptionItem.builder()
+                        .optionGroup(group)
+                        .name(optReq.getName().trim())
+                        .additionalPrice(optReq.getAdditionalPrice() != null ? optReq.getAdditionalPrice() : BigDecimal.ZERO)
+                        .isDefault(Boolean.TRUE.equals(optReq.getIsDefault()))
+                        .build();
+                group.getOptions().add(optItem);
+            }
+        }
+
+        FoodOptionGroup saved = foodOptionGroupRepository.save(group);
+        log.info("Option group '{}' added to food item: {}", saved.getName(), foodId);
+        return FoodOptionGroupResponse.from(saved);
+    }
+
+    @CacheEvict(value = "popular_foods", allEntries = true)
+    @Transactional
+    public void deleteOptionGroup(Long ownerId, Long foodId, Long groupId) {
+        FoodItem item = findFoodItemById(foodId);
+        restaurantService.verifyOwnership(item.getRestaurant(), ownerId);
+
+        FoodOptionGroup group = foodOptionGroupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("FoodOptionGroup", "id", groupId));
+
+        if (!group.getFoodItem().getId().equals(foodId)) {
+            throw new ResourceNotFoundException("Option group does not belong to this food item");
+        }
+
+        foodOptionGroupRepository.delete(group);
+        log.info("Option group {} deleted from food item: {}", groupId, foodId);
     }
 }

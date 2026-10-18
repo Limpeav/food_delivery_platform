@@ -1,11 +1,13 @@
 package com.example.fooddelivery.admin.service;
 
 import com.example.fooddelivery.admin.dto.AdminDashboardStats;
+import com.example.fooddelivery.admin.dto.AdminSearchResponse;
 import com.example.fooddelivery.common.exception.ResourceNotFoundException;
 import com.example.fooddelivery.common.response.PageResponse;
 import com.example.fooddelivery.driver.repository.DriverRepository;
 import com.example.fooddelivery.order.entity.OrderStatus;
 import com.example.fooddelivery.order.repository.OrderRepository;
+import com.example.fooddelivery.restaurant.entity.Restaurant;
 import com.example.fooddelivery.restaurant.entity.RestaurantStatus;
 import com.example.fooddelivery.restaurant.repository.RestaurantRepository;
 import com.example.fooddelivery.user.dto.UserResponse;
@@ -16,6 +18,7 @@ import com.example.fooddelivery.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.lang.NonNull;
@@ -180,5 +183,117 @@ public class AdminService {
         result.put("from", from.toString());
         result.put("to", to.toString());
         return result;
+    }
+
+    @Transactional(readOnly = true)
+    public AdminSearchResponse globalSearch(String query, String type, int limit) {
+        if (query == null || query.trim().isEmpty()) {
+            return AdminSearchResponse.builder()
+                    .restaurants(List.of())
+                    .users(List.of())
+                    .orders(List.of())
+                    .drivers(List.of())
+                    .totalMatches(0)
+                    .build();
+        }
+
+        String trimmed = query.trim();
+        int maxLimit = limit <= 0 ? 8 : Math.min(limit, 30);
+        Pageable topPage = PageRequest.of(0, maxLimit);
+
+        boolean searchAll = type == null || type.isBlank() || "ALL".equalsIgnoreCase(type);
+        boolean searchRestaurants = searchAll || "RESTAURANTS".equalsIgnoreCase(type);
+        boolean searchUsers = searchAll || "USERS".equalsIgnoreCase(type);
+        boolean searchOrders = searchAll || "ORDERS".equalsIgnoreCase(type);
+        boolean searchDrivers = searchAll || "DRIVERS".equalsIgnoreCase(type);
+
+        List<AdminSearchResponse.RestaurantResult> restaurants = new ArrayList<>();
+        List<AdminSearchResponse.UserResult> users = new ArrayList<>();
+        List<AdminSearchResponse.OrderResult> orders = new ArrayList<>();
+        List<AdminSearchResponse.DriverResult> drivers = new ArrayList<>();
+
+        if (searchRestaurants) {
+            String pattern = "%" + trimmed.toLowerCase() + "%";
+            Specification<Restaurant> spec = (root, q, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("name")), pattern),
+                    cb.like(cb.lower(root.get("address")), pattern),
+                    cb.like(cb.lower(root.get("phone")), pattern)
+            );
+            restaurants = restaurantRepository.findAll(spec, topPage).getContent().stream()
+                    .map(r -> AdminSearchResponse.RestaurantResult.builder()
+                            .id(r.getId())
+                            .name(r.getName())
+                            .status(r.getStatus().name())
+                            .address(r.getAddress())
+                            .phone(r.getPhone())
+                            .logoUrl(r.getLogoUrl())
+                            .rating(r.getRating())
+                            .ownerName(r.getOwner() != null ? r.getOwner().getName() : null)
+                            .build())
+                    .toList();
+        }
+
+        if (searchUsers) {
+            String pattern = "%" + trimmed.toLowerCase() + "%";
+            Specification<User> spec = (root, q, cb) -> cb.or(
+                    cb.like(cb.lower(root.get("name")), pattern),
+                    cb.like(cb.lower(root.get("email")), pattern),
+                    cb.like(cb.lower(root.get("phoneNumber")), pattern)
+            );
+            users = userRepository.findAll(spec, topPage).getContent().stream()
+                    .map(u -> AdminSearchResponse.UserResult.builder()
+                            .id(u.getId())
+                            .name(u.getName())
+                            .email(u.getEmail())
+                            .phoneNumber(u.getPhoneNumber())
+                            .role(u.getRole().name())
+                            .status(u.getStatus().name())
+                            .profileImageUrl(u.getProfileImageUrl())
+                            .build())
+                    .toList();
+        }
+
+        if (searchOrders) {
+            orders = orderRepository.searchOrdersAdmin(null, trimmed, topPage).getContent().stream()
+                    .map(o -> AdminSearchResponse.OrderResult.builder()
+                            .id(o.getId())
+                            .orderNumber("#ORD-" + o.getId())
+                            .status(o.getStatus().name())
+                            .totalAmount(o.getTotalAmount())
+                            .customerName(o.getCustomer() != null ? o.getCustomer().getName() : "Customer")
+                            .customerEmail(o.getCustomer() != null ? o.getCustomer().getEmail() : null)
+                            .restaurantName(o.getRestaurant() != null ? o.getRestaurant().getName() : "Restaurant")
+                            .deliveryAddress(o.getDeliveryAddress())
+                            .createdAt(o.getCreatedAt())
+                            .build())
+                    .toList();
+        }
+
+        if (searchDrivers) {
+            drivers = driverRepository.searchDriversAdmin(null, trimmed, topPage).getContent().stream()
+                    .map(d -> AdminSearchResponse.DriverResult.builder()
+                            .id(d.getId())
+                            .userId(d.getUser() != null ? d.getUser().getId() : null)
+                            .name(d.getUser() != null ? d.getUser().getName() : "Driver")
+                            .email(d.getUser() != null ? d.getUser().getEmail() : null)
+                            .phoneNumber(d.getUser() != null ? d.getUser().getPhoneNumber() : null)
+                            .vehicleType(d.getVehicleType())
+                            .vehicleNumber(d.getVehicleNumber())
+                            .approved(d.getApproved())
+                            .online(d.getOnline())
+                            .rating(d.getRating())
+                            .build())
+                    .toList();
+        }
+
+        long totalMatches = (long) restaurants.size() + users.size() + orders.size() + drivers.size();
+
+        return AdminSearchResponse.builder()
+                .restaurants(restaurants)
+                .users(users)
+                .orders(orders)
+                .drivers(drivers)
+                .totalMatches(totalMatches)
+                .build();
     }
 }

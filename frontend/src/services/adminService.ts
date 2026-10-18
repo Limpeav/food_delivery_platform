@@ -1,6 +1,7 @@
 import api from '@/lib/api';
 import {
   AdminDashboardStats,
+  AdminSearchResponse,
   ApiResponse,
   Driver,
   PageResponse,
@@ -19,11 +20,17 @@ export const adminService = {
     return res.data.data;
   },
 
+  async globalSearch(query: string, type?: string, limit?: number): Promise<AdminSearchResponse> {
+    const res = await api.get<ApiResponse<AdminSearchResponse>>('/admin/search', {
+      params: { query, type, limit },
+    });
+    return res.data.data;
+  },
+
   async getUsers(params?: { role?: Role; search?: string; page?: number; size?: number }): Promise<PageResponse<User>> {
     const res = await api.get<ApiResponse<PageResponse<User>>>('/admin/users', { params });
     return res.data.data;
   },
-
 
   async updateUserStatus(id: number, status: UserStatus): Promise<User> {
     const res = await api.patch<ApiResponse<User>>(`/admin/users/${id}/status`, null, {
@@ -32,7 +39,7 @@ export const adminService = {
     return res.data.data;
   },
 
-  async getRestaurants(params?: { status?: RestaurantStatus; page?: number; size?: number }): Promise<PageResponse<Restaurant>> {
+  async getRestaurants(params?: { status?: RestaurantStatus; search?: string; page?: number; size?: number }): Promise<PageResponse<Restaurant>> {
     const res = await api.get<ApiResponse<PageResponse<Restaurant>>>('/admin/restaurants', { params });
     return res.data.data;
   },
@@ -42,7 +49,7 @@ export const adminService = {
     return res.data.data;
   },
 
-  async getDrivers(params?: { approved?: boolean; page?: number; size?: number }): Promise<PageResponse<Driver>> {
+  async getDrivers(params?: { approved?: boolean; search?: string; page?: number; size?: number }): Promise<PageResponse<Driver>> {
     const res = await api.get<ApiResponse<PageResponse<Driver>>>('/admin/drivers', { params });
     return res.data.data;
   },

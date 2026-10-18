@@ -129,6 +129,22 @@ export interface MenuCategory {
   active: boolean;
 }
 
+export interface FoodOptionItem {
+  id: number;
+  name: string;
+  additionalPrice: number;
+  isDefault: boolean;
+}
+
+export interface FoodOptionGroup {
+  id: number;
+  name: string;
+  required: boolean;
+  minSelect: number;
+  maxSelect: number | null;
+  options: FoodOptionItem[];
+}
+
 export interface FoodItem {
   id: number;
   restaurantId: number;
@@ -142,6 +158,7 @@ export interface FoodItem {
   preparationTime: number;
   available: boolean;
   rating: number;
+  optionGroups?: FoodOptionGroup[];
   createdAt: string;
 }
 
@@ -249,6 +266,31 @@ export interface Order {
 
   createdAt: string;
   updatedAt?: string;
+}
+
+export interface KhqrResponse {
+  orderId: number;
+  qrCode: string;
+  qrImage: string;
+  md5: string;
+  amount: number;
+  currency: string;
+  merchantName: string;
+  merchantAccountId: string;
+  paymentStatus: string;
+  simulated: boolean;
+}
+
+export interface KhqrVerificationResponse {
+  orderId: number;
+  verified: boolean;
+  paymentStatus: string;
+  transactionHash?: string;
+  md5?: string;
+  amount?: number;
+  currency?: string;
+  message?: string;
+  verifiedAt?: string;
 }
 
 export interface Delivery {
@@ -399,3 +441,58 @@ export interface PageResponse<T> {
   totalPages: number;
   last: boolean;
 }
+
+export interface AdminRestaurantResult {
+  id: number;
+  name: string;
+  status: string;
+  address: string;
+  phone: string;
+  logoUrl?: string;
+  rating?: number;
+  ownerName?: string;
+}
+
+export interface AdminUserResult {
+  id: number;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  role: string;
+  status: string;
+  profileImageUrl?: string;
+}
+
+export interface AdminOrderResult {
+  id: number;
+  orderNumber: string;
+  status: string;
+  totalAmount: number;
+  customerName: string;
+  customerEmail?: string;
+  restaurantName: string;
+  deliveryAddress: string;
+  createdAt: string;
+}
+
+export interface AdminDriverResult {
+  id: number;
+  userId?: number;
+  name: string;
+  email?: string;
+  phoneNumber?: string;
+  vehicleType: string;
+  vehicleNumber: string;
+  approved: boolean;
+  online: boolean;
+  rating?: number;
+}
+
+export interface AdminSearchResponse {
+  restaurants: AdminRestaurantResult[];
+  users: AdminUserResult[];
+  orders: AdminOrderResult[];
+  drivers: AdminDriverResult[];
+  totalMatches: number;
+}
+

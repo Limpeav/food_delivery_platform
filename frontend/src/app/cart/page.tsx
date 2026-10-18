@@ -121,6 +121,16 @@ export default function CartPage() {
                   <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">
                     {item.foodName}
                   </h4>
+                  {item.selectedOptions && (
+                    <p className="text-[11px] font-medium text-[#FF5A1F] dark:text-orange-400 mt-0.5 line-clamp-1">
+                      {item.selectedOptions}
+                    </p>
+                  )}
+                  {item.specialInstructions && (
+                    <p className="text-[10px] text-slate-400 italic mt-0.5 line-clamp-1">
+                      &ldquo;{item.specialInstructions}&rdquo;
+                    </p>
+                  )}
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     ${item.unitPrice.toFixed(2)} {t.cartPage.each}
                   </p>

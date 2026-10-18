@@ -20,7 +20,7 @@ public enum OrderStatus {
 
     private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
             PENDING, EnumSet.of(CONFIRMED, REJECTED, CANCELLED),
-            CONFIRMED, EnumSet.of(PREPARING, CANCELLED),
+            CONFIRMED, EnumSet.of(PREPARING, CANCELLED, REJECTED),
             PREPARING, EnumSet.of(READY_FOR_PICKUP),
             READY_FOR_PICKUP, EnumSet.of(DRIVER_ASSIGNED, CANCELLED),
             DRIVER_ASSIGNED, EnumSet.of(PICKED_UP, OUT_FOR_DELIVERY, CANCELLED),

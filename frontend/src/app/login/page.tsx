@@ -31,10 +31,7 @@ export default function CustomerLoginPage() {
 
   React.useEffect(() => {
     if (isInitialized && !isLoading && isAuthenticated && user) {
-      if (user.role === 'ADMIN') router.replace('/admin/dashboard');
-      else if (user.role === 'RESTAURANT_OWNER') router.replace('/restaurant/dashboard');
-      else if (user.role === 'DRIVER') router.replace('/driver/dashboard');
-      else {
+      if (user.role === 'CUSTOMER') {
         router.replace('/');
       }
     }
@@ -58,7 +55,7 @@ export default function CustomerLoginPage() {
     setIsSubmitting(true);
     try {
       await customerLogin(data.email, data.password);
-      router.push('/');
+      window.location.href = '/';
     } catch (err: any) {
       setErrorMsg(
         err.response?.data?.message || 'Invalid email or password. Please verify your credentials.'

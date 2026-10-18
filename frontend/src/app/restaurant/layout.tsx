@@ -180,6 +180,15 @@ export default function RestaurantLayout({
     );
   }
 
+  // Dedicated fullscreen KDS layout for /restaurant/kds
+  if (pathname === '/restaurant/kds') {
+    return (
+      <div className="h-screen w-full bg-slate-950 text-slate-100 overflow-hidden flex flex-col selection:bg-emerald-500 selection:text-white">
+        {children}
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen w-full flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
       <Sidebar role="RESTAURANT_OWNER" isPending={isPending} />

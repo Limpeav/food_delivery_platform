@@ -56,4 +56,13 @@ export const foodService = {
   async deleteFoodItem(id: number): Promise<void> {
     await api.delete(`/restaurant/foods/${id}`);
   },
+
+  async addOptionGroup(foodId: number, data: any): Promise<any> {
+    const res = await api.post<ApiResponse<any>>(`/restaurant/foods/${foodId}/option-groups`, data);
+    return res.data.data;
+  },
+
+  async deleteOptionGroup(foodId: number, groupId: number): Promise<void> {
+    await api.delete(`/restaurant/foods/${foodId}/option-groups/${groupId}`);
+  },
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Bike, Check, X, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Bike, Check, X, ShieldCheck, AlertCircle, Search } from 'lucide-react';
 import { adminService } from '@/services/adminService';
 import { Driver } from '@/types';
 import { Badge } from '@/components/ui/Badge';
@@ -14,18 +14,25 @@ export default function AdminDriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [approvedFilter, setApprovedFilter] = useState<'ALL' | 'APPROVED' | 'PENDING'>('ALL');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
 
   useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
     setPage(0);
-  }, [approvedFilter]);
+  }, [approvedFilter, debouncedSearch]);
 
   useEffect(() => {
     loadDrivers();
-  }, [approvedFilter, page]);
+  }, [approvedFilter, debouncedSearch, page]);
 
   const loadDrivers = async () => {
     try {
@@ -34,6 +41,7 @@ export default function AdminDriversPage() {
         approvedFilter === 'ALL' ? undefined : approvedFilter === 'APPROVED';
       const res = await adminService.getDrivers({
         approved: isApproved,
+        search: debouncedSearch.trim() || undefined,
         page,
         size: 20,
       });
@@ -73,15 +81,38 @@ export default function AdminDriversPage() {
           </p>
         </div>
 
-        <select
-          value={approvedFilter}
-          onChange={(e) => setApprovedFilter(e.target.value as any)}
-          className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-[#FF5A1F]"
-        >
-          <option value="ALL">All Drivers</option>
-          <option value="PENDING">Pending Review</option>
-          <option value="APPROVED">Authorized Drivers</option>
-        </select>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          {/* Search Input */}
+          <div className="relative w-full sm:w-64 md:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by driver, phone, plate..."
+              className="w-full pl-9 pr-8 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-purple-500 transition-colors shadow-2xs"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <select
+            value={approvedFilter}
+            onChange={(e) => setApprovedFilter(e.target.value as any)}
+            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 focus:outline-none focus:border-purple-500 transition-colors shadow-2xs cursor-pointer"
+          >
+            <option value="ALL">All Drivers</option>
+            <option value="PENDING">Pending Review</option>
+            <option value="APPROVED">Authorized Drivers</option>
+          </select>
+        </div>
       </div>
 
       {/* List */}

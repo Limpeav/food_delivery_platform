@@ -33,6 +33,9 @@ public class CartItem {
     @Builder.Default
     private Integer quantity = 1;
 
+    @Column(name = "unit_price", precision = 10, scale = 2)
+    private BigDecimal unitPrice;
+
     @Column(name = "selected_options")
     private String selectedOptions;
 
@@ -40,9 +43,10 @@ public class CartItem {
     private String specialInstructions;
 
     public BigDecimal getSubtotal() {
-        if (foodItem == null || foodItem.getPrice() == null) {
+        BigDecimal effectivePrice = (unitPrice != null) ? unitPrice : (foodItem != null ? foodItem.getPrice() : BigDecimal.ZERO);
+        if (effectivePrice == null) {
             return BigDecimal.ZERO;
         }
-        return foodItem.getPrice().multiply(BigDecimal.valueOf(quantity));
+        return effectivePrice.multiply(BigDecimal.valueOf(quantity));
     }
 }

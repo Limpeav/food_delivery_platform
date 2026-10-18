@@ -118,10 +118,12 @@ public class OrderController {
     // Admin Endpoints
     @GetMapping("/api/admin/orders")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Get all platform orders (Admin)")
+    @Operation(summary = "Get all platform orders with optional search and status filter (Admin)")
     public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getAllOrdersAdmin(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) OrderStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        PageResponse<OrderResponse> response = orderService.getAllOrdersAdmin(pageable);
+        PageResponse<OrderResponse> response = orderService.getAllOrdersAdmin(search, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

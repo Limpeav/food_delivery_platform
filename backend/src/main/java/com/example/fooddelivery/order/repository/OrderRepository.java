@@ -46,5 +46,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COUNT(o) FROM Order o WHERE o.status = 'DELIVERED' AND o.createdAt >= :start AND o.createdAt <= :end")
     long countOrdersInPeriod(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+
+    @Query("SELECT o FROM Order o WHERE " +
+           "(:status IS NULL OR o.status = :status) AND (" +
+           ":search IS NULL OR :search = '' OR " +
+           "CAST(o.id AS string) LIKE CONCAT('%', :search, '%') OR " +
+           "LOWER(o.customer.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(o.customer.email) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(o.restaurant.name) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(o.deliveryAddress) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Order> searchOrdersAdmin(@Param("status") OrderStatus status, @Param("search") String search, Pageable pageable);
 }
 

@@ -7,6 +7,8 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "food_items", indexes = {
@@ -55,6 +57,11 @@ public class FoodItem {
     @Column(nullable = false)
     @Builder.Default
     private Double rating = 0.0;
+
+    @OneToMany(mappedBy = "foodItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    @Builder.Default
+    private List<FoodOptionGroup> optionGroups = new ArrayList<>();
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
