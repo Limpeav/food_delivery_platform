@@ -624,8 +624,6 @@ public class AuthService {
                     if (securityContextRepository != null && response != null) {
                         securityContextRepository.saveContext(context, request, response);
                     }
-                    HttpSession session = request.getSession(true);
-                    session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
                 }
             }
         } catch (Exception e) {

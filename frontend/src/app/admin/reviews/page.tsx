@@ -38,7 +38,7 @@ export default function AdminReviewsPage() {
       setTotalPages(res.totalPages || 0);
       setTotalElements(res.totalElements || 0);
     } catch (err: any) {
-      if (err?.response?.status === 401) return;
+      if (err?.response?.status === 401 || err?.response?.status === 403) return;
       console.error(err);
       setFeedback({ type: 'error', message: 'Failed to load reviews' });
     } finally {

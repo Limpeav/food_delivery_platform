@@ -218,13 +218,15 @@ function RestaurantsContent() {
               }`}
             >
               {cat.imageUrl ? (
-                <Image
-                  src={cat.imageUrl}
-                  alt={cat.name}
-                  width={16}
-                  height={16}
-                  className="rounded-sm object-cover"
-                />
+                <div className="relative w-4 h-4 shrink-0 overflow-hidden rounded-xs">
+                  <Image
+                    src={cat.imageUrl}
+                    alt={cat.name}
+                    fill
+                    className="object-cover"
+                    sizes="16px"
+                  />
+                </div>
               ) : null}
               {localizeCategory(cat.name, language)}
             </button>

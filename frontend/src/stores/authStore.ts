@@ -128,11 +128,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             isLoading: false,
             isInitialized: true,
           });
+        } else {
+          // User role does not match expected role for this portal scope
+          localStorage.removeItem(keys.accessToken);
+          localStorage.removeItem(keys.refreshToken);
+          localStorage.removeItem(keys.authUser);
+          localStorage.removeItem(keys.businessStatus);
+          set({ user: null, token: null, isAuthenticated: false, isLoading: false, isInitialized: true });
         }
       } catch (err: any) {
-        // If 401 Unauthorized, api interceptor has already attempted refresh and failed
-        if (err?.response?.status === 401) {
-          // Both access token and refresh token are invalid or expired
+        // If 401 Unauthorized or 403 Forbidden, session credentials are invalid or forbidden for this portal
+        if (err?.response?.status === 401 || err?.response?.status === 403) {
+          // Both access token and refresh token are invalid, expired, or lack privileges
           localStorage.removeItem(keys.accessToken);
           localStorage.removeItem(keys.refreshToken);
           localStorage.removeItem(keys.authUser);
@@ -145,7 +152,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           }
           set({ user: null, token: null, isAuthenticated: false, isLoading: false, isInitialized: true });
         } else {
-          // Server temporarily offline or non-401 error:
+          // Server temporarily offline or non-auth network error:
           // KEEP the cached session intact so the user is never kicked out!
           set({ isLoading: false, isInitialized: true });
         }

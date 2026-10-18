@@ -50,7 +50,7 @@ export default function AdminUsersPage() {
       setTotalPages(res.totalPages || 0);
       setTotalElements(res.totalElements || 0);
     } catch (err: any) {
-      if (err?.response?.status === 401) return;
+      if (err?.response?.status === 401 || err?.response?.status === 403) return;
       console.error(err);
     } finally {
       setLoading(false);

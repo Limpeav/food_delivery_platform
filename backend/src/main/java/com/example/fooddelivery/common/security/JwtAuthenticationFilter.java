@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -26,7 +26,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
-    private final SecurityContextRepository securityContextRepository = new HttpSessionSecurityContextRepository();
+    private final SecurityContextRepository securityContextRepository = new RequestAttributeSecurityContextRepository();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -47,10 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 context.setAuthentication(authentication);
                 SecurityContextHolder.setContext(context);
 
-                // Synchronize with HTTP session if a session exists
-                if (request.getSession(false) != null) {
-                    securityContextRepository.saveContext(context, request, response);
-                }
+                securityContextRepository.saveContext(context, request, response);
             }
         } catch (Exception ex) {
             log.error("Could not set user authentication in security context: {}", ex.getMessage());

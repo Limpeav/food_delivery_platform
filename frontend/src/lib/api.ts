@@ -8,7 +8,7 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true,
+  withCredentials: false,
 });
 
 // Request interceptor: attach token based on role/portal scope
@@ -144,6 +144,24 @@ api.interceptors.response.use(
           isRefreshing = false;
         }
       }
+    }
+
+    // Handle 403 Forbidden on role-protected routes
+    if (error.response?.status === 403) {
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        const protectedPrefixes = [
+          '/admin',
+          '/restaurant',
+          '/driver',
+          '/delivery',
+          '/deliveries',
+        ];
+        if (protectedPrefixes.some((prefix) => currentPath.startsWith(prefix))) {
+          handleAuthFailure(currentPath);
+        }
+      }
+      return Promise.reject(error);
     }
 
     return Promise.reject(error);

@@ -22,7 +22,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
@@ -46,7 +46,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityContextRepository securityContextRepository() {
-        return new HttpSessionSecurityContextRepository();
+        return new RequestAttributeSecurityContextRepository();
     }
 
     @Bean
@@ -117,7 +117,7 @@ public class SecurityConfig {
                         .contentTypeOptions(Customizer.withDefaults())
                         .xssProtection(Customizer.withDefaults())
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .securityContext(sc -> sc.securityContextRepository(securityContextRepository()))
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint())

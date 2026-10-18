@@ -434,14 +434,14 @@ export default function HomePage() {
                       : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-200 font-medium'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-lg mb-1.5 overflow-hidden">
+                  <div className="relative w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-lg mb-1.5 overflow-hidden">
                     {cat.imageUrl ? (
                       <Image
                         src={cat.imageUrl}
                         alt={cat.name}
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="40px"
                       />
                     ) : (
                       '🍔'
