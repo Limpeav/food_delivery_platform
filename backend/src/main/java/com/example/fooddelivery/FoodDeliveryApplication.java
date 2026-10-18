@@ -41,8 +41,17 @@ public class FoodDeliveryApplication {
                             value = value.substring(1, value.length() - 1);
                         }
                     }
-                    if (System.getProperty(key) == null && System.getenv(key) == null) {
-                        System.setProperty(key, value);
+                    System.setProperty(key, value);
+                    if ("DB_URL".equals(key)) {
+                        System.setProperty("spring.datasource.url", value);
+                    } else if ("DB_USERNAME".equals(key)) {
+                        System.setProperty("spring.datasource.username", value);
+                    } else if ("DB_PASSWORD".equals(key)) {
+                        System.setProperty("spring.datasource.password", value);
+                    } else if ("JWT_SECRET".equals(key)) {
+                        System.setProperty("jwt.secret", value);
+                    } else if ("ADMIN_PASSWORD".equals(key)) {
+                        System.setProperty("app.admin.password", value);
                     }
                 }
             } catch (Exception ignored) {
